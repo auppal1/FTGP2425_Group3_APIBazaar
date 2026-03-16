@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <0.9.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-contract FirstToken is ERC20 {
+contract EcoToken is ERC20 {
 
     // Make Math library functions available for use on uint256 variables
     using Math for uint256;
