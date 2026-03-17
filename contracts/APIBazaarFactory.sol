@@ -1,12 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-
 // FTGP Group 3 - API Bazaar
 // Contract creates and tracks individual API contracts, each associated with a provider
 // Calls upon APIProviderLogic to instantiate an individual contract, bonding curve, and token.
 
+// Need to import APIProviderLogic.sol to create contracts within factory
+import "./APIProviderLogic.sol";
+
 contract APIBazaarFactory{
+
+    // Marketplace owner
+    address public immutable admin;
+
+    // Construct marketplace owner upon contract creation
+    constructor(){
+        admin = msg.sender;
+    }
+
+    // Variable to track total number of listings
+    uint256 public totalListings;
+
+    // Array of all API listing addresses created
+    address[] private allListingAddresses; 
+
 
     // Struct data structure used for mapping API-specific metadata to a unique ID (contract address)
     // @param provider Wallet address of provider
@@ -31,7 +48,8 @@ contract APIBazaarFactory{
     // Map API contract address to API specific metadata from struct
     mapping(address => contractData) private listings;
 
-    // TODO: create mapping from wallet address to all contracts they have created
+    // Map provider's wallet address to list of all API contract addresses they have created
+    mapping(address => address[]) private providerListings;
 
     // Event for creation of listing
     event createdListing(address indexed provider, address indexed apiListing, string name, string category);
@@ -72,8 +90,37 @@ contract APIBazaarFactory{
         require(b > 0, "Parameter 'b' must be > 0"); // TODO: update according to bonding curve
         require(capacity > 0, "Capacity must be > 0"); // TODO: update according to bonding curve
 
-        // TODO: Call the contract from APIProviderLogic.sol once written to create new API listing
-        // TODO: Return data from calling contract such as contract address that is unique identifier of contract
+        // Call function from APIProviderLogic.sol
+        APIProviderLogic apiContract = new APIProviderLogic(msg.sender, a, b, capacity); // TODO: APIProviderLogic constructor must match these params
+
+        // Increment the total listing count
+        totalListings += 1;
+
+        // Store contract address from newly created contract
+        address apiContractAddress = address(apiContract);
+
+        // Use struct to store metadata of created contract and map to the contract address
+        listings[apiContractAddress] = contractData({
+            provider: msg.sender,
+            apiListing: apiContractAddress,
+            name: name,
+            description: description, 
+            symbol: symbol,
+            category: category,
+            endpoint: endpoint,
+            active: true,
+            createdAt: block.timestamp
+        });
+
+        // Add mapping from provider address to API contract address
+        providerListings[msg.sender].push(apiContractAddress);
+
+        // Add contract address to array of all API contract addresses
+        allListingAddresses.push(apiContractAddress);
+
+        // Emit creation of new contract
+        emit createdListing(msg.sender, apiContractAddress, name, category);
+        
     }
 
     function terminateListing(address apiListing) external returns (bool) {
