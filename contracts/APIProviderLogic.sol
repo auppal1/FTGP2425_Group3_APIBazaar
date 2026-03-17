@@ -61,12 +61,10 @@ contract TokenAPI is ERC20 {
         purchasePrice = 0;
         require(_totalSupply + quantity < capacity, "Amount breaches capacity");
 
-        // Use a for loop to sum the spot prices of each individual token
-        for (uint256 i = 1; i <= quantity; i++) { // i = 1 as supply is post-mint
-            uint256 sNext = _totalSupply + i;
-            uint256 denom = capacity + k - sNext;
-            purchasePrice += b + (a / denom);
-        }
+        // Calculate price for requested number of tokens
+        uint256 numerator = capacity + k - _totalSupply;
+        uint256 denominator = capacity + k - (_totalSupply + quantity);
+        purchasePrice = (b*_totalSupply) + a*(((numerator)/(denominator)).log2()) + quantity;
 
         return purchasePrice;
     }
