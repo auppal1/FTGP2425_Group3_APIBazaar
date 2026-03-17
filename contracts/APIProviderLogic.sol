@@ -16,6 +16,12 @@ contract TokenAPI is ERC20 {
     string constant tokenName = "TokenAPI";
     string constant tokenSymbol = "TAPI";
 
+    // Bonding Curve Parameters
+    uint256 constant a = 500;
+    uint256 constant b = 1;
+    uint256 constant k = 0;
+    uint256 constant capacity = 200;
+
     // Initial token purchase and sale prices are 0
     uint256 public purchasePrice = 0;
     uint256 public salePrice = 0;
@@ -23,19 +29,27 @@ contract TokenAPI is ERC20 {
     // Initialise balance of ETH stored in this contract
     uint256 public reserveBalance = 0;  //initial balance is 0
 
+    // Owner as contract needs administrative control
+    address public owner;
+
+    // Mapping for withdrawals
+    mapping(address => uint256) public credits;
+
     // Per day supply and balance mappings (as resets every day). UPDATED EVERY TIME TOKEN IS MINTED OR BURNED
     mapping(uint256 => uint256) private supplyByDay; // mapping day to supply of that day
     mapping(uint256 => mapping(address => uint256)) private balanceByDay; // mapping user address to their balance for that day
 
-    // Bonding Curve Parameters
-    uint256 constant a = 500;
-    uint256 constant b = 1;
-    uint256 constant k = 0;
-    uint256 constant capacity = 200;
+    // Events
+    event Credited(address indexed to, uint256 amount);
+    event Withdrawn(address indexed to, uint256 amount);
+    event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
+
 
     // CONSTRUCTOR
 
-    constructor() ERC20(tokenName, tokenSymbol) {}
+    constructor() ERC20(tokenName, tokenSymbol) {
+        owner = msg.sender;
+    }
 
 
     // Number of seconds in a day - used in currentDay() function
@@ -66,7 +80,7 @@ contract TokenAPI is ERC20 {
         // Calculate price for requested number of tokens
         uint256 numerator = capacity + k - _totalSupply;
         uint256 denominator = capacity + k - (_totalSupply + amount);
-        purchasePrice = b*_totalSupply) + a*(((numerator)/(denominator)).log2()) + amount;
+        purchasePrice = (b*_totalSupply) + a*(((numerator)/(denominator)).log2()) + amount;
 
         return purchasePrice;
     }
@@ -85,7 +99,7 @@ contract TokenAPI is ERC20 {
         // Calculate price for requested number of tokens
         uint256 numerator = capacity + k - _totalSupply;
         uint256 denominator = capacity + k - (_totalSupply + amount);
-        salePrice = b*_totalSupply) + a*(((numerator)/(denominator)).log2()) - amount;
+        salePrice = (b*_totalSupply) + a*(((numerator)/(denominator)).log2()) - amount;
 
         return salePrice;
     }
@@ -147,6 +161,40 @@ contract TokenAPI is ERC20 {
         // salePrice getter function they do not see the value of the last
         // sale
         salePrice = 0;
+    }
+
+    function consumeTokens (address user, uint256 amount) external returns (bool) {
+        require(msg.sender == owner, "Not owner");
+        require(user != address(0), "Zero address");
+        require(amount > 0, "Amount must be > 0");
+
+        // Ensure they have enough balance to consume
+        require(balanceByDay[day][user] >= amount, "Insufficient balance to consume");
+
+        // Ensure that amount of credits is not greater than supply
+        require(_totalSupply >= amount, "Not enough supply");
+
+        // Update balances and supply
+        balanceByDay[day][user] -= amount;
+        supplyByDay[day] -= amount;
+
+        emit Transfer(user, address(0), amount);
+        emit Consumed(user, amount, day);
+
+        return true;
+    }
+
+    function withdraw() external returns (bool) {
+        uint256 amount = credits[msg.sender];
+        require(amount > 0, "No credits to withdraw");
+
+        // Update credits to zero before sending
+        credits[msg.sender] = 0;
+
+        (bool sent, ) = payable(msg.sender).call{value: amount}("");
+        require(sent, "Withdraw failed");
+        emit Withdrawn(msg.sender, amount);
+        return true;
     }
 
     receive () external payable {
