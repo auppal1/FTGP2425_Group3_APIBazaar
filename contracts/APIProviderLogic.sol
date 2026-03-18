@@ -9,11 +9,20 @@ contract APIProviderLogic is ERC20 {
     // Make Math library functions available for use on uint256 variables
     using Math for uint256;
 
+<<<<<<< HEAD
     // Bonding Curve Parameters
     uint256 public immutable a;
     uint256 public immutable b;
     uint256 public immutable k;
     uint256 public immutable capacity;
+=======
+
+    // VARIABLES
+
+    // Token properties
+    string constant tokenName = "TokenAPI";
+    string constant tokenSymbol = "TAPI";
+>>>>>>> 1fb4dd4 (Corrected buy and sell pricing equations)
 
     // Initial token purchase and sale prices are 0
     uint256 public purchasePrice = 0;
@@ -31,6 +40,13 @@ contract APIProviderLogic is ERC20 {
     // Per day supply and balance mappings (as resets every day). UPDATED EVERY TIME TOKEN IS MINTED OR BURNED
     mapping(uint256 => uint256) private supplyByDay; // mapping day to supply of that day
     mapping(uint256 => mapping(address => uint256)) private balanceByDay; // mapping user address to their balance for that day
+
+    // Number of seconds in a day - used in currentDay() function
+    uint256 public constant dailySeconds = 24 * 60 * 60;
+
+    // Set current day and initialise supply for current day
+    uint256 day = currentDay();
+    uint256 _totalSupply = supplyByDay[day]; // initial daily supply is 0
 
     // Events
     event Credited(address indexed to, uint256 amount);
@@ -57,14 +73,6 @@ contract APIProviderLogic is ERC20 {
     }
 
 
-    // Number of seconds in a day - used in currentDay() function
-    uint256 public constant dailySeconds = 24 * 60 * 60;
-
-    // Set current day and initialise supply for current day
-    uint256 day = currentDay();
-    uint256 _totalSupply = supplyByDay[day]; // initial daily supply is 0
-
-
     // FUNCTIONS
 
     // Function for getting the current day
@@ -83,9 +91,8 @@ contract APIProviderLogic is ERC20 {
         purchasePrice = 0;
 
         // Calculate price for requested number of tokens
-        uint256 numerator = capacity + k - _totalSupply;
-        uint256 denominator = capacity + k - (_totalSupply + amount);
-        purchasePrice = (b*_totalSupply) + a*(((numerator)/(denominator)).log2()) + amount;
+        uint256 denominator = curve_denom - amount;
+        purchasePrice = (b*amount) + a*(((curve_denom)/(denominator)).log2());
 
         return purchasePrice;
     }
@@ -102,9 +109,8 @@ contract APIProviderLogic is ERC20 {
         salePrice = 0;
 
         // Calculate price for requested number of tokens
-        uint256 numerator = capacity + k - _totalSupply;
-        uint256 denominator = capacity + k - (_totalSupply + amount);
-        salePrice = (b*_totalSupply) + a*(((numerator)/(denominator)).log2()) - amount;
+        uint256 numerator = curve_denom + amount;
+        salePrice = (b*amount) + a*(((numerator)/(curve_denom)).log2());
 
         return salePrice;
     }
