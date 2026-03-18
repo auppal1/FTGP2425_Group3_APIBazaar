@@ -174,6 +174,7 @@ contract APIProviderLogic is ERC20 {
         _totalSupply = totalSupply();
         balanceByDay[day][recipient] = balanceOf(recipient);
         reserveBalance += purchasePrice;
+        emit Transfer(address(0), recipient, amount);
 
         // finally reset purchasePrice to 0 so that the next time the user calls
         // purchasePrice getter function they do not see the value of the last
@@ -196,6 +197,7 @@ contract APIProviderLogic is ERC20 {
         _burn(seller, amount);
         _totalSupply = totalSupply();
         balanceByDay[day][seller] = balanceOf(seller);
+        emit Transfer(seller, address(0), amount);
 
         // pay the seller
         (bool callSuccess, ) = payable(seller).call{value: salePrice}("");
@@ -242,6 +244,7 @@ contract APIProviderLogic is ERC20 {
         (bool sent, ) = payable(msg.sender).call{value: amount}("");
         require(sent, "Withdraw failed");
         emit Withdrawn(msg.sender, amount);
+
         return true;
     }
 
