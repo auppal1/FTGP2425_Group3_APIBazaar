@@ -4,38 +4,23 @@ pragma solidity >=0.7.0 <0.9.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-contract APIProviderLogic is ERC20 {
+contract TokenAPI is ERC20 {
 
     // Make Math library functions available for use on uint256 variables
     using Math for uint256;
 
-<<<<<<< HEAD
-    // Bonding Curve Parameters
-    uint256 public immutable a;
-    uint256 public immutable b;
-    uint256 public immutable k;
-    uint256 public immutable capacity;
-=======
 
     // VARIABLES
 
     // Token properties
     string constant tokenName = "TokenAPI";
     string constant tokenSymbol = "TAPI";
-<<<<<<< HEAD
-<<<<<<< HEAD
->>>>>>> 1fb4dd4 (Corrected buy and sell pricing equations)
-=======
-    uint8 public constant decimals = 0;
->>>>>>> 146a7eb (Updated consume, buy and sell functions)
-=======
 
     // Bonding Curve Parameters for equation: price = b + a / (capacity + k - _totalSupply)
     uint256 immutable a;   // determines max price
     uint256 immutable b;   // determines start price
     uint256 immutable k;   // smoothes the curve
     uint256 immutable capacity;    // maximum API capacity
->>>>>>> 1a47ada (Updated buy and sell functions for clarity, modification so curve params are defined by constructor)
 
     // Initial token purchase and sale prices are 0
     uint256 public purchasePrice = 0;
@@ -45,11 +30,7 @@ contract APIProviderLogic is ERC20 {
     uint256 public reserveBalance = 0;  //initial balance is 0
 
     // Owner as contract needs administrative control
-<<<<<<< HEAD
-    address public provider;
-=======
     address public immutable owner;
->>>>>>> 146a7eb (Updated consume, buy and sell functions)
 
     // Mapping for withdrawals
     mapping(address => uint256) public credits;
@@ -57,49 +38,14 @@ contract APIProviderLogic is ERC20 {
     // Per day supply and balance mappings (as resets every day). UPDATED EVERY TIME TOKEN IS MINTED OR BURNED
     mapping(uint256 => uint256) private supplyByDay; // mapping day to supply of that day
     mapping(uint256 => mapping(address => uint256)) private balanceByDay; // mapping user address to their balance for that day
-<<<<<<< HEAD
-<<<<<<< HEAD
 
-<<<<<<< HEAD
-    // Number of seconds in a day - used in currentDay() function
-    uint256 public constant dailySeconds = 24 * 60 * 60;
-
-    // Set current day and initialise supply for current day
-    uint256 day = currentDay();
-    uint256 _totalSupply = supplyByDay[day]; // initial daily supply is 0
-
-=======
->>>>>>> 1a47ada (Updated buy and sell functions for clarity, modification so curve params are defined by constructor)
-=======
-0x5B38Da6a701c568545dCfcB03FcB875f56beddC4
->>>>>>> bc49a8f (Small update to constructor, k can be 0)
-=======
-
->>>>>>> b95b9eb (Deleted mistake)
     // Events
     event Credited(address indexed to, uint256 amount);
     event Withdrawn(address indexed to, uint256 amount);
     event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
 
+
     // CONSTRUCTOR
-<<<<<<< HEAD
-    // Initialise parameters based on provider's params set in APIBazaarFactory.sol
-    constructor(
-        address provider_,
-        string memory tokenName_, 
-        string memory tokenSymbol_, 
-        uint256 a_, 
-        uint256 b_, 
-        uint256 k_, 
-        uint256 capacity_
-        ) ERC20(tokenName_, tokenSymbol_) {
-        // Initialise parameters from APIBazaarFactory.sol
-        a = a_;
-        b = b_;
-        k = k_;
-        capacity = capacity_;
-        provider = provider_;
-=======
 
     constructor(uint256 _a, uint256 _b, uint256 _k, uint256 _capacity) ERC20(tokenName, tokenSymbol) {
         owner = msg.sender;
@@ -110,7 +56,6 @@ contract APIProviderLogic is ERC20 {
         b = _b;
         k = _k;
         capacity = _capacity;
->>>>>>> 1a47ada (Updated buy and sell functions for clarity, modification so curve params are defined by constructor)
     }
 
     // Number of seconds in a day - used in currentDay() function
@@ -221,7 +166,6 @@ contract APIProviderLogic is ERC20 {
     }
 
     function consumeTokens (address user, uint256 amount) external returns (bool) {
-        require(msg.sender == provider, "Not owner");
         require(user != address(0), "Zero address");
         require(amount > 0, "Amount must be > 0");
 
