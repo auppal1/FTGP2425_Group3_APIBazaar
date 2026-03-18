@@ -71,6 +71,7 @@ contract APIBazaarFactory{
         string calldata endpoint,
         uint256 a,
         uint256 b,
+        uint256 k,
         uint256 capacity
     ) external {
         
@@ -91,7 +92,7 @@ contract APIBazaarFactory{
         require(capacity > 0, "Capacity must be > 0"); // TODO: update according to bonding curve
 
         // Call function from APIProviderLogic.sol
-        APIProviderLogic apiContract = new APIProviderLogic(msg.sender, a, b, capacity); // TODO: APIProviderLogic constructor must match these params
+        APIProviderLogic apiContract = new APIProviderLogic(msg.sender, name, symbol, a, b, k, capacity); // TODO: APIProviderLogic constructor must match these params
 
         // Increment the total listing count
         totalListings += 1;
@@ -120,23 +121,18 @@ contract APIBazaarFactory{
 
         // Emit creation of new contract
         emit createdListing(msg.sender, apiContractAddress, name, category);
-        
+
     }
 
-    function terminateListing(address apiListing) external returns (bool) {
+    // function terminateListing(address apiListing) external returns (bool) {
         // TODO: create function that terminates API listing
         // Need to implement some way of ensuring that contract can only be terminated at the start of next time period / refresh
-    }
+    // }
 
-    function listingCount(address provider) external view returns (uint256) {
-        // TODO: create function that view how many listings a specific wallet address has
-        // Need mapping from wallet address to listings
-    }
-
-    function changeParameters(address provider, uint256 param1, uint256 param2, uint256 capacity) external returns (bool) {
+    // function changeParameters(address provider, uint256 param1, uint256 param2, uint256 capacity) external returns (bool) {
         // TODO: create function that allows provider to change parameters. 
         // Need to ensure that this cannot change mid time period
-    }
+    // }
 
 }
 

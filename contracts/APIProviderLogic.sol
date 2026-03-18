@@ -4,23 +4,16 @@ pragma solidity >=0.7.0 <0.9.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-contract TokenAPI is ERC20 {
+contract APIProviderLogic is ERC20 {
 
     // Make Math library functions available for use on uint256 variables
     using Math for uint256;
 
-
-    // VARIABLES
-
-    // Token properties
-    string constant tokenName = "TokenAPI";
-    string constant tokenSymbol = "TAPI";
-
     // Bonding Curve Parameters
-    uint256 constant a = 500;
-    uint256 constant b = 1;
-    uint256 constant k = 0;
-    uint256 constant capacity = 200;
+    uint256 public immutable a;
+    uint256 public immutable b;
+    uint256 public immutable k;
+    uint256 public immutable capacity;
 
     // Initial token purchase and sale prices are 0
     uint256 public purchasePrice = 0;
@@ -30,7 +23,7 @@ contract TokenAPI is ERC20 {
     uint256 public reserveBalance = 0;  //initial balance is 0
 
     // Owner as contract needs administrative control
-    address public owner;
+    address public provider;
 
     // Mapping for withdrawals
     mapping(address => uint256) public credits;
@@ -44,11 +37,23 @@ contract TokenAPI is ERC20 {
     event Withdrawn(address indexed to, uint256 amount);
     event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
 
-
     // CONSTRUCTOR
-
-    constructor() ERC20(tokenName, tokenSymbol) {
-        owner = msg.sender;
+    // Initialise parameters based on provider's params set in APIBazaarFactory.sol
+    constructor(
+        address provider_,
+        string memory tokenName_, 
+        string memory tokenSymbol_, 
+        uint256 a_, 
+        uint256 b_, 
+        uint256 k_, 
+        uint256 capacity_
+        ) ERC20(tokenName_, tokenSymbol_) {
+        // Initialise parameters from APIBazaarFactory.sol
+        a = a_;
+        b = b_;
+        k = k_;
+        capacity = capacity_;
+        provider = provider_;
     }
 
 
@@ -164,7 +169,7 @@ contract TokenAPI is ERC20 {
     }
 
     function consumeTokens (address user, uint256 amount) external returns (bool) {
-        require(msg.sender == owner, "Not owner");
+        require(msg.sender == provider, "Not owner");
         require(user != address(0), "Zero address");
         require(amount > 0, "Amount must be > 0");
 
