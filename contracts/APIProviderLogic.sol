@@ -22,7 +22,11 @@ contract APIProviderLogic is ERC20 {
     // Token properties
     string constant tokenName = "TokenAPI";
     string constant tokenSymbol = "TAPI";
+<<<<<<< HEAD
 >>>>>>> 1fb4dd4 (Corrected buy and sell pricing equations)
+=======
+    uint8 public constant decimals = 0;
+>>>>>>> 146a7eb (Updated consume, buy and sell functions)
 
     // Initial token purchase and sale prices are 0
     uint256 public purchasePrice = 0;
@@ -32,7 +36,11 @@ contract APIProviderLogic is ERC20 {
     uint256 public reserveBalance = 0;  //initial balance is 0
 
     // Owner as contract needs administrative control
+<<<<<<< HEAD
     address public provider;
+=======
+    address public immutable owner;
+>>>>>>> 146a7eb (Updated consume, buy and sell functions)
 
     // Mapping for withdrawals
     mapping(address => uint256) public credits;
@@ -120,20 +128,17 @@ contract APIProviderLogic is ERC20 {
 
         address recipient = msg.sender; // address to send the bought tokens to
 
-        // require that some tokens are being bought
+        // require that some tokens are being bought and get price
         require(amount > 0, "Token quantity must be positive");
-        // get the price of the requested quantity of tokens
         purchasePrice = getPurchasePrice(amount);
         // require that the user has sent enough money
         require(msg.value >= purchasePrice, "Insufficient WEI sent");
 
         // mint the requested/bought tokens and send them to the user
+        // update token supply and balances
         _mint(recipient, amount);
-        // update _totalSupply variable
         _totalSupply = totalSupply();
-        // and update user's balance
         balanceByDay[day][recipient] = balanceOf(recipient);
-        // update the reserve balance of this contract
         reserveBalance += purchasePrice;
 
         // finally reset purchasePrice to 0 so that the next time the user calls
@@ -147,18 +152,15 @@ contract APIProviderLogic is ERC20 {
 
         address seller = msg.sender; // address selling tokens
 
-        // require that some tokens are being sold
+        // require that some tokens are being sold and that user has enough tokens
         require(amount > 0, "Token quantity must be positive");
-        // require that the user has enough tokens
         require(balanceByDay[day][seller] >= amount, "Your balance is insufficient");
-        // get the price of the requested quantity of tokens
+
         salePrice = getSalePrice(amount);
 
-        // burn the sold tokens
+        // burn the sold tokens, update balance and supply
         _burn(seller, amount);
-        // update _totalSupply
         _totalSupply = totalSupply();
-        // and update seller's balance
         balanceByDay[day][seller] = balanceOf(seller);
 
         // pay the seller
@@ -168,7 +170,7 @@ contract APIProviderLogic is ERC20 {
         // update the reserve balance of this contract
         reserveBalance -= salePrice;
 
-        // finally reset saleePrice to 0 so that the next time the user calls
+        // finally reset salePrice to 0 so that the next time the user calls
         // salePrice getter function they do not see the value of the last
         // sale
         salePrice = 0;
@@ -185,9 +187,10 @@ contract APIProviderLogic is ERC20 {
         // Ensure that amount of credits is not greater than supply
         require(_totalSupply >= amount, "Not enough supply");
 
-        // Update balances and supply
-        balanceByDay[day][user] -= amount;
-        supplyByDay[day] -= amount;
+        // burn consumed tokens, update balance and supply
+        _burn(user, amount);
+        _totalSupply = totalSupply();
+        balanceByDay[day][user] = balanceOf(user);
 
         emit Transfer(user, address(0), amount);
         emit Consumed(user, amount, day);
