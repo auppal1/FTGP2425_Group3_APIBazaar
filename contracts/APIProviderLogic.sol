@@ -23,10 +23,19 @@ contract APIProviderLogic is ERC20 {
     string constant tokenName = "TokenAPI";
     string constant tokenSymbol = "TAPI";
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 1fb4dd4 (Corrected buy and sell pricing equations)
 =======
     uint8 public constant decimals = 0;
 >>>>>>> 146a7eb (Updated consume, buy and sell functions)
+=======
+
+    // Bonding Curve Parameters for equation: price = b + a / (capacity + k - _totalSupply)
+    uint256 immutable a;   // determines max price
+    uint256 immutable b;   // determines start price
+    uint256 immutable k;   // smoothes the curve
+    uint256 immutable capacity;    // maximum API capacity
+>>>>>>> 1a47ada (Updated buy and sell functions for clarity, modification so curve params are defined by constructor)
 
     // Initial token purchase and sale prices are 0
     uint256 public purchasePrice = 0;
@@ -49,6 +58,7 @@ contract APIProviderLogic is ERC20 {
     mapping(uint256 => uint256) private supplyByDay; // mapping day to supply of that day
     mapping(uint256 => mapping(address => uint256)) private balanceByDay; // mapping user address to their balance for that day
 
+<<<<<<< HEAD
     // Number of seconds in a day - used in currentDay() function
     uint256 public constant dailySeconds = 24 * 60 * 60;
 
@@ -56,12 +66,15 @@ contract APIProviderLogic is ERC20 {
     uint256 day = currentDay();
     uint256 _totalSupply = supplyByDay[day]; // initial daily supply is 0
 
+=======
+>>>>>>> 1a47ada (Updated buy and sell functions for clarity, modification so curve params are defined by constructor)
     // Events
     event Credited(address indexed to, uint256 amount);
     event Withdrawn(address indexed to, uint256 amount);
     event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
 
     // CONSTRUCTOR
+<<<<<<< HEAD
     // Initialise parameters based on provider's params set in APIBazaarFactory.sol
     constructor(
         address provider_,
@@ -78,7 +91,26 @@ contract APIProviderLogic is ERC20 {
         k = k_;
         capacity = capacity_;
         provider = provider_;
+=======
+
+    constructor(uint256 _a, uint256 _b, uint256 _k, uint256 _capacity) ERC20(tokenName, tokenSymbol) {
+        owner = msg.sender;
+        // Negative a & b mean negative ETH per token, negative k will result in math errors
+        // and capacity cannot be too small
+        require(_a > 0 && _b > 0 && _k > 0 && _capacity > 1, "Invalid params");
+        a = _a;
+        b = _b;
+        k = _k;
+        capacity = _capacity;
+>>>>>>> 1a47ada (Updated buy and sell functions for clarity, modification so curve params are defined by constructor)
     }
+
+    // Number of seconds in a day - used in currentDay() function
+    uint256 public constant dailySeconds = 24 * 60 * 60;
+
+    // Set current day and initialise supply for current day
+    uint256 day = currentDay();
+    uint256 _totalSupply = supplyByDay[day]; // initial daily supply is 0
 
 
     // FUNCTIONS
@@ -99,8 +131,9 @@ contract APIProviderLogic is ERC20 {
         purchasePrice = 0;
 
         // Calculate price for requested number of tokens
-        uint256 denominator = curve_denom - amount;
-        purchasePrice = (b*amount) + a*(((curve_denom)/(denominator)).log2());
+        uint256 numerator = capacity + k - _totalSupply;
+        uint256 denominator = capacity + k - (_totalSupply + amount);
+        purchasePrice = (b*amount) + a*(((numerator)/(denominator)).log2());
 
         return purchasePrice;
     }
@@ -117,8 +150,9 @@ contract APIProviderLogic is ERC20 {
         salePrice = 0;
 
         // Calculate price for requested number of tokens
-        uint256 numerator = curve_denom + amount;
-        salePrice = (b*amount) + a*(((numerator)/(curve_denom)).log2());
+        uint256 numerator = capacity + k - (_totalSupply - amount);
+        uint256 denominator = capacity + k - _totalSupply;
+        salePrice = (b*amount) + a*(((numerator)/(denominator)).log2());
 
         return salePrice;
     }
