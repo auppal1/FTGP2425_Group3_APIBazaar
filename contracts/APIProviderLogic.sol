@@ -4,23 +4,16 @@ pragma solidity >=0.7.0 <0.9.0;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 
-contract TokenAPI is ERC20 {
+contract APIProviderLogic is ERC20 {
 
     // Make Math library functions available for use on uint256 variables
     using Math for uint256;
 
-
-    // VARIABLES
-
-    // Token properties
-    string constant tokenName = "TokenAPI";
-    string constant tokenSymbol = "TAPI";
-
-    // Bonding Curve Parameters for equation: price = b + a / (capacity + k - _totalSupply)
-    uint256 immutable a;   // determines max price
-    uint256 immutable b;   // determines start price
-    uint256 immutable k;   // smoothes the curve
-    uint256 immutable capacity;    // maximum API capacity
+    // Bonding Curve Parameters
+    uint256 public immutable a;
+    uint256 public immutable b;
+    uint256 public immutable k;
+    uint256 public immutable capacity;
 
     // Initial token purchase and sale prices are 0
     uint256 public purchasePrice = 0;
@@ -30,7 +23,7 @@ contract TokenAPI is ERC20 {
     uint256 public reserveBalance = 0;  //initial balance is 0
 
     // Owner as contract needs administrative control
-    address public immutable owner;
+    address public provider;
 
     // Mapping for withdrawals
     mapping(address => uint256) public credits;
@@ -44,19 +37,25 @@ contract TokenAPI is ERC20 {
     event Withdrawn(address indexed to, uint256 amount);
     event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
 
-
     // CONSTRUCTOR
-
-    constructor(uint256 _a, uint256 _b, uint256 _k, uint256 _capacity) ERC20(tokenName, tokenSymbol) {
-        owner = msg.sender;
-        // Negative a & b mean negative ETH per token, negative k will result in math errors
-        // and capacity cannot be too small
-        require(_a > 0 && _b > 0 && _k >= 0 && _capacity > 1, "Invalid params");
-        a = _a;
-        b = _b;
-        k = _k;
-        capacity = _capacity;
+    // Initialise parameters based on provider's params set in APIBazaarFactory.sol
+    constructor(
+        address provider_,
+        string memory tokenName_,
+        string memory tokenSymbol_,
+        uint256 a_,
+        uint256 b_,
+        uint256 k_,
+        uint256 capacity_
+        ) ERC20(tokenName_, tokenSymbol_) {
+        // Initialise parameters from APIBazaarFactory.sol
+        a = a_;
+        b = b_;
+        k = k_;
+        capacity = capacity_;
+        provider = provider_;
     }
+
 
     // Number of seconds in a day - used in currentDay() function
     uint256 public constant dailySeconds = 24 * 60 * 60;
@@ -196,7 +195,6 @@ contract TokenAPI is ERC20 {
         (bool sent, ) = payable(msg.sender).call{value: amount}("");
         require(sent, "Withdraw failed");
         emit Withdrawn(msg.sender, amount);
-
         return true;
     }
 
