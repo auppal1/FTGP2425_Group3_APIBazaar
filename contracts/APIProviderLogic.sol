@@ -57,6 +57,7 @@ contract APIProviderLogic is ERC20 {
     // Per day supply and balance mappings (as resets every day). UPDATED EVERY TIME TOKEN IS MINTED OR BURNED
     mapping(uint256 => uint256) private supplyByDay; // mapping day to supply of that day
     mapping(uint256 => mapping(address => uint256)) private balanceByDay; // mapping user address to their balance for that day
+<<<<<<< HEAD
 
 <<<<<<< HEAD
     // Number of seconds in a day - used in currentDay() function
@@ -68,6 +69,9 @@ contract APIProviderLogic is ERC20 {
 
 =======
 >>>>>>> 1a47ada (Updated buy and sell functions for clarity, modification so curve params are defined by constructor)
+=======
+0x5B38Da6a701c568545dCfcB03FcB875f56beddC4
+>>>>>>> bc49a8f (Small update to constructor, k can be 0)
     // Events
     event Credited(address indexed to, uint256 amount);
     event Withdrawn(address indexed to, uint256 amount);
@@ -97,7 +101,7 @@ contract APIProviderLogic is ERC20 {
         owner = msg.sender;
         // Negative a & b mean negative ETH per token, negative k will result in math errors
         // and capacity cannot be too small
-        require(_a > 0 && _b > 0 && _k > 0 && _capacity > 1, "Invalid params");
+        require(_a > 0 && _b > 0 && _k >= 0 && _capacity > 1, "Invalid params");
         a = _a;
         b = _b;
         k = _k;
