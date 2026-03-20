@@ -10,10 +10,8 @@ contract APIProviderLogic is ERC20 {
     using Math for uint256;
 
     // Bonding Curve Parameters
-    uint256 public immutable a;
-    uint256 public immutable b;
-    uint256 public immutable k;
     uint256 public immutable capacity;
+    uint256 public immutable base_price;
 
     // Initial token purchase and sale prices are 0
     uint256 public purchasePrice = 0;
@@ -43,16 +41,12 @@ contract APIProviderLogic is ERC20 {
         address provider_,
         string memory tokenName_,
         string memory tokenSymbol_,
-        uint256 a_,
-        uint256 b_,
-        uint256 k_,
-        uint256 capacity_
+        uint256 capacity_,
+        uint256 base_price_
         ) ERC20(tokenName_, tokenSymbol_) {
         // Initialise parameters from APIBazaarFactory.sol
-        a = a_;
-        b = b_;
-        k = k_;
         capacity = capacity_;
+        base_price = base_price_;
         provider = provider_;
     }
 
@@ -83,9 +77,19 @@ contract APIProviderLogic is ERC20 {
         purchasePrice = 0;
 
         // Calculate price for requested number of tokens
-        uint256 numerator = capacity + k - _totalSupply;
-        uint256 denominator = capacity + k - (_totalSupply + amount);
-        purchasePrice = (b*amount) + a*(((numerator)/(denominator)).log2());
+
+        // point where curve price ceases to be constant and becomes cubic
+        uint256 step_point = uint256(capacity * 90/100);
+
+        if (_totalSupply + amount <= step_point) {
+            // pricing function for constant portion of curve
+            purchasePrice = base_price * amount;
+        }
+        else if (_totalSupply + amount > step_point && _totalSupply + amount < capacity) {
+            // pricing function for cubic portion
+            // x**4 is integral of 4*x**3
+            purchasePrice = (_totalSupply + amount - step_point)**4 + (base_price * amount);
+        }
 
         return purchasePrice;
     }
@@ -102,9 +106,16 @@ contract APIProviderLogic is ERC20 {
         salePrice = 0;
 
         // Calculate price for requested number of tokens
-        uint256 numerator = capacity + k - (_totalSupply - amount);
-        uint256 denominator = capacity + k - _totalSupply;
-        salePrice = (b*amount) + a*(((numerator)/(denominator)).log2());
+
+        // point where curve price ceases to be constant and becomes cubic
+        uint256 step_point = uint256(capacity * 90/100);
+
+        if (_totalSupply - amount < step_point && _totalSupply - amount >= 0) {
+            salePrice = base_price * amount;
+        }
+        else if (_totalSupply - amount >= step_point) {
+            salePrice = (_totalSupply - amount - step_point)**4 + (base_price * amount);
+        }
 
         return salePrice;
     }
