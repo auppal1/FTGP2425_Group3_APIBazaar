@@ -243,6 +243,27 @@ contract APIProviderLogic is ERC20 {
         return true;
     }
 
+    //Override unneeded ERC20 functions
+
+    // Token is not transferable to prevent speculative behaviour
+    function transfer(address, uint256) public pure override returns (bool){
+        revert("No transfers");
+    }
+
+    function transferFrom(address, address, uint256) public pure override returns (bool){
+        revert("No transfers");
+    }
+
+    // No need for "spender" to be able to spend owner's tokens
+    function allowance(address, address) public pure override returns (uint256) {
+        revert("No allowances");
+    }
+
+    // No need to approve "spender" to spend owner's tokens
+    function approve(address, uint256) public pure override returns (bool) {
+        revert("Not allowed");
+    }
+
     receive () external payable {
         // setting amount = 0 will cause buyTokens() function to revert
         uint256 amount = 0;
