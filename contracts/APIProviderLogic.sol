@@ -11,7 +11,7 @@ contract APIProviderLogic is ERC20 {
 
     // Bonding Curve Parameters
     uint256 public immutable capacity;
-    uint256 public immutable base_price;
+    uint256 public immutable basePrice;
 
     // Initial token purchase and sale prices are 0
     uint256 public purchasePrice = 0;
@@ -42,11 +42,11 @@ contract APIProviderLogic is ERC20 {
         string memory tokenName_,
         string memory tokenSymbol_,
         uint256 capacity_,
-        uint256 base_price_
+        uint256 basePrice_
         ) ERC20(tokenName_, tokenSymbol_) {
         // Initialise parameters from APIBazaarFactory.sol
         capacity = capacity_;
-        base_price = base_price_;
+        basePrice = basePrice_;
         provider = provider_;
     }
 
@@ -79,16 +79,19 @@ contract APIProviderLogic is ERC20 {
         // Calculate price for requested number of tokens
 
         // point where curve price ceases to be constant and becomes cubic
-        uint256 step_point = uint256(capacity * 90/100);
+        uint256 stepPoint = uint256(capacity * 90/100);
 
-        if (_totalSupply + amount <= step_point) {
+        if (_totalSupply + amount <= stepPoint) {
             // pricing function for constant portion of curve
-            purchasePrice = base_price * amount;
+            purchasePrice = basePrice * amount;
         }
-        else if (_totalSupply + amount > step_point && _totalSupply + amount < capacity) {
+        else if (_totalSupply + amount > stepPoint && _totalSupply + amount < capacity) {
             // pricing function for cubic portion
             // x**4 is integral of 4*x**3
-            purchasePrice = (_totalSupply + amount - step_point)**4 + (base_price * amount);
+            uint256 newPrice = (_totalSupply + amount - stepPoint)**4; // should + (basePrice * amount) but these cancel
+            uint256 currentPrice = (_totalSupply - stepPoint)**4;      // + (basePrice * amount)
+            // add basePrice so that cubic portion doesn't start at price=0
+            purchasePrice = newPrice - currentPrice + basePrice;
         }
 
         return purchasePrice;
@@ -108,13 +111,16 @@ contract APIProviderLogic is ERC20 {
         // Calculate price for requested number of tokens
 
         // point where curve price ceases to be constant and becomes cubic
-        uint256 step_point = uint256(capacity * 90/100);
+        uint256 stepPoint = uint256(capacity * 90/100);
 
-        if (_totalSupply - amount < step_point && _totalSupply - amount >= 0) {
-            salePrice = base_price * amount;
+        if (_totalSupply - amount < stepPoint && _totalSupply - amount >= 0) {
+            salePrice = basePrice * amount;
         }
-        else if (_totalSupply - amount >= step_point) {
-            salePrice = (_totalSupply - amount - step_point)**4 + (base_price * amount);
+        else if (_totalSupply - amount >= stepPoint) {
+            uint256 currentPrice = (_totalSupply - stepPoint)**4;       // should + (basePrice * amount) but these cancel
+            uint256 newPrice = (_totalSupply - amount - stepPoint)**4;  // + (basePrice * amount)
+            // add basePrice so that cubic portion doesn't start at price=0
+            salePrice = currentPrice - newPrice + basePrice;
         }
 
         return salePrice;
