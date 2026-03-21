@@ -85,13 +85,27 @@ contract APIProviderLogic is ERC20 {
             // pricing function for constant portion of curve
             purchasePrice = basePrice * amount;
         }
-        else if (_totalSupply + amount > stepPoint && _totalSupply + amount < capacity) {
+        else if (_totalSupply > stepPoint) {
             // pricing function for cubic portion
             // x**4 is integral of 4*x**3
             uint256 newPrice = (_totalSupply + amount - stepPoint)**4; // should + (basePrice * amount) but these cancel
             uint256 currentPrice = (_totalSupply - stepPoint)**4;      // + (basePrice * amount)
             // add basePrice so that cubic portion doesn't start at price=0
             purchasePrice = newPrice - currentPrice + basePrice;
+        }
+        else if (_totalSupply <= stepPoint && _totalSupply + amount > stepPoint) {
+            // if amount crosses stepPoint, find how much amount is over and under stepPoint
+            uint256 overAmount = _totalSupply + amount - stepPoint;
+            uint256 underAmount = amount - overAmount;
+
+            uint256 newPrice = (_totalSupply + overAmount - stepPoint)**4;
+            uint256 currentPrice = (_totalSupply - stepPoint)**4;
+            uint256 overPrice = newPrice - currentPrice + basePrice;    // price of amount over stepPoint
+            uint256 underPrice = basePrice * underAmount;               // price of amount under stepPoint
+            purchasePrice = overPrice + underPrice;
+        }
+        else {
+            revert("No conditions met");
         }
 
         return purchasePrice;
@@ -113,14 +127,28 @@ contract APIProviderLogic is ERC20 {
         // point where curve price ceases to be constant and becomes cubic
         uint256 stepPoint = uint256(capacity * 90/100);
 
-        if (_totalSupply - amount < stepPoint && _totalSupply - amount >= 0) {
+        if (_totalSupply < stepPoint && _totalSupply - amount >= 0) {
             salePrice = basePrice * amount;
         }
         else if (_totalSupply - amount >= stepPoint) {
-            uint256 currentPrice = (_totalSupply - stepPoint)**4;       // should + (basePrice * amount) but these cancel
-            uint256 newPrice = (_totalSupply - amount - stepPoint)**4;  // + (basePrice * amount)
+            uint256 currentPrice = (_totalSupply - stepPoint)**4;
+            uint256 newPrice = (_totalSupply - amount - stepPoint)**4;
             // add basePrice so that cubic portion doesn't start at price=0
             salePrice = currentPrice - newPrice + basePrice;
+        }
+        else if (_totalSupply >= stepPoint && _totalSupply - amount < stepPoint) {
+            // if amount crosses stepPoint, find how much amount is over and under stepPoint
+            uint256 overAmount = _totalSupply - stepPoint;
+            uint256 underAmount = amount - overAmount;
+
+            uint256 currentPrice = (_totalSupply - stepPoint)**4;
+            uint256 newPrice = (_totalSupply - amount - stepPoint)**4;
+            uint256 overPrice = currentPrice - newPrice + basePrice;
+            uint256 underPrice = basePrice * underAmount;
+            salePrice = overPrice + underPrice;
+        }
+        else {
+            revert("No conditions met");
         }
 
         return salePrice;
