@@ -75,44 +75,50 @@ contract APIProviderLogic is ERC20 {
 
 
     // Function to calculate token purchase price using bonding curve
-    function getPurchasePrice(uint256 amount) public returns(uint256) {
+    function getPurchasePrice(uint256 amount) public view returns(uint256) {
 
+        // Initialise current day and supply variables 
+        uint256 day = currentDay();
+        uint256 S = supplyByDay[day];
+
+        // Validate inputs
         require(amount > 0 && amount <= capacity, "Invalid Amount");
-        require(_totalSupply + amount < capacity, "Amount breaches capacity");
+        require(S + amount < capacity, "Amount breaches capacity");
 
-        // reset price to 0 so that the contract is only calculating price of new tokens
-        purchasePrice = 0;
 
         // Calculate price for requested number of tokens
 
         // point where curve price ceases to be constant and becomes cubic
         uint256 stepPoint = uint256(capacity * 90/100);
 
-        if (_totalSupply + amount <= stepPoint) {
-            // pricing function for constant portion of curve
+        if (S + amount <= stepPoint) {
+            // pricing entirely follows constant portion of curve
             purchasePrice = basePrice * amount;
         }
-        else if (_totalSupply > stepPoint) {
-            // pricing function for cubic portion
+        else if (S >= stepPoint) {
+            // pricing enirely follows cubic portion of curve
             // x**4 is integral of 4*x**3
-            uint256 newPrice = (_totalSupply + amount - stepPoint)**4; // should + (basePrice * amount) but these cancel
-            uint256 currentPrice = (_totalSupply - stepPoint)**4;      // + (basePrice * amount)
-            // add basePrice so that cubic portion doesn't start at price=0
-            purchasePrice = newPrice - currentPrice + basePrice;
-        }
-        else if (_totalSupply <= stepPoint && _totalSupply + amount > stepPoint) {
-            // if amount crosses stepPoint, find how much amount is over and under stepPoint
-            uint256 overAmount = _totalSupply + amount - stepPoint;
-            uint256 underAmount = amount - overAmount;
+            uint256 curveValueAfter = (S + amount - stepPoint)**4; // cumulative cubic contribution after supply
+            uint256 curveValueBefore = (S - stepPoint)**4;      // cumulatve cubic contribution before supply
+            uint256 nonLinearContribution = curveValueAfter - curveValueBefore;
 
-            uint256 newPrice = (_totalSupply + overAmount - stepPoint)**4;
-            uint256 currentPrice = (_totalSupply - stepPoint)**4;
-            uint256 overPrice = newPrice - currentPrice + basePrice;    // price of amount over stepPoint
-            uint256 underPrice = basePrice * underAmount;               // price of amount under stepPoint
-            purchasePrice = overPrice + underPrice;
+            // Sum the non-linear and constant components
+            purchasePrice = nonLinearContribution + (basePrice * amount); // total mint price = non-linear contribution + constant contribution
         }
         else {
-            revert("No conditions met");
+            // if amount crosses stepPoint, find how much amount is over and under stepPoint
+            uint256 overAmount = S + amount - stepPoint;
+            uint256 underAmount = amount - overAmount;
+
+            // calculate price for the cubic portion of mint
+            uint256 curveValueAfter = overAmount**4;            // cumulative cubic contribution toward overPrice 
+            uint256 overPrice = curveValueAfter + (basePrice * overAmount);    // total overPrice = cubic price contribution + constant price contribution 
+
+            // calculate price for constant portion of mint
+            uint256 underPrice = basePrice * underAmount;  // price of amount under stepPoint
+
+            // total price of minting is the price over the step + price under the step 
+            purchasePrice = overPrice + underPrice;
         }
 
         return purchasePrice;
