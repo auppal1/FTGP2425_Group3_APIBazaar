@@ -106,6 +106,18 @@ contract APIBazaarFactory{
 
     }
 
+    function getListing(address apiListing) external view returns (contractData memory) {
+        return listings[apiListing];
+    } 
+
+    function getAllListings() external view returns (address[] memory) {
+        return allListingAddresses;
+    }
+
+    function getProviderListings(address provider) external view returns (address[] memory) {
+        return providerListings[provider];
+    }
+
     // function terminateListing(address apiListing) external returns (bool) {
         // TODO: create function that terminates API listing
         // Need to implement some way of ensuring that contract can only be terminated at the start of next time period / refresh
