@@ -49,14 +49,14 @@ contract APIBazaarFactory{
     mapping(address => address[]) private providerListings;
 
     // Event for creation of listing
-    event createdListing(address indexed provider, address indexed apiListing, string name);
+    event createdListing(address indexed provider, address indexed apiListing, string name, string symbol, string endpoint);
     
     // Creates a new API listing on the marketplace with params given by provider
     // @param name Readable name of API 
     // @param symbol Symbol of API provider
     // @param endpoint Endpoint needed for API gateway layer
     // @param capacity Bonding curve parameter representing the limit of supply
-    // @param basePrice Bonding curve parameter representing the constant price of API call before quartic increase
+    // @param basePrice Bonding curve parameter used by APIProviderLogic pricing function
     function createAPIListing(  // TODO: Add option to change time period
         string calldata name, 
         string calldata symbol,
@@ -76,7 +76,7 @@ contract APIBazaarFactory{
         require(basePrice > 0, "Base Price must be > 0");
 
         // Call function from APIProviderLogic.sol
-        APIProviderLogic apiContract = new APIProviderLogic(msg.sender, name, symbol, capacity, basePrice); // TODO: APIProviderLogic constructor must match these params
+        APIProviderLogic apiContract = new APIProviderLogic(msg.sender, name, symbol, capacity, basePrice);
 
         // Increment the total listing count
         totalListings += 1;
@@ -102,10 +102,12 @@ contract APIBazaarFactory{
         allListingAddresses.push(apiContractAddress);
 
         // Emit creation of new contract
-        emit createdListing(msg.sender, apiContractAddress, name);
+        emit createdListing(msg.sender, apiContractAddress, name, symbol, endpoint);
 
     }
 
+
+    // Getter functions
     function getListing(address apiListing) external view returns (contractData memory) {
         return listings[apiListing];
     } 
