@@ -54,10 +54,6 @@ contract APIProviderLogic is ERC20 {
     // Number of seconds in a day - used in currentDay() function
     uint256 public constant dailySeconds = 24 * 60 * 60;
 
-    // Set current day and initialise supply for current day
-    uint256 day = currentDay();
-    uint256 _totalSupply = supplyByDay[day]; // initial daily supply is 0
-
 
     // FUNCTIONS
 
@@ -66,6 +62,17 @@ contract APIProviderLogic is ERC20 {
     function currentDay() public view returns (uint256) {
         return block.timestamp / dailySeconds;
     }
+
+    // View function for supply (by day)
+    function getCurrentDaySupply () public view returns (uint256) {
+        return supplyByDay[currentDay()];
+    }
+
+    // View function for the current balance of a user (by day)
+    function getCurrentDayBalance (address user) public view returns (uint256) {
+        return balanceByDay[currentDay()][user];
+    }
+
 
     // Function to calculate token purchase price using bonding curve
     function getPurchasePrice(uint256 amount) public returns(uint256) {

@@ -109,6 +109,7 @@ contract APIBazaarFactory{
 
     // Getter functions
     function getListing(address apiListing) external view returns (contractData memory) {
+        require(listings[apiListing].apiListing != address(0), "Listing Does Not Exist");
         return listings[apiListing];
     } 
 
