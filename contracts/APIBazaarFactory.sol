@@ -55,20 +55,16 @@ contract APIBazaarFactory{
     // @param name Readable name of API 
     // @param symbol Symbol of API provider
     // @param endpoint Endpoint needed for API gateway layer
-    // @param a Bonding curve parameter PLACEHOLDER
-    // @param b Bonding curve parameter PLACEHOLDER
     // @param capacity Bonding curve parameter representing the limit of supply
-    function createAPIListing(
+    // @param basePrice Bonding curve parameter representing the constant price of API call before quartic increase
+    function createAPIListing(  // TODO: Add option to change time period
         string calldata name, 
         string calldata symbol,
         string calldata endpoint,
-        uint256 a,
-        uint256 b,
-        uint256 k,
-        uint256 capacity
+        uint256 capacity,
+        uint256 basePrice
     ) external {
         
-        // TODO: Change parameters when bonding curve defined
         // Ensure correct inputs for constructing contract
         require(bytes(name).length > 0, "Name Required");
         require(bytes(name).length <= 50, "Name Too Long");
@@ -76,12 +72,11 @@ contract APIBazaarFactory{
         require(bytes(symbol).length <= 10, "Symbol Too Long");
         require(bytes(endpoint).length > 0, "Must provide endpoint"); // TODO: at some point figure out what endpoint to use. Is this URL?
         require(bytes(endpoint).length <= 250, "Endpoint Too Long");
-        require(a > 0, "Parameter 'a' must be > 0"); // TODO: update according to bonding curve
-        require(b > 0, "Parameter 'b' must be > 0"); // TODO: update according to bonding curve
-        require(capacity > 0, "Capacity must be > 0"); // TODO: update according to bonding curve
+        require(capacity > 0, "Capacity must be > 0");
+        require(basePrice > 0, "Base Price must be > 0");
 
         // Call function from APIProviderLogic.sol
-        APIProviderLogic apiContract = new APIProviderLogic(msg.sender, name, symbol, a, b, k, capacity); // TODO: APIProviderLogic constructor must match these params
+        APIProviderLogic apiContract = new APIProviderLogic(msg.sender, name, symbol, capacity, basePrice); // TODO: APIProviderLogic constructor must match these params
 
         // Increment the total listing count
         totalListings += 1;

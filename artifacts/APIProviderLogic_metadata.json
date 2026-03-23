@@ -858,11 +858,11 @@
 			]
 		},
 		"contracts/APIProviderLogic.sol": {
-			"keccak256": "0xab857a23943ff0f3edf95c9f4849367835e3b147b3ff098c01a08d1be4cb98ac",
+			"keccak256": "0xd9dfa188a684ff87daa3144c903b1388408585b649fd969324999d84efbfec80",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://9c3f5c01ac76c578b108d9170c6e6bb26a70641236e0298ec02c5aac644084e2",
-				"dweb:/ipfs/QmNstzFi4ZDFUjxX4ShK1Y3gTAi3RoJ4fYUnJYPaxPovwZ"
+				"bzz-raw://ab64b42a7f158929d3f69e75f63d62a8a5537de79392ecec8df9476ecb46d2dd",
+				"dweb:/ipfs/QmSzmayhXoqa6GFB7Dd2zvbdrCmWhbha68dgEJvmbwMw54"
 			]
 		}
 	},
