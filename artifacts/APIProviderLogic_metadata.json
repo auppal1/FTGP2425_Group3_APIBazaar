@@ -24,22 +24,12 @@
 					},
 					{
 						"internalType": "uint256",
-						"name": "a_",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "b_",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "k_",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
 						"name": "capacity_",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "basePrice_",
 						"type": "uint256"
 					}
 				],
@@ -250,28 +240,15 @@
 				"type": "fallback"
 			},
 			{
-				"inputs": [],
-				"name": "a",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "owner",
+						"name": "",
 						"type": "address"
 					},
 					{
 						"internalType": "address",
-						"name": "spender",
+						"name": "",
 						"type": "address"
 					}
 				],
@@ -283,19 +260,19 @@
 						"type": "uint256"
 					}
 				],
-				"stateMutability": "view",
+				"stateMutability": "pure",
 				"type": "function"
 			},
 			{
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "spender",
+						"name": "",
 						"type": "address"
 					},
 					{
 						"internalType": "uint256",
-						"name": "value",
+						"name": "",
 						"type": "uint256"
 					}
 				],
@@ -307,20 +284,7 @@
 						"type": "bool"
 					}
 				],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "b",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
+				"stateMutability": "pure",
 				"type": "function"
 			},
 			{
@@ -332,6 +296,19 @@
 					}
 				],
 				"name": "balanceOf",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "basePrice",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -453,6 +430,38 @@
 			{
 				"inputs": [
 					{
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					}
+				],
+				"name": "getCurrentDayBalance",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "getCurrentDaySupply",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "uint256",
 						"name": "amount",
 						"type": "uint256"
@@ -466,7 +475,7 @@
 						"type": "uint256"
 					}
 				],
-				"stateMutability": "nonpayable",
+				"stateMutability": "view",
 				"type": "function"
 			},
 			{
@@ -478,19 +487,6 @@
 					}
 				],
 				"name": "getSalePrice",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "nonpayable",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "k",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -529,33 +525,7 @@
 			},
 			{
 				"inputs": [],
-				"name": "purchasePrice",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
 				"name": "reserveBalance",
-				"outputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "salePrice",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -609,12 +579,12 @@
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "to",
+						"name": "",
 						"type": "address"
 					},
 					{
 						"internalType": "uint256",
-						"name": "value",
+						"name": "",
 						"type": "uint256"
 					}
 				],
@@ -626,24 +596,24 @@
 						"type": "bool"
 					}
 				],
-				"stateMutability": "nonpayable",
+				"stateMutability": "pure",
 				"type": "function"
 			},
 			{
 				"inputs": [
 					{
 						"internalType": "address",
-						"name": "from",
+						"name": "",
 						"type": "address"
 					},
 					{
 						"internalType": "address",
-						"name": "to",
+						"name": "",
 						"type": "address"
 					},
 					{
 						"internalType": "uint256",
-						"name": "value",
+						"name": "",
 						"type": "uint256"
 					}
 				],
@@ -655,7 +625,7 @@
 						"type": "bool"
 					}
 				],
-				"stateMutability": "nonpayable",
+				"stateMutability": "pure",
 				"type": "function"
 			},
 			{
@@ -741,12 +711,6 @@
 			},
 			"kind": "dev",
 			"methods": {
-				"allowance(address,address)": {
-					"details": "Returns the remaining number of tokens that `spender` will be allowed to spend on behalf of `owner` through {transferFrom}. This is zero by default. This value changes when {approve} or {transferFrom} are called."
-				},
-				"approve(address,uint256)": {
-					"details": "See {IERC20-approve}. NOTE: If `value` is the maximum `uint256`, the allowance is not updated on `transferFrom`. This is semantically equivalent to an infinite approval. Requirements: - `spender` cannot be the zero address."
-				},
 				"balanceOf(address)": {
 					"details": "Returns the value of tokens owned by `account`."
 				},
@@ -761,12 +725,6 @@
 				},
 				"totalSupply()": {
 					"details": "Returns the value of tokens in existence."
-				},
-				"transfer(address,uint256)": {
-					"details": "See {IERC20-transfer}. Requirements: - `to` cannot be the zero address. - the caller must have a balance of at least `value`."
-				},
-				"transferFrom(address,address,uint256)": {
-					"details": "See {IERC20-transferFrom}. Skips emitting an {Approval} event indicating an allowance update. This is not required by the ERC. See {xref-ERC20-_approve-address-address-uint256-bool-}[_approve]. NOTE: Does not update the allowance if the current allowance is the maximum `uint256`. Requirements: - `from` and `to` cannot be the zero address. - `from` must have a balance of at least `value`. - the caller must have allowance for ``from``'s tokens of at least `value`."
 				}
 			},
 			"version": 1
@@ -858,11 +816,11 @@
 			]
 		},
 		"contracts/APIProviderLogic.sol": {
-			"keccak256": "0xd9dfa188a684ff87daa3144c903b1388408585b649fd969324999d84efbfec80",
+			"keccak256": "0xf18498ace73fa7541e7101110a2409bdef3d35daf52c9c772bd213baa645ae2b",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://ab64b42a7f158929d3f69e75f63d62a8a5537de79392ecec8df9476ecb46d2dd",
-				"dweb:/ipfs/QmSzmayhXoqa6GFB7Dd2zvbdrCmWhbha68dgEJvmbwMw54"
+				"bzz-raw://c50b23b3b6dbb7de1b40ca042d2f9f6ff29500829d5683c8940a052f5259c6ac",
+				"dweb:/ipfs/QmU8FbakAqyz3yKGvHtXgnGDR6ZCmh35b63fJdTLdfPkLP"
 			]
 		}
 	},

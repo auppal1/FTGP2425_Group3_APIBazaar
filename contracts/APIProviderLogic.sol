@@ -27,8 +27,8 @@ contract APIProviderLogic is ERC20 {
     mapping(uint256 => mapping(address => uint256)) private balanceByDay; // mapping user address to their balance for that day
 
     // Events
-    event Credited(address indexed to, uint256 amount);
-    event Withdrawn(address indexed to, uint256 amount);
+    event Credited(address indexed to, uint256 value);
+    event Withdrawn(address indexed to, uint256 value);
     event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
 
     // CONSTRUCTOR
@@ -184,7 +184,7 @@ contract APIProviderLogic is ERC20 {
         require(amount > 0, "Token quantity must be positive");
         uint256 purchasePrice = getPurchasePrice(amount);
         // require that the user has sent enough money
-        require(msg.value >= purchasePrice, "Insufficient WEI sent");
+        require(msg.value >= purchasePrice, "Insufficient value sent");
 
         // mint the requested/bought tokens and send them to the user
         _mint(recipient, amount);
@@ -195,7 +195,15 @@ contract APIProviderLogic is ERC20 {
         reserveBalance += purchasePrice;
         emit Transfer(address(0), recipient, amount);
 
+        // refund user if sends more than purchase price 
+        uint256 refund = msg.value - purchasePrice;
+        if (refund > 0) {
+            credits[recipient] += refund;
+            emit Credited(recipient, refund);
+        }
+        
     }
+    
 
     // Function to burn/enable selling of tokens
     function sellTokens(uint256 amount) public {
@@ -219,9 +227,10 @@ contract APIProviderLogic is ERC20 {
         balanceByDay[day][seller] -= amount; 
         emit Transfer(seller, address(0), amount);
 
-        // pay the seller
-        (bool callSuccess, ) = payable(seller).call{value: salePrice}("");
-        require(callSuccess, "Payment failed");
+        // credit the seller 
+        require(salePrice <= reserveBalance, "Not enough ETH in contract to credit");
+        credits[seller] += salePrice;
+        emit Credited(seller, salePrice);
 
         // update the reserve balance of this contract
         reserveBalance -= salePrice;
@@ -261,15 +270,15 @@ contract APIProviderLogic is ERC20 {
     }
 
     function withdraw() external returns (bool) {
-        uint256 amount = credits[msg.sender];
-        require(amount > 0, "No credits to withdraw");
+        uint256 value = credits[msg.sender];
+        require(value > 0, "No credits to withdraw");
 
         // Update credits to zero before sending
         credits[msg.sender] = 0;
 
-        (bool sent, ) = payable(msg.sender).call{value: amount}("");
+        (bool sent, ) = payable(msg.sender).call{value: value}("");
         require(sent, "Withdraw failed");
-        emit Withdrawn(msg.sender, amount);
+        emit Withdrawn(msg.sender, value);
         return true;
     }
 
