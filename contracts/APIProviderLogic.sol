@@ -225,23 +225,34 @@ contract APIProviderLogic is ERC20 {
 
         // update the reserve balance of this contract
         reserveBalance -= salePrice;
-        
+
     }
 
+    // Function for consuming tokens when API call has been accepted
+    // Should only be called by the owner of contract (or API gateway), to prevent users consuming other users' tokens
     function consumeTokens (address user, uint256 amount) external returns (bool) {
+
+        // ensure only owner can call this function
+        require(msg.sender == provider, "Only provider can consume tokens");
+
+        // get the current day
+        uint256 day = currentDay();
+
         require(user != address(0), "Zero address");
         require(amount > 0, "Amount must be > 0");
 
         // Ensure they have enough balance to consume
         require(balanceByDay[day][user] >= amount, "Insufficient balance to consume");
 
-        // Ensure that amount of credits is not greater than supply
-        require(_totalSupply >= amount, "Not enough supply");
+        // Ensure that amount of credits is not greater than current day supply
+        require(supplyByDay[day] >= amount, "Not enough supply");
 
         // burn consumed tokens, update balance and supply
         _burn(user, amount);
-        _totalSupply = totalSupply();
-        balanceByDay[day][user] = balanceOf(user);
+
+        // update current day supply and balances
+        supplyByDay[day] -= amount;
+        balanceByDay[day][user] -= amount;
 
         emit Transfer(user, address(0), amount);
         emit Consumed(user, amount, day);
