@@ -175,26 +175,26 @@ contract APIProviderLogic is ERC20 {
     // Function to mint/enable buying of new tokens
     function buyTokens(uint256 amount) public payable {
 
+        // get the current day
+        uint256 day = currentDay();
+
         address recipient = msg.sender; // address to send the bought tokens to
 
         // require that some tokens are being bought and get price
         require(amount > 0, "Token quantity must be positive");
-        purchasePrice = getPurchasePrice(amount);
+        uint256 purchasePrice = getPurchasePrice(amount);
         // require that the user has sent enough money
         require(msg.value >= purchasePrice, "Insufficient WEI sent");
 
         // mint the requested/bought tokens and send them to the user
-        // update token supply and balances
         _mint(recipient, amount);
-        _totalSupply = totalSupply();
-        balanceByDay[day][recipient] = balanceOf(recipient);
+
+        // update supply and balances by day
+        supplyByDay[day] += amount;
+        balanceByDay[day][recipient] += amount;
         reserveBalance += purchasePrice;
         emit Transfer(address(0), recipient, amount);
 
-        // finally reset purchasePrice to 0 so that the next time the user calls
-        // purchasePrice getter function they do not see the value of the last
-        // purchase
-        purchasePrice = 0;
     }
 
     // Function to burn/enable selling of tokens
