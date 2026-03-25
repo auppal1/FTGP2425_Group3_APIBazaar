@@ -200,18 +200,23 @@ contract APIProviderLogic is ERC20 {
     // Function to burn/enable selling of tokens
     function sellTokens(uint256 amount) public {
 
+        // get the current day
+        uint256 day = currentDay();
+
         address seller = msg.sender; // address selling tokens
 
         // require that some tokens are being sold and that user has enough tokens
         require(amount > 0, "Token quantity must be positive");
         require(balanceByDay[day][seller] >= amount, "Your balance is insufficient");
 
-        salePrice = getSalePrice(amount);
+        uint256 salePrice = getSalePrice(amount);
 
-        // burn the sold tokens, update balance and supply
+        // burn the sold tokens
         _burn(seller, amount);
-        _totalSupply = totalSupply();
-        balanceByDay[day][seller] = balanceOf(seller);
+
+        // update supply and balances by day
+        supplyByDay[day] -= amount;
+        balanceByDay[day][seller] -= amount; 
         emit Transfer(seller, address(0), amount);
 
         // pay the seller
@@ -220,11 +225,7 @@ contract APIProviderLogic is ERC20 {
 
         // update the reserve balance of this contract
         reserveBalance -= salePrice;
-
-        // finally reset salePrice to 0 so that the next time the user calls
-        // salePrice getter function they do not see the value of the last
-        // sale
-        salePrice = 0;
+        
     }
 
     function consumeTokens (address user, uint256 amount) external returns (bool) {
