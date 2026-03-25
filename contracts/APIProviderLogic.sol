@@ -13,10 +13,6 @@ contract APIProviderLogic is ERC20 {
     uint256 public immutable capacity;
     uint256 public immutable basePrice;
 
-    // Initial token purchase and sale prices are 0
-    uint256 public purchasePrice = 0;
-    uint256 public salePrice = 0;
-
     // Initialise balance of ETH stored in this contract
     uint256 public reserveBalance = 0;  //initial balance is 0
 
@@ -84,6 +80,7 @@ contract APIProviderLogic is ERC20 {
         // Validate inputs
         require(amount > 0 && amount <= capacity, "Invalid Amount");
         require(S + amount < capacity, "Amount breaches capacity");
+        uint256 purchasePrice;
 
 
         // Calculate price for requested number of tokens
@@ -126,42 +123,50 @@ contract APIProviderLogic is ERC20 {
 
     // Function to calculate current token price a user can expect to receive for
     // selling tokens back to the contract
-    function getSalePrice(uint256 amount) public returns(uint256) {
+    function getSalePrice(uint256 amount) public view returns(uint256) {
 
+        // Initialise current day and supply variables 
+        uint256 day = currentDay();
+        uint256 S = supplyByDay[day];
+        uint256 salePrice;
+
+        // validate inputs
         require(amount > 0 && amount <= capacity, "Invalid Amount");
         // require that user is not trying to sell more tokens than exist
-        require(amount <= _totalSupply, "Total token supply insufficient.");
-
-        // reset sale price to 0
-        salePrice = 0;
+        require(amount <= S, "Total token supply insufficient.");
 
         // Calculate price for requested number of tokens
 
         // point where curve price ceases to be constant and becomes cubic
         uint256 stepPoint = uint256(capacity * 90/100);
 
-        if (_totalSupply < stepPoint && _totalSupply - amount >= 0) {
+        if (S <= stepPoint) {
+            // sale entirely follows constant portion of curve
             salePrice = basePrice * amount;
         }
-        else if (_totalSupply - amount >= stepPoint) {
-            uint256 currentPrice = (_totalSupply - stepPoint)**4;
-            uint256 newPrice = (_totalSupply - amount - stepPoint)**4;
-            // add basePrice so that cubic portion doesn't start at price=0
-            salePrice = currentPrice - newPrice + basePrice;
-        }
-        else if (_totalSupply >= stepPoint && _totalSupply - amount < stepPoint) {
-            // if amount crosses stepPoint, find how much amount is over and under stepPoint
-            uint256 overAmount = _totalSupply - stepPoint;
-            uint256 underAmount = amount - overAmount;
+        else if (S - amount >= stepPoint) {
+            // sale entire follows cubic portion of curve
+            uint256 curveValueBefore = (S - stepPoint)**4;  // cumulative cubic portion before sale
+            uint256 curveValueAfter = (S - amount - stepPoint)**4;  // cumulative cubic portion after sale
+            uint256 nonLinearContribution = curveValueBefore - curveValueAfter;
 
-            uint256 currentPrice = (_totalSupply - stepPoint)**4;
-            uint256 newPrice = (_totalSupply - amount - stepPoint)**4;
-            uint256 overPrice = currentPrice - newPrice + basePrice;
-            uint256 underPrice = basePrice * underAmount;
-            salePrice = overPrice + underPrice;
+            // sum the non-linear and constant components
+            salePrice = nonLinearContribution + (basePrice * amount);   // total burn price = non-linear contribution + constant contribution
         }
         else {
-            revert("No conditions met");
+            // if amount crosses stepPoint, find out how much is over and under stepPoint
+            uint256 overAmount = S - stepPoint;
+            uint256 underAmount = amount - overAmount;
+
+            // calculate payout for cubic portion of sale
+            uint256 curveValueBefore = overAmount**4;   // cumulative cubic portion before crossing stepPoint
+            uint256 overPrice = curveValueBefore + (basePrice * overAmount);    // total overPrice = cubic price contribution + constant price contribution 
+
+            // calculate payout for constant portion of sale
+            uint256 underPrice = basePrice * underAmount;
+
+            // total sale payout = price above the step + price below the step
+            salePrice = overPrice + underPrice;
         }
 
         return salePrice;
