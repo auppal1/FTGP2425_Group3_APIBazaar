@@ -2,12 +2,8 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract APIProviderLogic is ERC20 {
-
-    // Make Math library functions available for use on uint256 variables
-    using Math for uint256;
 
     // Bonding Curve Parameters
     uint256 public immutable capacity;
@@ -70,6 +66,7 @@ contract APIProviderLogic is ERC20 {
     // Function to calculate token purchase price using bonding curve
     function getPurchasePrice(uint256 amount) public returns(uint256) {
 
+        // Validate inputs
         require(amount > 0 && amount <= capacity, "Invalid Amount");
         require(_totalSupply + amount < capacity, "Amount breaches capacity");
 
@@ -82,30 +79,33 @@ contract APIProviderLogic is ERC20 {
         uint256 stepPoint = uint256(capacity * 90/100);
 
         if (_totalSupply + amount <= stepPoint) {
-            // pricing function for constant portion of curve
+            // pricing entirely follows constant portion of curve
             purchasePrice = basePrice * amount;
         }
-        else if (_totalSupply > stepPoint) {
-            // pricing function for cubic portion
+        else if (_totalSupply >= stepPoint) {
+            // pricing enirely follows cubic portion of curve
             // x**4 is integral of 4*x**3
-            uint256 newPrice = (_totalSupply + amount - stepPoint)**4; // should + (basePrice * amount) but these cancel
-            uint256 currentPrice = (_totalSupply - stepPoint)**4;      // + (basePrice * amount)
-            // add basePrice so that cubic portion doesn't start at price=0
-            purchasePrice = newPrice - currentPrice + basePrice;
+            uint256 curveValueAfter = (_totalSupply + amount - stepPoint)**4; // cumulative cubic contribution after supply
+            uint256 curveValueBefore = (_totalSupply - stepPoint)**4;      // cumulatve cubic contribution before supply
+            uint256 nonLinearContribution = curveValueAfter - curveValueBefore;
+
+            // Sum the non-linear and constant components
+            purchasePrice = nonLinearContribution + (basePrice * amount); // total mint price = non-linear contribution + constant contribution
         }
-        else if (_totalSupply <= stepPoint && _totalSupply + amount > stepPoint) {
+        else {
             // if amount crosses stepPoint, find how much amount is over and under stepPoint
             uint256 overAmount = _totalSupply + amount - stepPoint;
             uint256 underAmount = amount - overAmount;
 
-            uint256 newPrice = (_totalSupply + overAmount - stepPoint)**4;
-            uint256 currentPrice = (_totalSupply - stepPoint)**4;
-            uint256 overPrice = newPrice - currentPrice + basePrice;    // price of amount over stepPoint
-            uint256 underPrice = basePrice * underAmount;               // price of amount under stepPoint
+            // calculate price for the cubic portion of mint
+            uint256 curveValueAfter = overAmount**4;            // cumulative cubic contribution toward overPrice
+            uint256 overPrice = curveValueAfter + (basePrice * overAmount);    // total overPrice = cubic price contribution + constant price contribution
+
+            // calculate price for constant portion of mint
+            uint256 underPrice = basePrice * underAmount;  // price of amount under stepPoint
+
+            // total price of minting is the price over the step + price under the step
             purchasePrice = overPrice + underPrice;
-        }
-        else {
-            revert("No conditions met");
         }
 
         return purchasePrice;
@@ -127,28 +127,31 @@ contract APIProviderLogic is ERC20 {
         // point where curve price ceases to be constant and becomes cubic
         uint256 stepPoint = uint256(capacity * 90/100);
 
-        if (_totalSupply < stepPoint && _totalSupply - amount >= 0) {
+        if (_totalSupply <= stepPoint) {
             salePrice = basePrice * amount;
         }
         else if (_totalSupply - amount >= stepPoint) {
-            uint256 currentPrice = (_totalSupply - stepPoint)**4;
-            uint256 newPrice = (_totalSupply - amount - stepPoint)**4;
-            // add basePrice so that cubic portion doesn't start at price=0
-            salePrice = currentPrice - newPrice + basePrice;
+            uint256 curveValueAfter = (_totalSupply - stepPoint)**4;     // cumulative cubic contribution after supply
+            uint256 curveValueBefore = (_totalSupply - amount - stepPoint)**4;      // cumulatve cubic contribution before supply
+            uint256 nonLinearContribution = curveValueAfter - curveValueBefore;
+
+            // Sum the non-linear and constant components
+            salePrice = nonLinearContribution + (basePrice * amount); // total mint price = non-linear contribution + constant contribution
         }
-        else if (_totalSupply >= stepPoint && _totalSupply - amount < stepPoint) {
+        else {
             // if amount crosses stepPoint, find how much amount is over and under stepPoint
             uint256 overAmount = _totalSupply - stepPoint;
             uint256 underAmount = amount - overAmount;
 
-            uint256 currentPrice = (_totalSupply - stepPoint)**4;
-            uint256 newPrice = (_totalSupply - amount - stepPoint)**4;
-            uint256 overPrice = currentPrice - newPrice + basePrice;
-            uint256 underPrice = basePrice * underAmount;
+            // calculate price for the cubic portion of mint
+            uint256 curveValueAfter = overAmount**4;            // cumulative cubic contribution toward overPrice
+            uint256 overPrice = curveValueAfter + (basePrice * overAmount);    // total overPrice = cubic price contribution + constant price contribution
+
+            // calculate price for constant portion of mint
+            uint256 underPrice = basePrice * underAmount;  // price of amount under stepPoint
+
+            // total price of minting is the price over the step + price under the step
             salePrice = overPrice + underPrice;
-        }
-        else {
-            revert("No conditions met");
         }
 
         return salePrice;
