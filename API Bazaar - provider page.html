@@ -42,7 +42,7 @@
             }
         }
     </script>
-    <style type="text/tailwindcss">
+    <style type="textailwindcss">
         @layer utilities {
             .content-auto {
                 content-visibility: auto;
@@ -155,7 +155,7 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="text-textSub text-sm">Total APIs</p>
-                                <h3 class="text-3xl font-bold mt-1">0</h3>
+                                <h3 class="text-3xl font-bold mt-1">5</h3>
                                 <p class="text-success text-xs mt-2 flex items-center">
                                     <i class="fa-solid fa-arrow-up mr-1"></i> 2 from last month
                                 </p>
@@ -170,7 +170,7 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="text-textSub text-sm">Total API Calls</p>
-                                <h3 class="text-3xl font-bold mt-1">0</h3>
+                                <h3 class="text-3xl font-bold mt-1">1,289</h3>
                                 <p class="text-success text-xs mt-2 flex items-center">
                                     <i class="fa-solid fa-arrow-up mr-1"></i> 15% from last week
                                 </p>
@@ -185,7 +185,7 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="text-textSub text-sm">Total Earnings (USD)</p>
-                                <h3 class="text-3xl font-bold mt-1">$0</h3>
+                                <h3 class="text-3xl font-bold mt-1">$128.90</h3>
                                 <p class="text-success text-xs mt-2 flex items-center">
                                     <i class="fa-solid fa-arrow-up mr-1"></i> $45.20 from last month
                                 </p>
@@ -200,7 +200,7 @@
                         <div class="flex justify-between items-start">
                             <div>
                                 <p class="text-textSub text-sm">Pending Withdrawal</p>
-                                <h3 class="text-3xl font-bold mt-1">$0</h3>
+                                <h3 class="text-3xl font-bold mt-1">$89.50</h3>
                                 <button class="text-warning text-xs mt-2 flex items-center hover:underline">
                                     <i class="fa-solid fa-money-bill-transfer mr-1"></i> Withdraw now
                                 </button>
@@ -214,6 +214,61 @@
 
                 <!-- Earnings Trend Chart + Recent API Calls -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Earnings Trend -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-semibold">Earnings Trend (Last 30 Days)</h3>
+                            <div class="flex gap-2">
+                                <button class="px-3 py-1 text-xs bg-primary/10 text-primary rounded-md">Week</button>
+                                <button class="px-3 py-1 text-xs bg-light text-textSub rounded-md">Month</button>
+                                <button class="px-3 py-1 text-xs bg-light text-textSub rounded-md">Year</button>
+                            </div>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="earningsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent API Calls -->
+                    <div class="bg-white rounded-lg shadow-sm p-6">
+                        <h3 class="font-semibold mb-4">Recent API Calls</h3>
+                        <div class="space-y-4 max-h-64 overflow-y-auto">
+                            <!-- Call Record 1 -->
+                            <div class="border-b pb-3">
+                                <div class="flex justify-between mb-1">
+                                    <span class="font-medium text-sm">Wallet Risk API</span>
+                                    <span class="text-success text-xs">Success</span>
+                                </div>
+                                <p class="text-textSub text-xs mb-1">0x123...456 • 0.01 USD</p>
+                                <p class="text-textSub text-xs">2 hours ago</p>
+                            </div>
+                            <!-- Call Record 2 -->
+                            <div class="border-b pb-3">
+                                <div class="flex justify-between mb-1">
+                                    <span class="font-medium text-sm">Contract Scan API</span>
+                                    <span class="text-success text-xs">Success</span>
+                                </div>
+                                <p class="text-textSub text-xs mb-1">0x789...012 • 0.02 USD</p>
+                                <p class="text-textSub text-xs">5 hours ago</p>
+                            </div>
+                            <!-- Call Record 3 -->
+                            <div class="border-b pb-3">
+                                <div class="flex justify-between mb-1">
+                                    <span class="font-medium text-sm">Wallet Risk API</span>
+                                    <span class="text-danger text-xs">Failed</span>
+                                </div>
+                                <p class="text-textSub text-xs mb-1">0x456...789 • 0.01 USD</p>
+                                <p class="text-textSub text-xs">1 day ago</p>
+                            </div>
+                            <!-- Call Record 4 -->
+                            <div class="pb-3">
+                                <div class="flex justify-between mb-1">
+                                    <span class="font-medium text-sm">NFT Metadata API</span>
+                                    <span class="text-success text-xs">Success</span>
+                                </div>
+                                <p class="text-textSub text-xs mb-1">0x234...567 • 0.03 USD</p>
+                                <p class="text-textSub text-xs">2 days ago</p>
+                            </div>
                         </div>
                         <button class="w-full mt-4 px-4 py-2 text-sm border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">
                             View All Calls
@@ -227,7 +282,84 @@
                 <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
                     <h2 class="text-xl font-bold mb-4">Publish New API</h2>
                     <form class="space-y-6">
-                        
+                        <!-- Basic Information -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">API Name *</label>
+                                <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="e.g. Wallet Risk Assessment API">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">API Category *</label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">
+                                    <option value="">Select Category</option>
+                                    <option value="web3">Web3 / Blockchain</option>
+                                    <option value="ai">AI / Machine Learning</option>
+                                    <option value="data">Data Analytics</option>
+                                    <option value="utility">Utility Tools</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium mb-1">API Description *</label>
+                                <textarea rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="Describe your API functionality, use cases, and requirements"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">API Endpoint URL *</label>
+                                <input type="url" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="https://api.yourdomain.com/v1/endpoint">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Authentication Type</label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">
+                                    <option value="none">None</option>
+                                    <option value="api-key">API Key</option>
+                                    <option value="bearer">Bearer Token</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Bonding Curve Configuration -->
+                        <div class="border-t pt-6">
+                            <h3 class="font-semibold mb-4">Bonding Curve Configuration</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Initial Price (USD per call) *</label>
+                                    <input type="number" step="0.01" min="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="0.01">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Capacity (Total Calls) *</label>
+                                    <input type="number" min="100" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="10000">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Curve Type *</label>
+                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">
+                                        <option value="linear">Linear</option>
+                                        <option value="exponential">Exponential</option>
+                                        <option value="logarithmic">Logarithmic</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- Curve Preview -->
+                            <div class="mt-4 p-4 bg-light rounded-md">
+                                <p class="text-sm text-textSub mb-2">Bonding Curve Preview</p>
+                                <div class="h-40">
+                                    <svg width="100%" height="100%" viewBox="0 0 400 150" class="absolute">
+                                        <line x1="50" y1="120" x2="350" y2="120" stroke="#718096" stroke-width="1" />
+                                        <line x1="50" y1="120" x2="50" y2="20" stroke="#718096" stroke-width="1" />
+                                        <path d="M50,120 Q150,110 250,60 T350,20" fill="none" stroke="#5E6AD2" stroke-width="2" />
+                                        <text x="100" y="135" fill="#718096" font-size="10">Supply (Calls)</text>
+                                        <text x="30" y="30" fill="#718096" font-size="10" transform="rotate(-90, 30, 30)">Price (USD)</text>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="flex justify-end gap-4 pt-4">
+                            <button type="button" class="px-6 py-2 border border-gray-300 text-textSub rounded-md hover:bg-light transition-colors">
+                                Save as Draft
+                            </button>
+                            <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+                                <i class="fa-solid fa-cloud-upload"></i>
+                                Publish API
                             </button>
                         </div>
                     </form>
@@ -273,7 +405,7 @@
                         </div>
                     </div>
 
-                    <!-- API List Table -->
+                    <!-- APIs List Table -->
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead>
@@ -306,6 +438,60 @@
                                         </div>
                                     </td>
                                 </tr>
+                                <!-- API 2 -->
+                                <tr class="border-b border-gray-100 hover:bg-light">
+                                    <td class="py-3 px-4 text-sm font-medium">Smart Contract Scan API</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">Web3 / Blockchain</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">$0.02</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">321</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">$6.42</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Active</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary text-sm hover:underline">Edit</button>
+                                            <button class="text-warning text-sm hover:underline">Analytics</button>
+                                            <button class="text-danger text-sm hover:underline">Deactivate</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- API 3 -->
+                                <tr class="border-b border-gray-100 hover:bg-light">
+                                    <td class="py-3 px-4 text-sm font-medium">NFT Metadata API</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">Web3 / Blockchain</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">$0.03</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">210</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">$6.30</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs bg-warning/10 text-warning rounded-full">Under Review</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary text-sm hover:underline">Edit</button>
+                                            <button class="text-textSub text-sm hover:underline cursor-not-allowed">Analytics</button>
+                                            <button class="text-textSub text-sm hover:underline cursor-not-allowed">Deactivate</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- API 4 -->
+                                <tr class="hover:bg-light">
+                                    <td class="py-3 px-4 text-sm font-medium">AI Image Generator API</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">AI / Machine Learning</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">$0.05</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">0</td>
+                                    <td class="py-3 px-4 text-sm text-textSub">$0.00</td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-1 text-xs bg-gray-100 text-textSub rounded-full">Draft</span>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex gap-2">
+                                            <button class="text-primary text-sm hover:underline">Edit</button>
+                                            <button class="text-textSub text-sm hover:underline cursor-not-allowed">Analytics</button>
+                                            <button class="text-success text-sm hover:underline">Publish</button>
+                                        </div>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -331,6 +517,131 @@
             <section id="earnings" class="hidden animate-fade-in">
                 <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
                     <h2 class="text-xl font-bold mb-6">Earnings & Withdrawals</h2>
+
+                    <!-- Earnings Overview -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="p-4 border border-gray-100 rounded-lg">
+                            <p class="text-textSub text-sm">Total Earnings</p>
+                            <h3 class="text-2xl font-bold mt-1">$128.90</h3>
+                            <p class="text-success text-xs mt-2">+15% from last month</p>
+                        </div>
+                        <div class="p-4 border border-gray-100 rounded-lg">
+                            <p class="text-textSub text-sm">Withdrawn Amount</p>
+                            <h3 class="text-2xl font-bold mt-1">$39.40</h3>
+                            <p class="text-textSub text-xs mt-2">4 withdrawals</p>
+                        </div>
+                        <div class="p-4 border border-gray-100 rounded-lg">
+                            <p class="text-textSub text-sm">Pending Withdrawal</p>
+                            <h3 class="text-2xl font-bold mt-1">$89.50</h3>
+                            <button class="mt-2 px-3 py-1 text-xs bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">
+                                Withdraw Now
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Withdrawal History -->
+                    <div class="mb-6">
+                        <h3 class="font-semibold mb-4">Withdrawal History</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200">
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Date</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Amount</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Wallet Address</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Status</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Tx Hash</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-100 hover:bg-light">
+                                        <td class="py-3 px-4 text-sm">2026-03-15</td>
+                                        <td class="py-3 px-4 text-sm font-medium">$25.00</td>
+                                        <td class="py-3 px-4 text-sm text-textSub">0x89...789</td>
+                                        <td class="py-3 px-4">
+                                            <span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Completed</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-sm text-primary hover:underline">0x123...456</td>
+                                    </tr>
+                                    <tr class="border-b border-gray-100 hover:bg-light">
+                                        <td class="py-3 px-4 text-sm">2026-02-20</td>
+                                        <td class="py-3 px-4 text-sm font-medium">$14.40</td>
+                                        <td class="py-3 px-4 text-sm text-textSub">0x89...789</td>
+                                        <td class="py-3 px-4">
+                                            <span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Completed</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-sm text-primary hover:underline">0x789...012</td>
+                                    </tr>
+                                    <tr class="hover:bg-light">
+                                        <td class="py-3 px-4 text-sm">2026-03-22</td>
+                                        <td class="py-3 px-4 text-sm font-medium">$89.50</td>
+                                        <td class="py-3 px-4 text-sm text-textSub">0x89...789</td>
+                                        <td class="py-3 px-4">
+                                            <span class="px-2 py-1 text-xs bg-warning/10 text-warning rounded-full">Processing</span>
+                                        </td>
+                                        <td class="py-3 px-4 text-sm text-textSub">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Withdrawal Form -->
+                    <div class="border-t pt-6">
+                        <h3 class="font-semibold mb-4">Request Withdrawal</h3>
+                        <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Withdrawal Amount (USD) *</label>
+                                <input type="number" step="0.01" max="89.50" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="Enter amount">
+                                <p class="text-xs text-textSub mt-1">Maximum withdrawable: $89.50</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Recipient Wallet Address *</label>
+                                <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="0x..." value="0x89...789">
+                                <p class="text-xs text-textSub mt-1">Connected wallet address</p>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium mb-1">Network</label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">
+                                    <option value="ethereum">Ethereum</option>
+                                    <option value="base" selected>Base (Low Gas)</option>
+                                    <option value="arbitrum">Arbitrum</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2 flex justify-end">
+                                <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">
+                                    Submit Withdrawal Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Page (Hidden by default) -->
+            <section id="settings" class="hidden animate-fade-in">
+                <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <h2 class="text-xl font-bold mb-6">Developer Settings</h2>
+
+                    <!-- Profile Information -->
+                    <div class="mb-8">
+                        <h3 class="font-semibold mb-4">Profile Information</h3>
+                        <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Display Name *</label>
+                                <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" value="John Developer">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Email Address</label>
+                                <input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" value="john.dev@example.com">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium mb-1">Bio</label>
+                                <textarea rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">Web3 developer specializing in blockchain APIs and smart contract development.</textarea>
+                            </div>
+                            <div class="md:col-span-2 flex justify-end">
+                                <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">
+                                    Save Changes
                                 </button>
                             </div>
                         </form>
@@ -360,6 +671,54 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Notification Settings -->
+                    <div class="border-t pt-6">
+                        <h3 class="font-semibold mb-4">Notification Preferences</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">API Call Notifications</p>
+                                    <p class="text-sm text-textSub">Receive alerts when your API is called</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Earnings Notifications</p>
+                                    <p class="text-sm text-textSub">Receive alerts when you earn from API calls</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Withdrawal Notifications</p>
+                                    <p class="text-sm text-textSub">Receive alerts when withdrawals are processed</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium">Marketing Emails</p>
+                                    <p class="text-sm text-textSub">Receive updates about new features and promotions</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
+                            </div>
+                        </div>
+                        <button class="mt-6 px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">
+                            Save Notification Settings
                         </button>
                     </div>
                 </div>
@@ -408,7 +767,7 @@
             }
         });
 
-        // Sidebar Navigation Switching
+        // Sidebar Navigation Switch
         const navLinks = document.querySelectorAll('nav a');
         const sections = document.querySelectorAll('main > section');
 
@@ -418,7 +777,7 @@
                 
                 // Remove all active states
                 navLinks.forEach(nav => nav.classList.remove('sidebar-active'));
-                // Add current active state
+                // Add active state to current link
                 link.classList.add('sidebar-active');
                 
                 // Hide all sections
@@ -434,7 +793,7 @@
         if (newApiBtn) {
             newApiBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Switch to publish API section
+                // Switch to Publish API section
                 navLinks.forEach(nav => nav.classList.remove('sidebar-active'));
                 document.querySelector('a[href="#publish-api"]').classList.add('sidebar-active');
                 
