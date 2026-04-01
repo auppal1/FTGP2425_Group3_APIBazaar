@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/utils/math/Math.sol";
+contract APIProviderLogic {
 
-contract APIProviderLogic is ERC20 {
-
-    // Make Math library functions available for use on uint256 variables
-    using Math for uint256;
+    // Metadata
+    string public tokenName;
+    string public tokenSymbol;
+    uint8 public constant decimals = 0;
 
     // Bonding Curve Parameters
     uint256 public immutable capacity;
@@ -17,7 +16,7 @@ contract APIProviderLogic is ERC20 {
     uint256 public reserveBalance = 0;  //initial balance is 0
 
     // Owner as contract needs administrative control
-    address public provider;
+    address public immutable provider;
 
     // Mapping for withdrawals
     mapping(address => uint256) public credits;
@@ -27,6 +26,7 @@ contract APIProviderLogic is ERC20 {
     mapping(uint256 => mapping(address => uint256)) private balanceByDay; // mapping user address to their balance for that day
 
     // Events
+    event Transfer(address indexed from, address indexed to, uint256 amount);
     event Credited(address indexed to, uint256 value);
     event Withdrawn(address indexed to, uint256 value);
     event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
@@ -39,11 +39,13 @@ contract APIProviderLogic is ERC20 {
         string memory tokenSymbol_,
         uint256 capacity_,
         uint256 basePrice_
-        ) ERC20(tokenName_, tokenSymbol_) {
+        ) {
         // Initialise parameters from APIBazaarFactory.sol
         capacity = capacity_;
         basePrice = basePrice_;
         provider = provider_;
+        tokenName = tokenName_;
+        tokenSymbol = tokenSymbol_;
     }
 
 
@@ -186,9 +188,6 @@ contract APIProviderLogic is ERC20 {
         // require that the user has sent enough money
         require(msg.value >= purchasePrice, "Insufficient value sent");
 
-        // mint the requested/bought tokens and send them to the user
-        _mint(recipient, amount);
-
         // update supply and balances by day
         supplyByDay[day] += amount;
         balanceByDay[day][recipient] += amount;
@@ -216,11 +215,9 @@ contract APIProviderLogic is ERC20 {
         // require that some tokens are being sold and that user has enough tokens
         require(amount > 0, "Token quantity must be positive");
         require(balanceByDay[day][seller] >= amount, "Your balance is insufficient");
-
+        
         uint256 salePrice = getSalePrice(amount);
-
-        // burn the sold tokens
-        _burn(seller, amount);
+        require(salePrice <= reserveBalance, "Not enough ETH in contract to credit");
 
         // update supply and balances by day
         supplyByDay[day] -= amount;
@@ -228,7 +225,6 @@ contract APIProviderLogic is ERC20 {
         emit Transfer(seller, address(0), amount);
 
         // credit the seller 
-        require(salePrice <= reserveBalance, "Not enough ETH in contract to credit");
         credits[seller] += salePrice;
         emit Credited(seller, salePrice);
 
@@ -256,9 +252,6 @@ contract APIProviderLogic is ERC20 {
         // Ensure that amount of credits is not greater than current day supply
         require(supplyByDay[day] >= amount, "Not enough supply");
 
-        // burn consumed tokens, update balance and supply
-        _burn(user, amount);
-
         // update current day supply and balances
         supplyByDay[day] -= amount;
         balanceByDay[day][user] -= amount;
@@ -280,27 +273,6 @@ contract APIProviderLogic is ERC20 {
         require(sent, "Withdraw failed");
         emit Withdrawn(msg.sender, value);
         return true;
-    }
-
-    //Override unneeded ERC20 functions
-
-    // Token is not transferable to prevent speculative behaviour
-    function transfer(address, uint256) public pure override returns (bool){
-        revert("No transfers");
-    }
-
-    function transferFrom(address, address, uint256) public pure override returns (bool){
-        revert("No transfers");
-    }
-
-    // No need for "spender" to be able to spend owner's tokens
-    function allowance(address, address) public pure override returns (uint256) {
-        revert("No allowances");
-    }
-
-    // No need to approve "spender" to spend owner's tokens
-    function approve(address, uint256) public pure override returns (bool) {
-        revert("Not allowed");
     }
 
     receive () external payable {
