@@ -237,6 +237,19 @@
 				"type": "function"
 			},
 			{
+				"inputs": [],
+				"name": "decimals",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "address",
@@ -296,6 +309,19 @@
 					}
 				],
 				"name": "getSalePrice",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "lastActiveDay",
 				"outputs": [
 					{
 						"internalType": "uint256",
@@ -417,11 +443,11 @@
 	},
 	"sources": {
 		"contracts/APIProviderLogic.sol": {
-			"keccak256": "0xee0783c099758482e1e41def3bc0da1c8799638dede54b2f05fc1626616e5c7c",
+			"keccak256": "0x036c14a784a1437f505b8feac3e57b05153355de063a5309d4eadaba4ff410e8",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://6f36782f393abc3763701700edae6093cb8684ecac0a44a81787fab42469dc5d",
-				"dweb:/ipfs/QmPRPgKtTvZQBfUb23X4LEn8KvKntUefNrXpJDafToKPjL"
+				"bzz-raw://a6b30436a5dde8a304fa648118548d377b7aa4b8f45115ae63c79cd47b257f4a",
+				"dweb:/ipfs/Qmc4SSLn2L62KCRcJKXoHbrj1T3cT7hZ8Qa3XpsksDSZCJ"
 			]
 		}
 	},
