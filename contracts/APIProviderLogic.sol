@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
+pragma solidity ^0.8.0;
 
 contract APIProviderLogic {
 
@@ -31,6 +31,15 @@ contract APIProviderLogic {
     event Withdrawn(address indexed to, uint256 value);
     event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
 
+    // Function for getting the current day
+    // Returns the number of days since unix epoch
+    function currentDay() public view returns (uint256) {
+        return block.timestamp / dailySeconds;
+    }
+
+    // State variable that tracks the last active day (for transfering expired reserves to provider credits)
+    uint256 public lastActiveDay;
+
     // CONSTRUCTOR
     // Initialise parameters based on provider's params set in APIBazaarFactory.sol
     constructor(
@@ -46,6 +55,9 @@ contract APIProviderLogic {
         provider = provider_;
         tokenName = tokenName_;
         tokenSymbol = tokenSymbol_;
+
+        // Construct last active day on contract instantiation
+        lastActiveDay = currentDay();
     }
 
 
@@ -54,12 +66,6 @@ contract APIProviderLogic {
 
 
     // FUNCTIONS
-
-    // Function for getting the current day
-    // Returns the number of days since unix epoch
-    function currentDay() public view returns (uint256) {
-        return block.timestamp / dailySeconds;
-    }
 
     // View function for supply (by day)
     function getCurrentDaySupply () public view returns (uint256) {
@@ -71,6 +77,29 @@ contract APIProviderLogic {
         return balanceByDay[currentDay()][user];
     }
 
+    // Function to transfer yesterday's reserves into providers credits
+    // Tokens are useless the next day, therefore value of unused credits in reserves should be given to provider
+    // Should be called any time 
+    function expiredReservesToCredits() internal {
+
+        // Get the current day
+        uint256 day = currentDay();
+
+        // If the current day is newer than the last active day 
+        if (lastActiveDay < day) {
+            uint256 expiredReserves = reserveBalance;
+
+            // If there are leftover reserves, then credit the provider with that amount
+            if (expiredReserves > 0) {
+                reserveBalance = 0;
+                credits[provider] += expiredReserves;
+                emit Credited(provider, expiredReserves);
+            }
+
+        // CRUCIAL: to make sure the day we track keeps updating, set lastActiveDay to the current day 
+        lastActiveDay = day;
+        }
+    } 
 
     // Function to calculate token purchase price using bonding curve
     function getPurchasePrice(uint256 amount) public view returns(uint256) {
@@ -177,6 +206,9 @@ contract APIProviderLogic {
     // Function to mint/enable buying of new tokens
     function buyTokens(uint256 amount) public payable {
 
+        // If there are expired tokens from the last day, credit them to provider
+        expiredReservesToCredits();
+
         // get the current day
         uint256 day = currentDay();
 
@@ -206,6 +238,9 @@ contract APIProviderLogic {
 
     // Function to burn/enable selling of tokens
     function sellTokens(uint256 amount) public {
+
+        // If there are expired tokens from the last day, credit them to provider
+        expiredReservesToCredits();
 
         // get the current day
         uint256 day = currentDay();
@@ -237,6 +272,9 @@ contract APIProviderLogic {
     // Should only be called by the owner of contract (or API gateway), to prevent users consuming other users' tokens
     function consumeTokens (address user, uint256 amount) external returns (bool) {
 
+        // If there are expired tokens from the last day, credit them to provider
+        expiredReservesToCredits();
+
         // ensure only owner can call this function
         require(msg.sender == provider, "Only provider can consume tokens");
 
@@ -252,17 +290,30 @@ contract APIProviderLogic {
         // Ensure that amount of credits is not greater than current day supply
         require(supplyByDay[day] >= amount, "Not enough supply");
 
+        // reduce reserves by value that has been removed 
+        uint256 consumePrice = getSalePrice(amount);
+        require(consumePrice <= reserveBalance, "Not enough reserves");
+        reserveBalance -= consumePrice;
+
         // update current day supply and balances
         supplyByDay[day] -= amount;
         balanceByDay[day][user] -= amount;
 
+        // credit the provider with the value consumed
+        credits[provider] += consumePrice;
+        
         emit Transfer(user, address(0), amount);
         emit Consumed(user, amount, day);
+        emit Credited(provider, consumePrice);
 
         return true;
     }
 
     function withdraw() external returns (bool) {
+
+        // If there are expired tokens from the last day, credit them to provider
+        expiredReservesToCredits();
+
         uint256 value = credits[msg.sender];
         require(value > 0, "No credits to withdraw");
 
