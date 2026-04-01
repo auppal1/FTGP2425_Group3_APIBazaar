@@ -8,7 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Custom Config -->
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Tailwind Config -->
     <script>
         tailwind.config = {
             theme: {
@@ -18,6 +20,9 @@
                         secondary: '#165DFF',
                         dark: '#2D3748',
                         light: '#F5F7FA',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
                         textMain: '#1A202C',
                         textSub: '#718096'
                     },
@@ -53,13 +58,12 @@
                 animation: dash 3s linear forwards;
             }
             @keyframes dash {
-                to {
-                    stroke-dashoffset: 0;
-                }
+                to { stroke-dashoffset: 0; }
             }
-            .nav-scrolled {
-                @apply bg-white shadow-md;
-            }
+            .nav-scrolled { @apply bg-white shadow-md; }
+            .sidebar-active { @apply bg-primary/10 text-primary border-l-4 border-primary; }
+            .form-input-focus { @apply ring-2 ring-primary/50 border-primary; }
+            .modal-active { @apply opacity-100 visible; }
         }
     </style>
     <!-- Inter Font -->
@@ -67,274 +71,540 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="font-inter bg-white text-textMain">
-    <!-- Navigation Bar -->
-    <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent py-4">
-        <div class="container mx-auto px-4 md:px-8 flex justify-between items-center">
-            <!-- Logo -->
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-link-chain text-primary text-2xl"></i>
-                <span class="text-xl font-bold text-textMain">API Bazaar</span>
+<body class="font-inter bg-white text-textMain antialiased">
+    <!-- Login & Register Modal -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 opacity-0 invisible transition-all duration-300">
+        <div class="bg-white rounded-lg w-full max-w-md p-6 relative animate-fade-in">
+            <button id="closeModal" class="absolute top-4 right-4 text-textSub hover:text-textMain">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <!-- Tab Switcher -->
+            <div class="flex border-b mb-6">
+                <button id="loginTab" class="px-4 py-2 font-medium border-b-2 border-primary text-primary">Login</button>
+                <button id="registerTab" class="px-4 py-2 font-medium text-textSub">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <h2 class="text-xl font-bold mb-4">Welcome Back</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Email</label>
+                        <input type="email" id="loginEmail" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Password</label>
+                        <input type="password" id="loginPwd" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <button id="loginBtn" class="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90">Login</button>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" class="hidden">
+                <h2 class="text-xl font-bold mb-4">Create Account</h2>
+                <div class="space-y-4">
+                    <!-- Role Selection -->
+                    <div class="flex gap-4">
+                        <button id="providerBtn" class="flex-1 py-2 border border-primary text-primary rounded-md bg-primary/10">API Provider</button>
+                        <button id="buyerBtn" class="flex-1 py-2 border border-gray-300 text-textSub rounded-md">API Buyer</button>
+                    </div>
+                    <input type="hidden" id="userRole" value="provider">
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Username</label>
+                        <input type="text" id="regUsername" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Email</label>
+                        <input type="email" id="regEmail" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Password</label>
+                        <input type="password" id="regPwd" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Confirm Password</label>
+                        <input type="password" id="regConfirmPwd" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <button id="registerBtn" class="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Page Container -->
+    <div id="mainPage" class="block">
+        <!-- Navigation Bar -->
+        <nav id="navbar" class="fixed top-0 left-0 w-full z-40 transition-all duration-300 bg-transparent py-4">
+            <div class="container mx-auto px-4 md:px-8 flex justify-between items-center">
+                <!-- Logo -->
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-link-chain text-primary text-2xl"></i>
+                    <span class="text-xl font-bold text-textMain">API Bazaar</span>
+                </div>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#values" class="text-textMain hover:text-primary transition-colors">Values</a>
+                    <a href="#faq" class="text-textMain hover:text-primary transition-colors">FAQs</a>
+                    <a href="#" class="text-textMain hover:text-primary transition-colors">About Us</a>
+                </div>
+                
+                <!-- Right Buttons -->
+                <div class="flex items-center gap-4">
+                    <button id="loginBtnMain" class="px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">Login</button>
+                    <a href="#" class="hidden md:block px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">Developer Portal</a>
+                    <button id="connectWalletBtn" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-wallet"></i>
+                        <span>Connect Wallet</span>
+                    </button>
+                    <!-- Mobile Menu Button -->
+                    <button id="menuBtn" class="md:hidden text-textMain text-xl">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
             </div>
             
-            <!-- Desktop Navigation -->
-            <div class="hidden md:flex items-center gap-8">
-                <a href="#values" class="text-textMain hover:text-primary transition-colors">Values</a>
-                <a href="#faq" class="text-textMain hover:text-primary transition-colors">FAQs</a>
-                <a href="#" class="text-textMain hover:text-primary transition-colors">About Us</a>
-            </div>
-            
-            <!-- Right Buttons -->
-            <div class="flex items-center gap-4">
-                <a href="#" class="hidden md:block px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">Developer Portal</a>
-                <a href="#" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-wallet"></i>
-                    <span>Connect Wallet</span>
-                </a>
-                <!-- Mobile Menu Button -->
-                <button id="menuBtn" class="md:hidden text-textMain text-xl">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Mobile Navigation Menu -->
-        <div id="mobileMenu" class="md:hidden hidden bg-white shadow-lg absolute w-full">
-            <div class="container mx-auto px-4 py-4 flex flex-col gap-4">
-                <a href="#values" class="text-textMain hover:text-primary transition-colors py-2">Values</a>
-                <a href="#faq" class="text-textMain hover:text-primary transition-colors py-2">FAQs</a>
-                <a href="#" class="text-textMain hover:text-primary transition-colors py-2">About Us</a>
-                <a href="#" class="text-primary py-2">Developer Portal</a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="pt-32 pb-20 md:pt-40 md:pb-32 bg-light relative overflow-hidden">
-        <div class="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center gap-10">
-            <!-- Left Content -->
-            <div class="md:w-3/5 animate-fade-in">
-                <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">
-                    Decentralized API Marketplace for the Long Tail
-                </h1>
-                <p class="text-[clamp(1rem,2vw,1.25rem)] text-textSub mb-8 max-w-2xl">
-                    A decentralized API marketplace built for indie developers, featuring transparent pricing via on-chain bonding curves, pay-as-you-go access, and no subscription lock-ins or high commission fees.
-                </p>
-                <div class="flex flex-wrap gap-4 mb-6">
-                    <a href="#" class="px-8 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors font-medium">Publish API</a>
-                    <a href="#" class="px-8 py-3 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors font-medium">Explore API Marketplace</a>
-                </div>
-                <p class="text-sm text-textSub">
-                    Quick wallet connection via QR code, gas fees as low as $0.01, and O(1) smart contracts ensure efficient transactions.
-                </p>
-            </div>
-            
-            <!-- Right Visualization -->
-            <div class="md:w-2/5 relative animate-float">
-                <div class="w-full h-80 relative">
-                    <!-- Bonding Curve SVG -->
-                    <svg width="100%" height="100%" viewBox="0 0 400 300" class="absolute top-0 left-0">
-                        <defs>
-                            <linearGradient id="curveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#5E6AD2" />
-                                <stop offset="100%" stop-color="#165DFF" />
-                            </linearGradient>
-                        </defs>
-                        <!-- Axes -->
-                        <line x1="50" y1="250" x2="350" y2="250" stroke="#718096" stroke-width="2" />
-                        <line x1="50" y1="250" x2="50" y2="50" stroke="#718096" stroke-width="2" />
-                        <!-- Curve -->
-                        <path d="M50,250 Q150,240 250,150 T350,50" fill="none" stroke="url(#curveGradient)" stroke-width="3" class="curve-visual" />
-                        <!-- Labels -->
-                        <text x="100" y="270" fill="#718096" font-size="12">Supply</text>
-                        <text x="30" y="70" fill="#718096" font-size="12" transform="rotate(-90, 30, 70)">Price</text>
-                        <text x="150" y="230" fill="#5E6AD2" font-size="10" class="font-medium">Near Constant Pricing</text>
-                        <text x="300" y="80" fill="#165DFF" font-size="10" class="font-medium">Infinite Price at Capacity</text>
-                    </svg>
-                    <!-- Decorative Icons -->
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-4">
-                        <i class="fa-solid fa-code text-primary text-4xl"></i>
-                        <i class="fa-solid fa-coins text-secondary text-4xl"></i>
-                        <i class="fa-solid fa-shield-halved text-primary text-4xl"></i>
-                    </div>
+            <!-- Mobile Navigation Menu -->
+            <div id="mobileMenu" class="md:hidden hidden bg-white shadow-lg absolute w-full">
+                <div class="container mx-auto px-4 py-4 flex flex-col gap-4">
+                    <a href="#values" class="text-textMain hover:text-primary transition-colors py-2">Values</a>
+                    <a href="#faq" class="text-textMain hover:text-primary transition-colors py-2">FAQs</a>
+                    <a href="#" class="text-textMain hover:text-primary transition-colors py-2">About Us</a>
+                    <a href="#" class="text-primary py-2">Developer Portal</a>
                 </div>
             </div>
-        </div>
-        
-        <!-- Background Decor -->
-        <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 to-secondary/5 -z-10"></div>
-        <div class="absolute top-20 right-20 w-40 h-40 bg-primary/10 rounded-full -z-10"></div>
-        <div class="absolute bottom-20 left-20 w-60 h-60 bg-secondary/10 rounded-full -z-10"></div>
-    </section>
+        </nav>
 
-    <!-- Core Values Section -->
-    <section id="values" class="py-20 bg-white">
-        <div class="container mx-auto px-4 md:px-8">
-            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-center mb-16">Why Choose API Bazaar?</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Value 1 -->
-                <div class="p-6 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
-                    <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4">
-                        <i class="fa-solid fa-book-journal-whills text-primary text-xl"></i>
+        <!-- Hero Section -->
+        <section class="pt-32 pb-20 md:pt-40 md:pb-32 bg-light relative overflow-hidden">
+            <div class="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center gap-10">
+                <!-- Left Content -->
+                <div class="md:w-3/5 animate-fade-in">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">
+                        Decentralized API Marketplace for the Long Tail
+                    </h1>
+                    <p class="text-[clamp(1rem,2vw,1.25rem)] text-textSub mb-8 max-w-2xl">
+                        A decentralized API marketplace built for indie developers, featuring transparent pricing via on-chain bonding curves, pay-as-you-go access, and no subscription lock-ins or high commission fees.
+                    </p>
+                    <div class="flex flex-wrap gap-4 mb-6">
+                        <button id="goToDashboardBtn" class="px-8 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors font-medium">Publish API</button>
+                        <a href="#" class="px-8 py-3 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors font-medium">Explore API Marketplace</a>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3">Low Commission (0~5%)</h3>
-                    <p class="text-textSub">
-                        Say goodbye to 20-30% high commissions on traditional platforms. On-chain smart contracts automate revenue sharing, giving developers full control over their earnings with decentralized transparency.
+                    <p class="text-sm text-textSub">
+                        Quick wallet connection via QR code, gas fees as low as $0.01, and O(1) smart contracts ensure efficient transactions.
                     </p>
                 </div>
-                <!-- Value 2 -->
-                <div class="p-6 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
-                    <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4">
-                        <i class="fa-solid fa-chart-line text-primary text-xl"></i>
+                
+                <!-- Right Visualization -->
+                <div class="md:w-2/5 relative animate-float">
+                    <div class="w-full h-80 relative">
+                        <svg width="100%" height="100%" viewBox="0 0 400 300" class="absolute top-0 left-0">
+                            <defs>
+                                <linearGradient id="curveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#5E6AD2" />
+                                    <stop offset="100%" stop-color="#165DFF" />
+                                </linearGradient>
+                            </defs>
+                            <!-- Axes -->
+                            <line x1="50" y1="250" x2="350" y2="250" stroke="#718096" stroke-width="2" />
+                            <line x1="50" y1="250" x2="50" y2="50" stroke="#718096" stroke-width="2" />
+                            <!-- Curve -->
+                            <path d="M50,250 Q150,240 250,150 T350,50" fill="none" stroke="url(#curveGradient)" stroke-width="3" class="curve-visual" />
+                            <!-- Labels -->
+                            <text x="100" y="270" fill="#718096" font-size="12">Supply</text>
+                            <text x="30" y="70" fill="#718096" font-size="12" transform="rotate(-90, 30, 70)">Price</text>
+                            <text x="150" y="230" fill="#5E6AD2" font-size="10" class="font-medium">Near Constant Pricing</text>
+                            <text x="300" y="80" fill="#165DFF" font-size="10" class="font-medium">Infinite Price at Capacity</text>
+                        </svg>
+                        <!-- Decorative Icons -->
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-4">
+                            <i class="fa-solid fa-code text-primary text-4xl"></i>
+                            <i class="fa-solid fa-coins text-secondary text-4xl"></i>
+                            <i class="fa-solid fa-shield-halved text-primary text-4xl"></i>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-semibold mb-3">Pay-as-You-Go, No Subscriptions</h3>
-                    <p class="text-textSub">
-                        API call rights are represented by tokens, minted based on actual usage. Bonding curve pricing is hardcoded in smart contracts, with fully transparent on-chain price, supply, and capacity data.
-                    </p>
-                </div>
-                <!-- Value 3 -->
-                <div class="p-6 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
-                    <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4">
-                        <i class="fa-solid fa-shield-halved text-primary text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-3">Anti-Abuse + Low Gas Fees</h3>
-                    <p class="text-textSub">
-                        Economic incentives replace rigid rate limits—bots need massive capital to exploit the curve. O(1) contract design keeps gas fees as low as $0.01 per transaction, with Layer2 support.
-                    </p>
                 </div>
             </div>
-        </div>
-    </section>
+            <!-- Background Decor -->
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 to-secondary/5 -z-10"></div>
+            <div class="absolute top-20 right-20 w-40 h-40 bg-primary/10 rounded-full -z-10"></div>
+            <div class="absolute bottom-20 left-20 w-60 h-60 bg-secondary/10 rounded-full -z-10"></div>
+        </section>
 
-
-    <!-- CTA Section -->
-    <section class="py-20 bg-primary text-white">
-        <div class="container mx-auto px-4 md:px-8 text-center">
-            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">Start Your Decentralized API Journey</h2>
-            <p class="text-white/80 mb-8 max-w-2xl mx-auto">
-                Whether you're a developer publishing APIs or a user looking for niche APIs, connect your wallet now to start your experience.
-            </p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <a href="#" class="px-8 py-3 bg-white text-primary rounded-md hover:bg-white/90 transition-colors font-medium">Publish My API</a>
-                <a href="#" class="px-8 py-3 border border-white text-white rounded-md hover:bg-white/10 transition-colors font-medium">Explore API Marketplace</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-dark text-gray-400 py-12">
-        <div class="container mx-auto px-4 md:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                <!-- Brand Info -->
-                <div>
-                    <div class="flex items-center gap-2 mb-4">
-                        <i class="fa-solid fa-link-chain text-primary text-xl"></i>
-                        <span class="text-xl font-bold text-white">API Bazaar</span>
+        <!-- Core Values Section -->
+        <section id="values" class="py-20 bg-white">
+            <div class="container mx-auto px-4 md:px-8">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-center mb-16">Why Choose API Bazaar?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Value 1 -->
+                    <div class="p-6 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
+                        <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4">
+                            <i class="fa-solid fa-book-journal-whills text-primary text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Low Commission (0~5%)</h3>
+                        <p class="text-textSub">Say goodbye to 20-30% high commissions on traditional platforms. On-chain smart contracts automate revenue sharing.</p>
                     </div>
-                    <p class="text-sm">
-                        Decentralized Marketplace for Long-Tail APIs<br>
-                        Making niche APIs monetizable, short-term needs accessible
-                    </p>
+                    <!-- Value 2 -->
+                    <div class="p-6 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
+                        <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4">
+                            <i class="fa-solid fa-chart-line text-primary text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Pay-as-You-Go, No Subscriptions</h3>
+                        <p class="text-textSub">API call rights are represented by tokens, minted based on actual usage. Bonding curve pricing is hardcoded in smart contracts.</p>
+                    </div>
+                    <!-- Value 3 -->
+                    <div class="p-6 rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
+                        <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4">
+                            <i class="fa-solid fa-shield-halved text-primary text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Anti-Abuse + Low Gas Fees</h3>
+                        <p class="text-textSub">Economic incentives replace rigid rate limits—bots need massive capital to exploit the curve. O(1) contract design keeps gas fees low.</p>
+                    </div>
                 </div>
-                <!-- Product Links -->
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Product</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition-colors">Overview</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">API Marketplace</a></li>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-20 bg-primary text-white">
+            <div class="container mx-auto px-4 md:px-8 text-center">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">Start Your Decentralized API Journey</h2>
+                <p class="text-white/80 mb-8 max-w-2xl mx-auto">Whether you're a developer publishing APIs or a user looking for niche APIs, connect your wallet now to start your experience.</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button id="ctaPublishBtn" class="px-8 py-3 bg-white text-primary rounded-md hover:bg-white/90 transition-colors font-medium">Publish My API</button>
+                    <a href="#" class="px-8 py-3 border border-white text-white rounded-md hover:bg-white/10 transition-colors font-medium">Explore API Marketplace</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="bg-dark text-gray-400 py-12">
+            <div class="container mx-auto px-4 md:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                    <!-- Brand Info -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <i class="fa-solid fa-link-chain text-primary text-xl"></i>
+                            <span class="text-xl font-bold text-white">API Bazaar</span>
+                        </div>
+                        <p class="text-sm">Decentralized Marketplace for Long-Tail APIs<br>Making niche APIs monetizable, short-term needs accessible</p>
+                    </div>
+                    <!-- Product Links -->
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Product</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-white transition-colors">Overview</a></li>
+                            <li><a href="#" class="hover:text-white transition-colors">API Marketplace</a></li>
+                        </ul>
+                    </div>
+                    <!-- Developer Resources -->
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Developer Resources</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
+                        </ul>
+                    </div>
+                    <!-- Social Links -->
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Connect With Us</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-brands fa-twitter"></i> Twitter/X</a></li>
+                            <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-brands fa-telegram"></i> Telegram</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Copyright -->
+                <div class="pt-8 border-t border-gray-700 text-center text-sm">© 2026 API Bazaar. All rights reserved. Built on blockchain technology.</div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Developer Dashboard Page (Hidden by Default) -->
+    <div id="dashboardPage" class="hidden">
+        <div class="flex h-screen overflow-hidden">
+            <!-- Sidebar -->
+            <aside class="w-64 bg-white shadow-md flex-shrink-0 h-full overflow-y-auto">
+                <!-- Brand Logo -->
+                <div class="p-4 border-b flex items-center gap-2">
+                    <i class="fa-solid fa-link-chain text-primary text-xl"></i>
+                    <span class="text-xl font-bold">API Bazaar</span>
+                </div>
+                
+                <!-- Sidebar Navigation -->
+                <nav class="py-4">
+                    <ul class="space-y-1 px-2">
+                        <li><a href="#dashboard" class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a></li>
+                        <li><a href="#publish-api" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-cloud-upload"></i><span>Publish New API</span></a></li>
+                        <li><a href="#my-apis" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-list-code"></i><span>My APIs</span></a></li>
+                        <li><a href="#earnings" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-sack-dollar"></i><span>Earnings</span></a></li>
+                        <li><a href="#settings" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-gear"></i><span>Settings</span></a></li>
                     </ul>
+                </nav>
+                
+                <!-- Wallet Info -->
+                <div class="px-4 py-6 border-t mt-auto">
+                    <div class="bg-light rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium">Connected Wallet</span>
+                            <span class="text-xs px-2 py-1 bg-success/10 text-success rounded-full">Active</span>
+                        </div>
+                        <p id="dashboardWalletAddr" class="text-sm text-textSub truncate">Not Connected</p>
+                        <button id="disconnectWallet" class="mt-3 w-full px-3 py-2 text-sm bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-right-from-bracket text-xs"></i><span>Disconnect</span>
+                        </button>
+                        <button id="backToHome" class="mt-2 w-full px-3 py-2 text-sm bg-gray-100 text-textSub rounded-md hover:bg-gray-200 transition-colors">
+                            <i class="fa-solid fa-house mr-1"></i> Back to Home
+                        </button>
+                    </div>
                 </div>
-                <!-- Developer Resources -->
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Developer Resources</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
-                    </ul>
-                </div>
-                <!-- Social Links -->
-                <div>
-                    <h4 class="text-white font-semibold mb-4">Connect With Us</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-brands fa-twitter"></i> Twitter/X</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-brands fa-telegram"></i> Telegram</a></li>
-                    </ul>
-                </div>
-            </div>
-            <!-- Copyright -->
-            <div class="pt-8 border-t border-gray-700 text-center text-sm">
-                © 2026 API Bazaar. All rights reserved. Built on blockchain technology, compatible with EVM chains.
-            </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="flex-1 overflow-y-auto bg-light p-6">
+                <!-- Top Header -->
+                <header class="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold">Developer Dashboard</h1>
+                        <p class="text-textSub text-sm">Manage your APIs and track earnings</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <!-- Notification Icon -->
+                        <button class="relative p-2 rounded-full hover:bg-white transition-colors"><i class="fa-solid fa-bell text-textSub"></i><span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span></button>
+                        <!-- User Avatar -->
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><span class="text-xs font-medium" id="dashboardUser">UN</span></div>
+                            <span class="text-sm font-medium hidden md:block" id="dashboardUsername">Guest User</span>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Dashboard Statistics Section -->
+                <section id="dashboard" class="mb-8 animate-fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <!-- Total APIs Card -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-textSub text-sm">Total APIs</p><h3 class="text-3xl font-bold mt-1">5</h3><p class="text-success text-xs mt-2"><i class="fa-solid fa-arrow-up mr-1"></i> 2 from last month</p></div>
+                                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fa-solid fa-code"></i></div>
+                            </div>
+                        </div>
+                        <!-- Total API Calls Card -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-textSub text-sm">Total API Calls</p><h3 class="text-3xl font-bold mt-1">1,289</h3><p class="text-success text-xs mt-2"><i class="fa-solid fa-arrow-up mr-1"></i> 15% from last week</p></div>
+                                <div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary"><i class="fa-solid fa-receipt"></i></div>
+                            </div>
+                        </div>
+                        <!-- Total Earnings Card -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-textSub text-sm">Total Earnings (USD)</p><h3 class="text-3xl font-bold mt-1">$128.90</h3><p class="text-success text-xs mt-2"><i class="fa-solid fa-arrow-up mr-1"></i> $45.20 from last month</p></div>
+                                <div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success"><i class="fa-solid fa-sack-dollar"></i></div>
+                            </div>
+                        </div>
+                        <!-- Pending Withdrawal Card -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <div class="flex justify-between items-start">
+                                <div><p class="text-textSub text-sm">Pending Withdrawal</p><h3 class="text-3xl font-bold mt-1">$89.50</h3><button class="text-warning text-xs mt-2 flex items-center hover:underline"><i class="fa-solid fa-money-bill-transfer mr-1"></i> Withdraw now</button></div>
+                                <div class="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center text-warning"><i class="fa-solid fa-wallet"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Earnings Chart + Recent API Calls -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Earnings Trend Chart -->
+                        <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-semibold">Earnings Trend (Last 30 Days)</h3>
+                                <div class="flex gap-2">
+                                    <button class="px-3 py-1 text-xs bg-primary/10 text-primary rounded-md">Week</button>
+                                    <button class="px-3 py-1 text-xs bg-light text-textSub rounded-md">Month</button>
+                                    <button class="px-3 py-1 text-xs bg-light text-textSub rounded-md">Year</button>
+                                </div>
+                            </div>
+                            <div class="h-64"><canvas id="earningsChart"></canvas></div>
+                        </div>
+
+                        <!-- Recent API Calls List -->
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="font-semibold mb-4">Recent API Calls</h3>
+                            <div class="space-y-4 max-h-64 overflow-y-auto">
+                                <div class="border-b pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">Wallet Risk API</span><span class="text-success text-xs">Success</span></div><p class="text-textSub text-xs">0x123...456 • 0.01 USD</p><p class="text-textSub text-xs">2 hours ago</p></div>
+                                <div class="border-b pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">Contract Scan API</span><span class="text-success text-xs">Success</span></div><p class="text-textSub text-xs">0x789...012 • 0.02 USD</p><p class="text-textSub text-xs">5 hours ago</p></div>
+                            </div>
+                            <button class="w-full mt-4 px-4 py-2 text-sm border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">View All Calls</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Publish New API Form (Hidden by Default) -->
+                <section id="publish-api" class="hidden animate-fade-in">
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <h2 class="text-xl font-bold mb-4">Publish New API</h2>
+                        <form class="space-y-6">
+                            <!-- Basic Info -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label class="block text-sm font-medium mb-1">API Name *</label><input type="text" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none" placeholder="e.g. Wallet Risk Assessment API"></div>
+                                <div><label class="block text-sm font-medium mb-1">API Category *</label><select class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none"><option value="">Select Category</option><option value="web3">Web3 / Blockchain</option></select></div>
+                            </div>
+                            <!-- Form Buttons -->
+                            <div class="flex justify-end gap-4 pt-4">
+                                <button type="button" class="px-6 py-2 border border-gray-300 text-textSub rounded-md hover:bg-light">Save as Draft</button>
+                                <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center gap-2"><i class="fa-solid fa-cloud-upload"></i>Publish API</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+            </main>
         </div>
-    </footer>
+    </div>
 
     <!-- JavaScript -->
     <script>
-        // Navbar Scroll Effect
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('nav-scrolled');
-            } else {
-                navbar.classList.remove('nav-scrolled');
-            }
+        // Global Variables
+        let isLoggedIn = false;
+        let userData = { role: '', username: '', wallet: '' };
+        const mainPage = document.getElementById('mainPage');
+        const dashboardPage = document.getElementById('dashboardPage');
+
+        // 1. Auth Modal Logic
+        const authModal = document.getElementById('authModal');
+        const closeModal = document.getElementById('closeModal');
+        const loginBtnMain = document.getElementById('loginBtnMain');
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const providerBtn = document.getElementById('providerBtn');
+        const buyerBtn = document.getElementById('buyerBtn');
+        const userRole = document.getElementById('userRole');
+
+        // Open/Close Modal
+        loginBtnMain.addEventListener('click', () => authModal.classList.add('modal-active'));
+        closeModal.addEventListener('click', () => authModal.classList.remove('modal-active'));
+        authModal.addEventListener('click', (e) => e.target === authModal && authModal.classList.remove('modal-active'));
+
+        // Tab Switching
+        registerTab.addEventListener('click', () => {
+            loginTab.classList.remove('border-primary', 'text-primary');
+            registerTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        });
+        loginTab.addEventListener('click', () => {
+            registerTab.classList.remove('border-primary', 'text-primary');
+            loginTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
         });
 
-        // Mobile Menu Toggle
+        // Register Role Switch
+        providerBtn.addEventListener('click', () => {
+            providerBtn.classList.add('bg-primary/10', 'border-primary', 'text-primary');
+            buyerBtn.classList.remove('bg-primary/10', 'border-primary', 'text-primary');
+            userRole.value = 'provider';
+        });
+        buyerBtn.addEventListener('click', () => {
+            buyerBtn.classList.add('bg-primary/10', 'border-primary', 'text-primary');
+            providerBtn.classList.remove('bg-primary/10', 'border-primary', 'text-primary');
+            userRole.value = 'buyer';
+        });
+
+        // Simulate Login & Register
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            isLoggedIn = true;
+            userData.username = document.getElementById('loginEmail').value.split('@')[0] || 'User';
+            userData.role = 'provider';
+            authModal.classList.remove('modal-active');
+            updateUI();
+        });
+        document.getElementById('registerBtn').addEventListener('click', () => {
+            isLoggedIn = true;
+            userData.username = document.getElementById('regUsername').value || 'NewUser';
+            userData.role = userRole.value;
+            authModal.classList.remove('modal-active');
+            updateUI();
+        });
+
+        // 2. MetaMask Wallet Connection
+        const connectWalletBtn = document.getElementById('connectWalletBtn');
+        const dashboardWalletAddr = document.getElementById('dashboardWalletAddr');
+        connectWalletBtn.addEventListener('click', async () => {
+            if (!window.ethereum) { alert('Please install MetaMask!'); return; }
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                userData.wallet = accounts[0];
+                connectWalletBtn.innerHTML = `<i class="fa-solid fa-wallet"></i><span>${accounts[0].slice(0,6)}...${accounts[0].slice(-4)}</span>`;
+                dashboardWalletAddr.textContent = `${accounts[0].slice(0,6)}...${accounts[0].slice(-4)}`;
+                alert('Wallet connected & bound to account successfully!');
+                updateUI();
+            } catch (error) {
+                console.error(error);
+            }
+        });
+        document.getElementById('disconnectWallet').addEventListener('click', () => {
+            userData.wallet = '';
+            connectWalletBtn.innerHTML = `<i class="fa-solid fa-wallet"></i><span>Connect Wallet</span>`;
+            dashboardWalletAddr.textContent = 'Not Connected';
+        });
+
+        // 3. Page Navigation: Home → Dashboard
+        document.getElementById('goToDashboardBtn').addEventListener('click', goToDashboard);
+        document.getElementById('ctaPublishBtn').addEventListener('click', goToDashboard);
+        function goToDashboard() {
+            if(!isLoggedIn){ authModal.classList.add('modal-active'); return; }
+            mainPage.classList.add('hidden');
+            dashboardPage.classList.remove('hidden');
+        }
+        // Dashboard → Home
+        document.getElementById('backToHome').addEventListener('click', () => {
+            dashboardPage.classList.add('hidden');
+            mainPage.classList.remove('hidden');
+        });
+
+        // 4. Initialize Earnings Chart
+        window.onload = function() {
+            const ctx = document.getElementById('earningsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line', data: {
+                    labels: ['1','5','10','15','20','25','30'],
+                    datasets: [{ label: 'Daily Earnings', data: [2.5,3.8,4.2,3.5,5.1,4.8,5.5], borderColor: '#5E6AD2', backgroundColor: 'rgba(94,106,210,0.1)', fill: true, tension: 0.4 }]
+                }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        };
+
+        // 5. Sidebar Navigation
+        const navLinks = document.querySelectorAll('aside nav a');
+        const sections = document.querySelectorAll('main > section');
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navLinks.forEach(nav => nav.classList.remove('sidebar-active'));
+                link.classList.add('sidebar-active');
+                sections.forEach(sec => sec.classList.add('hidden'));
+                document.querySelector(link.getAttribute('href')).classList.remove('hidden');
+            });
+        });
+
+        // 6. Update UI After Login/Wallet Connect
+        function updateUI() {
+            document.getElementById('dashboardUsername').textContent = userData.username;
+            document.getElementById('dashboardUser').textContent = userData.username.slice(0,2).toUpperCase();
+            loginBtnMain.textContent = isLoggedIn ? userData.username : 'Login';
+        }
+
+        // Original Navbar Scroll Logic
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => navbar.classList.toggle('nav-scrolled', window.scrollY > 50));
         const menuBtn = document.getElementById('menuBtn');
         const mobileMenu = document.getElementById('mobileMenu');
         menuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
             const icon = menuBtn.querySelector('i');
-            if (mobileMenu.classList.contains('hidden')) {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            } else {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            }
-        });
-
-        // FAQ Toggle
-        const faqBtns = document.querySelectorAll('.faq-btn');
-        faqBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const content = btn.nextElementSibling;
-                const icon = btn.querySelector('i');
-                
-                content.classList.toggle('hidden');
-                icon.classList.toggle('rotate-180');
-                
-                // Close Other FAQs
-                faqBtns.forEach(otherBtn => {
-                    if (otherBtn !== btn) {
-                        otherBtn.nextElementSibling.classList.add('hidden');
-                        otherBtn.querySelector('i').classList.remove('rotate-180');
-                    }
-                });
-            });
-        });
-
-        // Smooth Scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 80,
-                        behavior: 'smooth'
-                    });
-                    
-                    // Close Mobile Menu
-                    mobileMenu.classList.add('hidden');
-                    const icon = menuBtn.querySelector('i');
-                    icon.classList.remove('fa-times');
-                    icon.classList.add('fa-bars');
-                }
-            });
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
         });
     </script>
 </body>
