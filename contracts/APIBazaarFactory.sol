@@ -38,7 +38,6 @@ contract APIBazaarFactory{
         string name;
         string symbol;
         string endpoint;
-        bool active;
         uint256 createdAt;
     }
 
@@ -48,8 +47,10 @@ contract APIBazaarFactory{
     // Map provider's wallet address to list of all API contract addresses they have created
     mapping(address => address[]) private providerListings;
 
-    // Event for creation of listing
+    // Events
     event createdListing(address indexed provider, address indexed apiListing, string name, string symbol, string endpoint);
+    event terminationQueued(address indexed apiListing);
+    event listingSettled(address indexed apiListing);
     
     // Creates a new API listing on the marketplace with params given by provider
     // @param name Readable name of API 
@@ -76,7 +77,7 @@ contract APIBazaarFactory{
         require(basePrice > 0, "Base Price must be > 0");
 
         // Call function from APIProviderLogic.sol
-        APIProviderLogic apiContract = new APIProviderLogic(msg.sender, name, symbol, capacity, basePrice);
+        APIProviderLogic apiContract = new APIProviderLogic(msg.sender, address(this), name, symbol, capacity, basePrice);
 
         // Increment the total listing count
         totalListings += 1;
@@ -91,7 +92,6 @@ contract APIBazaarFactory{
             name: name,
             symbol: symbol,
             endpoint: endpoint,
-            active: true,
             createdAt: block.timestamp
         });
 
@@ -121,15 +121,76 @@ contract APIBazaarFactory{
         return providerListings[provider];
     }
 
-    // function terminateListing(address apiListing) external returns (bool) {
-        // TODO: create function that terminates API listing
-        // Need to implement some way of ensuring that contract can only be terminated at the start of next time period / refresh
+    function isListingTerminated(address apiListing) external view returns (bool) {
+        require(listings[apiListing].apiListing != address(0), "Listing does not exist");
+        return APIProviderLogic(payable(apiListing)).isTerminated();
+    }
+
+    function settleExpiredCredits(address apiListing) external returns (bool) {
+
+        // Ensure listing exists 
+        require(listings[apiListing].apiListing != address(0), "Listing does not exist");
+
+        // Call settlement in APIProviderLogic
+        APIProviderLogic(payable(apiListing)).settleDay();
+        emit listingSettled(apiListing);
+        return true;
+    }
+
+    // TODO: Potentially implement a way to change the time parameters?
+
+    // function deactivateListing(address provider) external returns (bool) {
+
+        // require msg.sender is same provider address in contract 
+        // require contract address is not zero address
+
+        // call queueDeactivation in APIProviderLogic
+
     // }
 
-    // function changeParameters(address provider, uint256 param1, uint256 param2, uint256 capacity) external returns (bool) {
-        // TODO: create function that allows provider to change parameters. 
-        // Need to ensure that this cannot change mid time period
-    // }
+    // function reactivateListing(address provider) external returns (bool) {
+
+        // require msg.sender is same provider address in contract 
+        // require contract address is not zero address
+
+        // call queueReactivation in APIProviderLogic
+
+    // }   
+
+    // We want termination only when the next day begins, but cannot run a constant loop. 
+    // Instead, make so termination is only allowed when the first person attempts to purchase a token on a new day
+    function terminateListing(address apiListing) external returns (bool) {
+        // Message sender must have same wallet address as the wallet address associated with the contract wanting to be terminated therefore msg.sender must equal contractData[provider]
+        require(listings[apiListing].provider == msg.sender, "Not owner of API listing");
+        require(listings[apiListing].apiListing != address(0), "Cannot be zero address");
+        
+        APIProviderLogic apiContract = APIProviderLogic(payable(apiListing));
+
+        // Use the live state of the listing for checks
+        require(!apiContract.isTerminated(), "Listing already terminated");
+        require(apiContract.terminationDay() == 0, "Listing already queued");
+
+        // Queue / immediately terminate the contract 
+        apiContract.queueTermination();
+        emit terminationQueued(apiListing);
+        return true;
+    }
+
+    // NOTE: THIS MUST BE UPDATED WELL IN THE FRONTEND... OTHERWISE SOMEBODY COULD BE BUYING INTO A DIFFERENT CURVE THAN THEY'RE SEEING
+    // function changeParameters(address apiListing, uint256 basePrice, uint256 capacity) external returns (bool) {
+        
+        // require msg.sender is same provider address in contract 
+        // require contract address is not zero address
+
+        // call queueChangeParams in APIProviderLogic that executes param change at start of new day
+
+    // }    
+
+    // TODO: Need some method of withdrawing credits and taking a cut
+    // Do we want to allow people to withdraw credits? Need frontend to explain how to withdraw credits, and show how many credits they have
+
+    // TODO: How do we deal with refunds? I.e., if provider fails to accept API request, then can we automate refunds via API Gateway calling something in smart contract?
+
 
 }
 

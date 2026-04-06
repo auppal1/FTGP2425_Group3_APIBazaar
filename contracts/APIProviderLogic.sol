@@ -9,14 +9,27 @@ contract APIProviderLogic {
     uint8 public constant decimals = 0;
 
     // Bonding Curve Parameters
-    uint256 public immutable capacity;
-    uint256 public immutable basePrice;
+    uint256 public capacity;
+    uint256 public basePrice;
 
     // Initialise balance of ETH stored in this contract
     uint256 public reserveBalance = 0;  //initial balance is 0
 
     // Owner as contract needs administrative control
     address public immutable provider;
+
+    // Factory address also needs administative control
+    address public immutable factory;
+
+    // Tracks the last day settlement logic was processed
+    uint256 public lastSettledDay;
+
+    // Tracks the last day of marketplace usage / activity
+    uint256 public lastUsageDay;
+
+    // State variables for terminating listings
+    uint256 public terminationDay = 0;      // 0 termination day means no termination has been queued
+    bool public terminated;
 
     // Mapping for withdrawals
     mapping(address => uint256) public credits;
@@ -30,6 +43,11 @@ contract APIProviderLogic {
     event Credited(address indexed to, uint256 value);
     event Withdrawn(address indexed to, uint256 value);
     event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
+    event TerminationQueued();
+    event ListingTerminated();
+
+    // Number of seconds in a day - used in currentDay() function
+    uint256 public constant dailySeconds = 24 * 60 * 60;
 
     // Function for getting the current day
     // Returns the number of days since unix epoch
@@ -37,33 +55,27 @@ contract APIProviderLogic {
         return block.timestamp / dailySeconds;
     }
 
-    // State variable that tracks the last active day (for transfering expired reserves to provider credits)
-    uint256 public lastActiveDay;
-
     // CONSTRUCTOR
     // Initialise parameters based on provider's params set in APIBazaarFactory.sol
     constructor(
         address provider_,
+        address factory_,
         string memory tokenName_,
         string memory tokenSymbol_,
         uint256 capacity_,
         uint256 basePrice_
         ) {
         // Initialise parameters from APIBazaarFactory.sol
-        capacity = capacity_;
-        basePrice = basePrice_;
         provider = provider_;
+        factory = factory_;
         tokenName = tokenName_;
         tokenSymbol = tokenSymbol_;
+        capacity = capacity_;
+        basePrice = basePrice_;
 
         // Construct last active day on contract instantiation
-        lastActiveDay = currentDay();
+        lastSettledDay = currentDay();
     }
-
-
-    // Number of seconds in a day - used in currentDay() function
-    uint256 public constant dailySeconds = 24 * 60 * 60;
-
 
     // FUNCTIONS
 
@@ -77,16 +89,14 @@ contract APIProviderLogic {
         return balanceByDay[currentDay()][user];
     }
 
-    // Function to transfer yesterday's reserves into providers credits
-    // Tokens are useless the next day, therefore value of unused credits in reserves should be given to provider
-    // Should be called any time 
-    function expiredReservesToCredits() internal {
+    // Function to handle all updates at the start of the new day to be called at the start of all state changing functions
+    function newDayProcess() internal {
 
         // Get the current day
         uint256 day = currentDay();
 
-        // If the current day is newer than the last active day 
-        if (lastActiveDay < day) {
+        // If we are now in a new day (greater than the last settled day)
+        if (lastSettledDay < day) {
             uint256 expiredReserves = reserveBalance;
 
             // If there are leftover reserves, then credit the provider with that amount
@@ -96,10 +106,57 @@ contract APIProviderLogic {
                 emit Credited(provider, expiredReserves);
             }
 
-        // CRUCIAL: to make sure the day we track keeps updating, set lastActiveDay to the current day 
-        lastActiveDay = day;
+            // If termination queued, switch terminated to true once the termination day has been reached.
+            if (!terminated && terminationDay != 0 && day >= terminationDay) {
+                terminated = true;
+                emit ListingTerminated();
+            }
+
+            // CRUCIAL: to make sure the day we track keeps updating, set lastSettledDay to the current day 
+            lastSettledDay = day;
         }
     } 
+
+    // Function can be called by gateway or frontend periodically to manually transfer expired credits to provider
+    function settleDay() external {
+        newDayProcess();
+    }
+
+        // Function that indicates whether the contract has been terminated or not
+    function isTerminated() public view returns (bool) {
+        if (terminated) {
+            return true;
+        }
+        if (terminationDay != 0 && currentDay() >= terminationDay) {
+            return true;
+        }
+        return false;
+    }
+
+    // Function that queues a termination that should be activated in the next stale day 
+    function queueTermination () external {
+        require(msg.sender == factory, "Only factory can call function");
+        require(terminationDay == 0, "Termination already queued");
+        require(!isTerminated(), "Contract already terminated");
+        
+        // Immediately terminate only if there has been no usage this day
+        if (lastUsageDay < currentDay()) {
+
+            // settle old reserves
+            newDayProcess();
+
+            // update states
+            terminated = true;
+            emit ListingTerminated();
+        }
+
+        // Otherwise, queue termination for tomorrow
+        else {
+            terminationDay = currentDay() + 1;
+            emit TerminationQueued();
+        }
+    }
+
 
     // Function to calculate token purchase price using bonding curve
     function getPurchasePrice(uint256 amount) public view returns(uint256) {
@@ -204,10 +261,13 @@ contract APIProviderLogic {
     }
 
     // Function to mint/enable buying of new tokens
-    function buyTokens(uint256 amount) public payable {
+    function buyTokens(uint256 amount) public payable returns (bool) {
 
-        // If there are expired tokens from the last day, credit them to provider
-        expiredReservesToCredits();
+        // Ensure contract has not been terminated:
+        require(!isTerminated(), "Contract has been terminated");
+
+        // Process day rollover logic before continuing
+        newDayProcess();
 
         // get the current day
         uint256 day = currentDay();
@@ -226,21 +286,27 @@ contract APIProviderLogic {
         reserveBalance += purchasePrice;
         emit Transfer(address(0), recipient, amount);
 
+        // update the day there has been usage
+        lastUsageDay = day;
+
         // refund user if sends more than purchase price 
         uint256 refund = msg.value - purchasePrice;
         if (refund > 0) {
             credits[recipient] += refund;
             emit Credited(recipient, refund);
         }
-        
+        return true;     
     }
     
-
+    // TODO: Decide whether to burn at constant rate to stop people speculative trading the token
     // Function to burn/enable selling of tokens
-    function sellTokens(uint256 amount) public {
+    function sellTokens(uint256 amount) public returns (bool) {
 
-        // If there are expired tokens from the last day, credit them to provider
-        expiredReservesToCredits();
+        // Ensure contract has not been terminated:
+        require(!isTerminated(), "Contract has been terminated");
+
+        // Process day rollover logic before continuing
+        newDayProcess();
 
         // get the current day
         uint256 day = currentDay();
@@ -259,6 +325,9 @@ contract APIProviderLogic {
         balanceByDay[day][seller] -= amount; 
         emit Transfer(seller, address(0), amount);
 
+        // update the day there has been usage
+        lastUsageDay = day;
+
         // credit the seller 
         credits[seller] += salePrice;
         emit Credited(seller, salePrice);
@@ -266,18 +335,23 @@ contract APIProviderLogic {
         // update the reserve balance of this contract
         reserveBalance -= salePrice;
 
+        return true;
+
     }
 
     // Function for consuming tokens when API call has been accepted
     // Should only be called by the owner of contract (or API gateway), to prevent users consuming other users' tokens
     function consumeTokens (address user, uint256 amount) external returns (bool) {
 
-        // If there are expired tokens from the last day, credit them to provider
-        expiredReservesToCredits();
+        // Ensure contract has not been terminated:
+        require(!isTerminated(), "Contract has been terminated");
 
         // ensure only owner can call this function
         require(msg.sender == provider, "Only provider can consume tokens");
 
+        // Process day rollover logic before continuing
+        newDayProcess();
+        
         // get the current day
         uint256 day = currentDay();
 
@@ -299,6 +373,9 @@ contract APIProviderLogic {
         supplyByDay[day] -= amount;
         balanceByDay[day][user] -= amount;
 
+        // update the day there has been usage
+        lastUsageDay = day;
+
         // credit the provider with the value consumed
         credits[provider] += consumePrice;
         
@@ -311,8 +388,8 @@ contract APIProviderLogic {
 
     function withdraw() external returns (bool) {
 
-        // If there are expired tokens from the last day, credit them to provider
-        expiredReservesToCredits();
+        // Process day rollover logic before continuing
+        newDayProcess();
 
         uint256 value = credits[msg.sender];
         require(value > 0, "No credits to withdraw");
