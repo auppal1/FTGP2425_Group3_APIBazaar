@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract APIProviderLogic {
+contract APIListing {
 
     // Metadata
     string public tokenName;
@@ -18,8 +18,8 @@ contract APIProviderLogic {
     // Owner as contract needs administrative control
     address public immutable provider;
 
-    // Factory address also needs administative control
-    address public immutable factory;
+    // Registry address also needs administative control
+    address public immutable registry;
 
     // Tracks the last day settlement logic was processed
     uint256 public lastSettledDay;
@@ -67,7 +67,7 @@ contract APIProviderLogic {
     // Initialise parameters based on provider's params set in APIBazaarFactory.sol
     constructor(
         address provider_,
-        address factory_,
+        address registry_,
         string memory tokenName_,
         string memory tokenSymbol_,
         uint256 capacity_,
@@ -75,7 +75,7 @@ contract APIProviderLogic {
         ) {
         // Initialise parameters from APIBazaarFactory.sol
         provider = provider_;
-        factory = factory_;
+        registry = registry_;
         tokenName = tokenName_;
         tokenSymbol = tokenSymbol_;
         capacity = capacity_;
@@ -99,7 +99,7 @@ contract APIProviderLogic {
 
     // Function that queues a termination that should be activated in the next stale day 
     function queueTermination () external {
-        require(msg.sender == factory, "Only factory can call function");
+        require(msg.sender == provider, "Only provider can call function");
         require(terminationDay == 0, "Termination already queued");
         require(!isTerminated(), "Contract already terminated");
         
@@ -134,9 +134,13 @@ contract APIProviderLogic {
 
     // Function to queue a parameter change
     function queueParameterChange(uint256 newCapacity, uint256 newBasePrice) external {
-        require(msg.sender == factory, "Only factory can call function");
+        require(msg.sender == provider, "Only provider can call function");
         require(!isTerminated(), "Contract has been terminated");
         require(changeParamsDay == 0, "Parameter change has already been queued");
+
+        // enforce adequate parameter values 
+        require(newCapacity > 0, "Capacity must be > 0");
+        require(newBasePrice > 0, "Base Price must be > 0");
 
         // update pending param values
         pendingCapacity = newCapacity;
