@@ -31,6 +31,11 @@ contract APIProviderLogic {
     uint256 public terminationDay = 0;      // 0 termination day means no termination has been queued
     bool public terminated;
 
+    // State variables for changing parameters
+    uint256 public changeParamsDay = 0;    // 0 change params day means no param changes have been queued
+    uint256 public pendingBasePrice;
+    uint256 public pendingCapacity;
+
     // Mapping for withdrawals
     mapping(address => uint256) public credits;
 
@@ -45,6 +50,9 @@ contract APIProviderLogic {
     event Consumed(address indexed user, uint256 amount,  uint256 indexed day);
     event TerminationQueued();
     event ListingTerminated();
+    event ParametersQueued(uint256 basePrice, uint256 capacity, uint256 changeParamsDay);
+    event ParametersChanged(uint256 basePrice, uint256 capacity);
+    
 
     // Number of seconds in a day - used in currentDay() function
     uint256 public constant dailySeconds = 24 * 60 * 60;
@@ -89,50 +97,6 @@ contract APIProviderLogic {
         return balanceByDay[currentDay()][user];
     }
 
-    // Function to handle all updates at the start of the new day to be called at the start of all state changing functions
-    function newDayProcess() internal {
-
-        // Get the current day
-        uint256 day = currentDay();
-
-        // If we are now in a new day (greater than the last settled day)
-        if (lastSettledDay < day) {
-            uint256 expiredReserves = reserveBalance;
-
-            // If there are leftover reserves, then credit the provider with that amount
-            if (expiredReserves > 0) {
-                reserveBalance = 0;
-                credits[provider] += expiredReserves;
-                emit Credited(provider, expiredReserves);
-            }
-
-            // If termination queued, switch terminated to true once the termination day has been reached.
-            if (!terminated && terminationDay != 0 && day >= terminationDay) {
-                terminated = true;
-                emit ListingTerminated();
-            }
-
-            // CRUCIAL: to make sure the day we track keeps updating, set lastSettledDay to the current day 
-            lastSettledDay = day;
-        }
-    } 
-
-    // Function can be called by gateway or frontend periodically to manually transfer expired credits to provider
-    function settleDay() external {
-        newDayProcess();
-    }
-
-        // Function that indicates whether the contract has been terminated or not
-    function isTerminated() public view returns (bool) {
-        if (terminated) {
-            return true;
-        }
-        if (terminationDay != 0 && currentDay() >= terminationDay) {
-            return true;
-        }
-        return false;
-    }
-
     // Function that queues a termination that should be activated in the next stale day 
     function queueTermination () external {
         require(msg.sender == factory, "Only factory can call function");
@@ -157,6 +121,82 @@ contract APIProviderLogic {
         }
     }
 
+        // Function that indicates whether the contract has been terminated or not
+    function isTerminated() public view returns (bool) {
+        if (terminated) {
+            return true;
+        }
+        if (terminationDay != 0 && currentDay() >= terminationDay) {
+            return true;
+        }
+        return false;
+    }
+
+    // Function to queue a parameter change
+    function queueParameterChange(uint256 newCapacity, uint256 newBasePrice) external {
+        require(msg.sender == factory, "Only factory can call function");
+        require(!isTerminated(), "Contract has been terminated");
+        require(changeParamsDay == 0, "Parameter change has already been queued");
+
+        // update pending param values
+        pendingCapacity = newCapacity;
+        pendingBasePrice = newBasePrice;
+        changeParamsDay = currentDay() + 1;
+        emit ParametersQueued(pendingBasePrice, pendingCapacity, changeParamsDay);
+    }
+
+    function getActiveParameters() public view returns (uint256 activeCapacity, uint256 activeBasePrice) {
+        if (changeParamsDay != 0 && currentDay() >= changeParamsDay) {
+            return (pendingCapacity, pendingBasePrice);
+        }
+        return(capacity, basePrice);
+    }
+
+    // Function to handle all updates at the start of the new day to be called at the start of all state changing functions
+    function newDayProcess() internal {
+
+        // Get the current day
+        uint256 day = currentDay();
+
+        // If we are now in a new day (greater than the last settled day)
+        if (lastSettledDay < day) {
+            uint256 expiredReserves = reserveBalance;
+
+            // If there are leftover reserves, then credit the provider with that amount
+            if (expiredReserves > 0) {
+                reserveBalance = 0;
+                credits[provider] += expiredReserves;
+                emit Credited(provider, expiredReserves);
+            }
+
+            // If termination queued, switch terminated to true once the termination day has been reached.
+            if (!terminated && terminationDay != 0 && day >= terminationDay) {
+                terminated = true;
+                terminationDay = 0;
+                emit ListingTerminated();
+            }
+
+            // If param change queued, change params
+            if (changeParamsDay != 0 && day >= changeParamsDay) {
+                capacity = pendingCapacity;
+                basePrice = pendingBasePrice;
+                emit ParametersChanged(pendingBasePrice, pendingCapacity);
+
+                // Reset param change states
+                changeParamsDay = 0;
+                pendingCapacity = 0;
+                pendingBasePrice = 0;
+            }
+
+            // CRUCIAL: to make sure the day we track keeps updating, set lastSettledDay to the current day 
+            lastSettledDay = day;
+        }
+    } 
+
+    // Function can be called by gateway or frontend periodically to manually transfer expired credits to provider
+    function settleDay() external {
+        newDayProcess();
+    }
 
     // Function to calculate token purchase price using bonding curve
     function getPurchasePrice(uint256 amount) public view returns(uint256) {
@@ -165,20 +205,22 @@ contract APIProviderLogic {
         uint256 day = currentDay();
         uint256 S = supplyByDay[day];
 
-        // Validate inputs
-        require(amount > 0 && amount <= capacity, "Invalid Amount");
-        require(S + amount < capacity, "Amount breaches capacity");
-        uint256 purchasePrice;
+        // Get active parameters, to accomodate for parameter changes that have just come into effect
+        (uint256 activeCapacity, uint256 activeBasePrice) = getActiveParameters();
 
+        // Validate inputs
+        require(amount > 0 && amount <= activeCapacity, "Invalid Amount");
+        require(S + amount < activeCapacity, "Amount breaches capacity");
+        uint256 purchasePrice;
 
         // Calculate price for requested number of tokens
 
         // point where curve price ceases to be constant and becomes cubic
-        uint256 stepPoint = uint256(capacity * 90/100);
+        uint256 stepPoint = uint256(activeCapacity * 90/100);
 
         if (S + amount <= stepPoint) {
             // pricing entirely follows constant portion of curve
-            purchasePrice = basePrice * amount;
+            purchasePrice = activeBasePrice * amount;
         }
         else if (S >= stepPoint) {
             // pricing enirely follows cubic portion of curve
@@ -188,7 +230,7 @@ contract APIProviderLogic {
             uint256 nonLinearContribution = curveValueAfter - curveValueBefore;
 
             // Sum the non-linear and constant components
-            purchasePrice = nonLinearContribution + (basePrice * amount); // total mint price = non-linear contribution + constant contribution
+            purchasePrice = nonLinearContribution + (activeBasePrice * amount); // total mint price = non-linear contribution + constant contribution
         }
         else {
             // if amount crosses stepPoint, find how much amount is over and under stepPoint
@@ -197,10 +239,10 @@ contract APIProviderLogic {
 
             // calculate price for the cubic portion of mint
             uint256 curveValueAfter = overAmount**4;            // cumulative cubic contribution toward overPrice 
-            uint256 overPrice = curveValueAfter + (basePrice * overAmount);    // total overPrice = cubic price contribution + constant price contribution 
+            uint256 overPrice = curveValueAfter + (activeBasePrice * overAmount);    // total overPrice = cubic price contribution + constant price contribution 
 
             // calculate price for constant portion of mint
-            uint256 underPrice = basePrice * underAmount;  // price of amount under stepPoint
+            uint256 underPrice = activeBasePrice * underAmount;  // price of amount under stepPoint
 
             // total price of minting is the price over the step + price under the step 
             purchasePrice = overPrice + underPrice;
@@ -218,19 +260,22 @@ contract APIProviderLogic {
         uint256 S = supplyByDay[day];
         uint256 salePrice;
 
+        // Get active parameters, to accomodate for parameter changes that have just come into effect
+        (uint256 activeCapacity, uint256 activeBasePrice) = getActiveParameters();
+
         // validate inputs
-        require(amount > 0 && amount <= capacity, "Invalid Amount");
+        require(amount > 0 && amount <= activeCapacity, "Invalid Amount");
         // require that user is not trying to sell more tokens than exist
         require(amount <= S, "Total token supply insufficient.");
 
         // Calculate price for requested number of tokens
 
         // point where curve price ceases to be constant and becomes cubic
-        uint256 stepPoint = uint256(capacity * 90/100);
+        uint256 stepPoint = uint256(activeCapacity * 90/100);
 
         if (S <= stepPoint) {
             // sale entirely follows constant portion of curve
-            salePrice = basePrice * amount;
+            salePrice = activeBasePrice * amount;
         }
         else if (S - amount >= stepPoint) {
             // sale entire follows cubic portion of curve
@@ -239,7 +284,7 @@ contract APIProviderLogic {
             uint256 nonLinearContribution = curveValueBefore - curveValueAfter;
 
             // sum the non-linear and constant components
-            salePrice = nonLinearContribution + (basePrice * amount);   // total burn price = non-linear contribution + constant contribution
+            salePrice = nonLinearContribution + (activeBasePrice * amount);   // total burn price = non-linear contribution + constant contribution
         }
         else {
             // if amount crosses stepPoint, find out how much is over and under stepPoint
@@ -248,10 +293,10 @@ contract APIProviderLogic {
 
             // calculate payout for cubic portion of sale
             uint256 curveValueBefore = overAmount**4;   // cumulative cubic portion before crossing stepPoint
-            uint256 overPrice = curveValueBefore + (basePrice * overAmount);    // total overPrice = cubic price contribution + constant price contribution 
+            uint256 overPrice = curveValueBefore + (activeBasePrice * overAmount);    // total overPrice = cubic price contribution + constant price contribution 
 
             // calculate payout for constant portion of sale
-            uint256 underPrice = basePrice * underAmount;
+            uint256 underPrice = activeBasePrice * underAmount;
 
             // total sale payout = price above the step + price below the step
             salePrice = overPrice + underPrice;
