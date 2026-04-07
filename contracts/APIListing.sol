@@ -18,8 +18,8 @@ contract APIListing {
     // Owner as contract needs administrative control
     address public immutable provider;
 
-    // Registry address also needs administative control
-    address public immutable registry;
+    // Need platform wallet address to take fees
+    address public immutable feeRecipient;
 
     // Tracks the last day settlement logic was processed
     uint256 public lastSettledDay;
@@ -52,6 +52,7 @@ contract APIListing {
     event ListingTerminated();
     event ParametersQueued(uint256 basePrice, uint256 capacity, uint256 changeParamsDay);
     event ParametersChanged(uint256 basePrice, uint256 capacity);
+    event FeePaid(address indexed treasury, uint256 amount);
     
 
     // Number of seconds in a day - used in currentDay() function
@@ -67,7 +68,7 @@ contract APIListing {
     // Initialise parameters based on provider's params set in APIBazaarFactory.sol
     constructor(
         address provider_,
-        address registry_,
+        address feeRecipient_,
         string memory tokenName_,
         string memory tokenSymbol_,
         uint256 capacity_,
@@ -75,7 +76,7 @@ contract APIListing {
         ) {
         // Initialise parameters from APIBazaarFactory.sol
         provider = provider_;
-        registry = registry_;
+        feeRecipient = feeRecipient_;
         tokenName = tokenName_;
         tokenSymbol = tokenSymbol_;
         capacity = capacity_;
@@ -95,6 +96,33 @@ contract APIListing {
     // View function for the current balance of a user (by day)
     function getCurrentDayBalance (address user) public view returns (uint256) {
         return balanceByDay[currentDay()][user];
+    }
+
+    // Fee taking logic: Is called whenever provider is credited therefore revenue is realised 
+    // That is either consuming tokens, or settling expired credits during newDayProcess()
+    function splitRevenues(uint256 amount) internal {
+        
+        // Ensure amount is some positive amount
+        if (amount == 0) {
+            return;
+        }
+
+        // Calculate the fee (SET AT 5%)
+        uint256 fee = (amount * 5) / 100;
+        uint256 providerAmount = amount - fee;
+
+        // Credit the provider with their share
+        if (providerAmount > 0) {
+            credits[provider] += providerAmount;
+            emit Credited(provider, providerAmount);
+        } 
+
+        // Transfer treasury fee
+        if (fee > 0) {
+            (bool sent, ) = payable(feeRecipient).call{value: fee}("");
+            require(sent, "Fee transfer failed");
+            emit FeePaid(feeRecipient, fee);
+        }
     }
 
     // Function that queues a termination that should be activated in the next stale day 
@@ -157,6 +185,7 @@ contract APIListing {
     }
 
     // Function to handle all updates at the start of the new day to be called at the start of all state changing functions
+    // Includes: splitting expired token credits (reserves) between provider and treasury, updating termination states, updating param states
     function newDayProcess() internal {
 
         // Get the current day
@@ -165,13 +194,7 @@ contract APIListing {
         // If we are now in a new day (greater than the last settled day)
         if (lastSettledDay < day) {
             uint256 expiredReserves = reserveBalance;
-
-            // If there are leftover reserves, then credit the provider with that amount
-            if (expiredReserves > 0) {
-                reserveBalance = 0;
-                credits[provider] += expiredReserves;
-                emit Credited(provider, expiredReserves);
-            }
+            reserveBalance = 0;
 
             // If termination queued, switch terminated to true once the termination day has been reached.
             if (!terminated && terminationDay != 0 && day >= terminationDay) {
@@ -194,6 +217,11 @@ contract APIListing {
 
             // CRUCIAL: to make sure the day we track keeps updating, set lastSettledDay to the current day 
             lastSettledDay = day;
+
+            // If there are leftover reserves, then split the fees among treasury and provider
+            if (expiredReserves > 0) {  
+                splitRevenues(expiredReserves);        
+            }
         }
     } 
 
@@ -410,7 +438,7 @@ contract APIListing {
         // Ensure they have enough balance to consume
         require(balanceByDay[day][user] >= amount, "Insufficient balance to consume");
 
-        // Ensure that amount of credits is not greater than current day supply
+        // Ensure that amount of tokens is not greater than current day supply
         require(supplyByDay[day] >= amount, "Not enough supply");
 
         // reduce reserves by value that has been removed 
@@ -425,12 +453,12 @@ contract APIListing {
         // update the day there has been usage
         lastUsageDay = day;
 
-        // credit the provider with the value consumed
-        credits[provider] += consumePrice;
+        // consuming tokens => revenue realised (as the reserves are no longer backing tokens)
+        // therefore, split the realised revenue among provider and treasury
+        splitRevenues(consumePrice);
         
         emit Transfer(user, address(0), amount);
         emit Consumed(user, amount, day);
-        emit Credited(provider, consumePrice);
 
         return true;
     }

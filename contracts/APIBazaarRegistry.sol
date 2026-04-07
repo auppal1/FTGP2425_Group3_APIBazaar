@@ -9,7 +9,7 @@ pragma solidity ^0.8.0;
 interface IAPIListingDeployer {
     function deployListing (
         address provider,
-        address admin,
+        address feeRecipient,
         string calldata name,
         string calldata symbol,
         uint256 capacity,
@@ -25,16 +25,27 @@ contract APIBazaarRegistry {
     // Deployer contract address
     address public deployer;
 
+    // Treasury contract address
+    address public treasury;
+
     // Construct marketplace owner upon contract creation
     constructor() {
+        // TODO: Talk to Abhay... should this be the gateway wallet address?
         admin = msg.sender;
     }
 
     // Set deployer address after creating registry and deployment contract
     function setDeployer(address deployerAddress) external {
-        require(msg.sender == admin, "Only admin can set deployer");
+        require(msg.sender == admin, "Only admin");
         require(deployerAddress != address(0), "Zero address");
         deployer = deployerAddress;
+    }
+
+    // Set treasury address to be passed to deployer, to be passed to listing, to then take platform fees
+    function setTreasury(address treasuryAddress) external {
+        require(msg.sender == admin, "Only admin");
+        require(treasuryAddress != address(0), "Zero address");
+        treasury = treasuryAddress;
     }
 
     // Store all API listing addresses created
@@ -89,10 +100,11 @@ contract APIBazaarRegistry {
         require(capacity > 0, "Capacity must be > 0");
         require(basePrice > 0, "Base Price must be > 0");
         require(deployer != address(0), "Deployer not set");
+        require(treasury != address(0), "Treasury not set");
 
         // Deploy an API listing via APIListingDeployer.sol using deployer contract address + interface
         address apiContractAddress = IAPIListingDeployer(deployer).deployListing(
-            msg.sender, admin, name, symbol, capacity, basePrice
+            msg.sender, treasury, name, symbol, capacity, basePrice
         );
 
         // Use struct to store metadata of created contract and map to the contract address
