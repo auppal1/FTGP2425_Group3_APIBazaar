@@ -49,8 +49,9 @@ contract APIBazaarFactory{
 
     // Events
     event createdListing(address indexed provider, address indexed apiListing, string name, string symbol, string endpoint);
-    event terminationQueued(address indexed apiListing);
-    event listingSettled(address indexed apiListing);
+    event TerminationQueued(address indexed apiListing);
+    event ListingSettled(address indexed apiListing);
+    event ParametersQueued(address indexed apiListing, uint256 newBasePrice, uint256 newCapacity, uint256 day);
     
     // Creates a new API listing on the marketplace with params given by provider
     // @param name Readable name of API 
@@ -109,7 +110,7 @@ contract APIBazaarFactory{
 
     // Getter functions
     function getListing(address apiListing) external view returns (contractData memory) {
-        require(listings[apiListing].apiListing != address(0), "Listing Does Not Exist");
+        require(listings[apiListing].apiListing != address(0), "Zero address");
         return listings[apiListing];
     } 
 
@@ -122,47 +123,52 @@ contract APIBazaarFactory{
     }
 
     function isListingTerminated(address apiListing) external view returns (bool) {
-        require(listings[apiListing].apiListing != address(0), "Listing does not exist");
+        require(listings[apiListing].apiListing != address(0), "Zero address");
         return APIProviderLogic(payable(apiListing)).isTerminated();
     }
 
     function settleExpiredCredits(address apiListing) external returns (bool) {
 
         // Ensure listing exists 
-        require(listings[apiListing].apiListing != address(0), "Listing does not exist");
+        require(listings[apiListing].apiListing != address(0), "Zero address");
 
         // Call settlement in APIProviderLogic
         APIProviderLogic(payable(apiListing)).settleDay();
-        emit listingSettled(apiListing);
+        emit ListingSettled(apiListing);
         return true;
     }
 
-    // TODO: Potentially implement a way to change the time parameters?
+    function getListingParameters (address apiListing) external view returns (
+        uint256 capacity,
+        uint256 basePrice,
+        uint256 pendingCapacity,
+        uint256 pendingBasePrice,
+        uint256 liveCapacity,
+        uint256 liveBasePrice,
+        uint256 changeParamsDay
+    ){
+        require(listings[apiListing].apiListing != address(0), "Zero address");
 
-    // function deactivateListing(address provider) external returns (bool) {
+        APIProviderLogic apiContract = APIProviderLogic(payable(apiListing));
+        (uint256 activeCapacity, uint256 activeBasePrice) = apiContract.getActiveParameters();
 
-        // require msg.sender is same provider address in contract 
-        // require contract address is not zero address
-
-        // call queueDeactivation in APIProviderLogic
-
-    // }
-
-    // function reactivateListing(address provider) external returns (bool) {
-
-        // require msg.sender is same provider address in contract 
-        // require contract address is not zero address
-
-        // call queueReactivation in APIProviderLogic
-
-    // }   
+        return(
+            apiContract.capacity(),
+            apiContract.basePrice(),
+            apiContract.pendingCapacity(),
+            apiContract.pendingBasePrice(),
+            activeCapacity,
+            activeBasePrice,
+            apiContract.changeParamsDay()
+        );
+    } 
 
     // We want termination only when the next day begins, but cannot run a constant loop. 
     // Instead, make so termination is only allowed when the first person attempts to purchase a token on a new day
     function terminateListing(address apiListing) external returns (bool) {
         // Message sender must have same wallet address as the wallet address associated with the contract wanting to be terminated therefore msg.sender must equal contractData[provider]
         require(listings[apiListing].provider == msg.sender, "Not owner of API listing");
-        require(listings[apiListing].apiListing != address(0), "Cannot be zero address");
+        require(listings[apiListing].apiListing != address(0), "Zero address");
         
         APIProviderLogic apiContract = APIProviderLogic(payable(apiListing));
 
@@ -172,19 +178,31 @@ contract APIBazaarFactory{
 
         // Queue / immediately terminate the contract 
         apiContract.queueTermination();
-        emit terminationQueued(apiListing);
+        emit TerminationQueued(apiListing);
         return true;
     }
 
     // NOTE: THIS MUST BE UPDATED WELL IN THE FRONTEND... OTHERWISE SOMEBODY COULD BE BUYING INTO A DIFFERENT CURVE THAN THEY'RE SEEING
-    // function changeParameters(address apiListing, uint256 basePrice, uint256 capacity) external returns (bool) {
-        
-        // require msg.sender is same provider address in contract 
-        // require contract address is not zero address
+    function changeParameters(address apiListing, uint256 newBasePrice, uint256 newCapacity) external returns (bool) {
+        require(listings[apiListing].apiListing != address(0), "Zero address");
+        require(listings[apiListing].provider == msg.sender, "Not owner of API listing");
 
-        // call queueChangeParams in APIProviderLogic that executes param change at start of new day
+        // Validate param inputs
+        require(newCapacity > 0, "Capacity must be greater than 0");
+        require(newBasePrice > 0, "Base price must be greater than 0");
 
-    // }    
+        APIProviderLogic apiContract = APIProviderLogic(payable(apiListing));
+
+        // Use live state of the listing for checks
+        require(!apiContract.isTerminated(), "Listing terminated");
+        require(apiContract.changeParamsDay() == 0, "Parameter change already queued");
+
+        // Queue param change in APIProviderLogic
+        apiContract.queueParameterChange(newCapacity, newBasePrice);
+        emit ParametersQueued(apiListing, newBasePrice, newCapacity, apiContract.changeParamsDay());
+
+        return true;
+    }
 
     // TODO: Need some method of withdrawing credits and taking a cut
     // Do we want to allow people to withdraw credits? Need frontend to explain how to withdraw credits, and show how many credits they have
