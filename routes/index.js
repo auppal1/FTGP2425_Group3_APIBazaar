@@ -19,6 +19,36 @@ const providerUrls = {
   provider2: 'https://api.provider2.com'
 };
 
+// Checking health at specific provider endpoint
+router.get('/providers/:provider/health', async (req, res) => {
+  const { provider } = req.params;
+  const baseUrl = providerUrls[provider];
+
+  if (!baseUrl) {
+    return res.status(400).json({error:'Invalid provider'});
+  }
+try{
+  // Assumption providers expose a /health or /status endpoint
+  const url = '${baseUrl}/health';
+  const response = await axios.get(url);
+
+  return res.status(200).json({
+    provider,
+    upstreamStatus:'ok',
+    upstreamHttpStatus: response.status,
+    data: response.data
+  });
+
+} catch (error) {
+  const status = error.response ? error.response.status : 500;
+  return res.status(status).json({
+    provider,
+    upstreamStatus: 'unreachable',
+    details: error.response?.data ||error.message
+    });
+  }
+});
+
 // Rate limiter to prevent abuse
 const requestLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
