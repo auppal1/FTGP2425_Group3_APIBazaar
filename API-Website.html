@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Bazaar - Web3 API Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: '#5E6AD2', secondary: '#165DFF', dark: '#2D3748', light: '#F5F7FA', success: '#10B981', warning: '#F59E0B', danger: '#EF4444', textMain: '#1A202C', textSub: '#718096' },
+                    fontFamily: { inter: ['Inter', 'system-ui', 'sans-serif'] },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-in-out', 'float': 'float 3s ease-in-out infinite' },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } }
+                    }
+                },
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .nav-scrolled { @apply bg-white shadow-md; }
+            .sidebar-active { @apply bg-primary/10 text-primary border-l-4 border-primary; }
+            .form-input-focus { @apply ring-2 ring-primary/50 border-primary outline-none; }
+            .modal-active { @apply opacity-100 visible; pointer-events: auto; }
+            .modal-inactive { @apply opacity-0 invisible; pointer-events: none; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-light text-textMain antialiased h-screen overflow-hidden flex flex-col">
+
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 modal-inactive transition-all duration-300">
+        <div class="bg-white rounded-xl w-full max-w-md p-8 relative animate-fade-in shadow-2xl">
+            <button onclick="closeModal('authModal')" class="absolute top-4 right-4 text-textSub hover:text-textMain"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <div class="flex border-b mb-6">
+                <button id="loginTab" class="px-4 py-2 font-medium border-b-2 border-primary text-primary w-1/2" onclick="switchAuthTab('login')">Login</button>
+                <button id="registerTab" class="px-4 py-2 font-medium text-textSub w-1/2" onclick="switchAuthTab('register')">Register</button>
+            </div>
+            <div id="loginForm">
+                <h2 class="text-2xl font-bold mb-6 text-center text-primary">Welcome Back</h2>
+                <div class="space-y-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Select Role to Login</label>
+                        <div class="flex gap-4">
+                            <button onclick="selectRole('provider', this)" class="role-btn flex-1 py-3 border border-gray-200 rounded-lg flex flex-col items-center hover:bg-green-50 hover:border-green-400 transition">
+                                <span class="text-2xl mb-1">💻</span><span class="text-sm font-bold">Provider</span>
+                            </button>
+                            <button onclick="selectRole('buyer', this)" class="role-btn flex-1 py-3 border border-gray-200 rounded-lg flex flex-col items-center hover:bg-blue-50 hover:border-blue-400 transition bg-blue-50 border-blue-400 text-blue-600">
+                                <span class="text-2xl mb-1">🛒</span><span class="text-sm font-bold">Buyer</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div><label class="block text-sm font-medium mb-1">Email</label><input type="email" class="w-full px-4 py-2 border rounded-md focus:form-input-focus" value="demo@apibazaar.com"></div>
+                    <div><label class="block text-sm font-medium mb-1">Password</label><input type="password" class="w-full px-4 py-2 border rounded-md focus:form-input-focus" value="password"></div>
+                </div>
+                <button onclick="executeLogin()" class="w-full py-3 bg-primary text-white font-bold rounded-md hover:bg-primary/90 shadow-md">Enter App</button>
+            </div>
+            <div id="registerForm" class="hidden">
+                <h2 class="text-2xl font-bold mb-6 text-center text-primary">Create Account</h2>
+                <div class="space-y-4">
+                    <div><label class="block text-sm font-medium mb-1">Username</label><input type="text" class="w-full px-4 py-2 border rounded-md focus:form-input-focus"></div>
+                    <div><label class="block text-sm font-medium mb-1">Email</label><input type="email" class="w-full px-4 py-2 border rounded-md focus:form-input-focus"></div>
+                    <div><label class="block text-sm font-medium mb-1">Password</label><input type="password" class="w-full px-4 py-2 border rounded-md focus:form-input-focus"></div>
+                    <button onclick="executeLogin()" class="w-full py-3 bg-primary text-white font-bold rounded-md hover:bg-primary/90 shadow-md mt-4">Register</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="walletModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-50 modal-inactive transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-96 z-10 overflow-hidden animate-fade-in">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+                <h3 class="font-bold text-lg text-gray-800">Connect your wallet</h3>
+                <button onclick="closeModal('walletModal')" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            <div class="p-6 flex flex-col gap-4">
+                <button onclick="simulateWalletConnect('MetaMask')" class="flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition">
+                    <span class="font-bold text-gray-700">MetaMask</span><span class="text-2xl">🦊</span>
+                </button>
+                <button onclick="simulateWalletConnect('WalletConnect')" class="flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition">
+                    <span class="font-bold text-gray-700">WalletConnect</span><span class="text-2xl">🔗</span>
+                </button>
+            </div>
+            <div class="p-4 bg-gray-50 text-center text-xs text-gray-500">By connecting a wallet, you agree to API Bazaar's Terms of Service.</div>
+        </div>
+    </div>
+
+    <div id="buyApiModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-50 modal-inactive transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg z-10 overflow-hidden animate-fade-in">
+            <div class="p-5 border-b flex justify-between items-center bg-gray-50">
+                <h3 class="font-bold text-lg text-gray-800" id="buyApiTitle">Purchase API Access</h3>
+                <button onclick="closeBuyModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            <div class="p-6">
+                <div id="apiInputSection" class="mb-6">
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Input Parameters (Target Address/URL)</label>
+                    <input type="text" id="apiParamInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:form-input-focus bg-gray-50" placeholder="e.g., 0x742d...454e">
+                    <p class="text-xs text-gray-500 mt-2">Price per call: <span class="font-bold text-primary">0.01 ETH</span></p>
+                </div>
+                <div id="apiStatusSection" class="hidden mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <h4 class="font-bold text-sm mb-3 text-gray-700">Transaction Status</h4>
+                    <ul class="space-y-2 text-sm text-gray-600" id="txStatusList"></ul>
+                    <div id="apiResultBox" class="hidden mt-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm font-mono break-words"></div>
+                </div>
+                <button id="confirmBuyBtn" onclick="executeBuyFlow()" class="w-full bg-dark hover:bg-black text-white font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-bolt text-yellow-400"></i><span>Pay & Execute API</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <nav id="sharedNavbar" class="fixed top-0 left-0 w-full z-40 transition-all duration-300 bg-white shadow-sm py-4">
+        <div class="container mx-auto px-4 md:px-8 flex justify-between items-center">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('home')">
+                <i class="fa-solid fa-link-chain text-primary text-2xl"></i>
+                <span class="text-xl font-bold text-textMain">API Bazaar</span>
+            </div>
+            <div class="hidden md:flex items-center gap-8" id="navLinks">
+                <a href="#" onclick="switchView('home')" class="text-textMain hover:text-primary font-medium">Home</a>
+                <a href="#" onclick="switchView('buyer')" class="text-textMain hover:text-primary font-medium">Marketplace</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="navLoginBtn" onclick="openModal('authModal')" class="px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary/5 transition">Login</button>
+                <button id="navWalletBtn" onclick="openModal('walletModal')" class="wallet-btn px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition flex items-center gap-2">
+                    <i class="fa-solid fa-wallet"></i><span>Connect Wallet</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="mainContent" class="flex-1 overflow-y-auto mt-[72px]">
+        
+        <div id="view-home" class="block">
+            <section class="pt-20 pb-20 md:pt-32 md:pb-32 bg-light relative overflow-hidden">
+                <div class="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center gap-10">
+                    <div class="md:w-3/5 animate-fade-in">
+                        <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4 text-gray-800">Decentralized API Marketplace</h1>
+                        <p class="text-[clamp(1rem,2vw,1.25rem)] text-textSub mb-8 max-w-2xl">Purchase temporary API access seamlessly using our dynamic bonding curve pricing.</p>
+                        <div class="flex flex-wrap gap-4 mb-6">
+                            <button onclick="openModal('authModal')" class="px-8 py-3 bg-primary text-white rounded-md hover:bg-primary/90 font-bold shadow-lg">Start Building</button>
+                            <button onclick="switchView('buyer')" class="px-8 py-3 bg-white border-2 border-gray-200 text-gray-800 hover:border-gray-300 rounded-md font-bold shadow-sm">Explore APIs</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div id="view-buyer" class="hidden container mx-auto px-4 md:px-8 py-12">
+            <div class="mb-10 text-center animate-fade-in">
+                <h2 class="text-4xl font-extrabold mb-4 text-gray-800">Find the Best Web3 APIs</h2>
+                <div class="relative max-w-2xl mx-auto">
+                    <input type="text" placeholder="Search APIs..." class="w-full p-4 pl-12 border border-gray-300 rounded-lg shadow-sm focus:form-input-focus text-lg">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xl"><i class="fa-solid fa-shield-halved"></i></div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">Wallet Risk Oracle</h3>
+                    <p class="text-gray-500 text-sm mb-4">By DataSec Team</p>
+                    <div class="flex justify-between items-center border-t border-gray-100 pt-4">
+                        <div class="flex flex-col"><span class="text-xs text-gray-500">Current Price</span><span class="text-primary font-bold">0.01 ETH / call</span></div>
+                        <button onclick="initiateBuy('Wallet Risk Oracle')" class="bg-dark hover:bg-black text-white px-5 py-2 rounded-lg text-sm font-medium transition">Buy Access</button>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-xl"><i class="fa-solid fa-eye"></i></div>
+                    </div>
+                    <h3 class="text-xl font-bold mb-1">AI Video Detection</h3>
+                    <p class="text-gray-500 text-sm mb-4">By VisionAI</p>
+                    <div class="flex justify-between items-center border-t border-gray-100 pt-4">
+                        <div class="flex flex-col"><span class="text-xs text-gray-500">Current Price</span><span class="text-primary font-bold">0.05 ETH / call</span></div>
+                        <button onclick="initiateBuy('AI Video Detection')" class="bg-dark hover:bg-black text-white px-5 py-2 rounded-lg text-sm font-medium transition">Buy Access</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-provider" class="hidden h-screen w-full flex bg-light absolute top-0 left-0 z-50 overflow-hidden">
+        
+        <aside class="w-64 bg-white shadow-md flex-shrink-0 h-full flex flex-col relative z-20">
+            <div class="p-4 border-b flex items-center justify-between">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('home')">
+                    <i class="fa-solid fa-link-chain text-primary text-xl"></i>
+                    <span class="text-xl font-bold text-gray-800">API Bazaar</span>
+                </div>
+            </div>
+            <nav class="py-4 flex-1 overflow-y-auto">
+                <ul class="space-y-1 px-2">
+                    <li><button onclick="switchProviderTab('dashboard')" id="tab-dashboard" class="provider-tab w-full sidebar-active flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"><i class="fa-solid fa-gauge w-5 text-left"></i><span>Dashboard</span></button></li>
+                    <li><button onclick="switchProviderTab('publish-api')" id="tab-publish-api" class="provider-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-cloud-upload w-5 text-left"></i><span>Publish API</span></button></li>
+                    <li><button onclick="switchProviderTab('my-apis')" id="tab-my-apis" class="provider-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-list-code w-5 text-left"></i><span>My APIs</span></button></li>
+                    <li><button onclick="switchProviderTab('earnings')" id="tab-earnings" class="provider-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-sack-dollar w-5 text-left"></i><span>Earnings</span></button></li>
+                    <li><button onclick="switchProviderTab('settings')" id="tab-settings" class="provider-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-gear w-5 text-left"></i><span>Settings</span></button></li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t">
+                <button onclick="logout()" class="w-full px-3 py-2 text-sm border border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-from-bracket"></i> Exit Dashboard
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-8 bg-light h-full">
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800" id="dashTitle">Overview</h1>
+                    <p class="text-textSub text-sm mt-1">Manage your APIs and track earnings</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button id="dashWalletBtn" onclick="openModal('walletModal')" class="wallet-btn bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-full flex items-center gap-2 text-sm hover:bg-gray-300 transition">
+                        Connect Wallet
+                    </button>
+                    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border-2 border-primary/30">JD</div>
+                </div>
+            </header>
+
+            <section id="panel-dashboard" class="provider-panel animate-fade-in">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <p class="text-textSub text-sm font-medium">Total APIs</p>
+                        <h3 class="text-3xl font-bold mt-2 text-gray-800">5</h3>
+                        <p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> 2 new this month</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <p class="text-textSub text-sm font-medium">Total Calls</p>
+                        <h3 class="text-3xl font-bold mt-2 text-gray-800">1,289</h3>
+                        <p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> 15% from last week</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                        <p class="text-textSub text-sm font-medium">Total Earnings</p>
+                        <h3 class="text-3xl font-bold mt-2 text-gray-800">$128.90</h3>
+                        <p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> +$45.20</p>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 bg-gradient-to-br from-primary/5 to-transparent">
+                        <p class="text-primary text-sm font-bold">Pending Withdrawal</p>
+                        <h3 class="text-3xl font-bold mt-2 text-primary">$89.50</h3>
+                        <button onclick="switchProviderTab('earnings')" class="text-primary hover:text-blue-800 font-medium text-xs mt-2 underline">Withdraw now &rarr;</button>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+                    <h3 class="font-bold text-lg mb-4 text-gray-800">Earnings Trend (30 Days)</h3>
+                    <div class="h-64"><canvas id="earningsChart"></canvas></div>
+                </div>
+            </section>
+
+            <section id="panel-publish-api" class="provider-panel hidden animate-fade-in">
+                <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+                    <h2 class="text-xl font-bold mb-6 border-b pb-4">Create New API Contract</h2>
+                    <form class="space-y-6" onsubmit="event.preventDefault(); alert('API Published to Sandbox!'); switchProviderTab('my-apis');">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div><label class="block text-sm font-medium mb-1">API Name *</label><input type="text" class="w-full px-4 py-2 border rounded-md focus:form-input-focus" required placeholder="e.g. NFT Metadata Scraper"></div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Category *</label>
+                                <select class="w-full px-4 py-2 border rounded-md focus:form-input-focus" required>
+                                    <option value="web3">Web3 / Blockchain</option><option value="ai">AI / ML</option><option value="data">Data Analytics</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Endpoint URL *</label><input type="url" class="w-full px-4 py-2 border rounded-md focus:form-input-focus" required placeholder="https://api.yourdomain.com/v1"></div>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-6">
+                            <h3 class="font-bold mb-4 text-primary"><i class="fa-solid fa-chart-line mr-2"></i>Bonding Curve Configuration</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div><label class="block text-sm font-medium mb-1">Initial Price (ETH) *</label><input type="number" step="0.001" class="w-full px-4 py-2 border rounded-md" value="0.01"></div>
+                                <div><label class="block text-sm font-medium mb-1">Capacity limit *</label><input type="number" class="w-full px-4 py-2 border rounded-md" value="10000"></div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Curve Type</label>
+                                    <select class="w-full px-4 py-2 border rounded-md"><option>Linear</option><option>Exponential</option></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-4 pt-6">
+                            <button type="button" class="px-6 py-2 border border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 font-medium">Draft</button>
+                            <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 font-medium shadow-md">Deploy Smart Contract</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="panel-my-apis" class="provider-panel hidden animate-fade-in">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold">Published APIs</h2>
+                        <button onclick="switchProviderTab('publish-api')" class="px-4 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90"><i class="fa-solid fa-plus mr-1"></i> New</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-gray-200 text-textSub text-sm">
+                                    <th class="py-3 px-4 font-medium">Name</th>
+                                    <th class="py-3 px-4 font-medium">Price/Call</th>
+                                    <th class="py-3 px-4 font-medium">Total Calls</th>
+                                    <th class="py-3 px-4 font-medium">Status</th>
+                                    <th class="py-3 px-4 font-medium">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+                                    <td class="py-4 px-4 font-bold text-sm">Wallet Risk Oracle</td>
+                                    <td class="py-4 px-4 text-sm">$0.01</td>
+                                    <td class="py-4 px-4 text-sm text-gray-500">458</td>
+                                    <td class="py-4 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-bold">Active</span></td>
+                                    <td class="py-4 px-4 flex gap-3 text-sm">
+                                        <button class="text-primary hover:underline">Edit</button>
+                                        <button class="text-danger hover:underline">Pause</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="panel-earnings" class="provider-panel hidden animate-fade-in">
+                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
+                    <h2 class="text-xl font-bold mb-6">Withdraw Funds</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <p class="text-gray-500 text-sm mb-1">Available to withdraw</p>
+                            <h3 class="text-4xl font-extrabold text-gray-800 mb-6">$89.50</h3>
+                            <form onsubmit="event.preventDefault(); alert('Withdrawal initiated on Base network!');">
+                                <label class="block text-sm font-medium mb-1">Amount (USD)</label>
+                                <input type="number" class="w-full px-4 py-2 border rounded-md focus:form-input-focus mb-4" value="89.50" max="89.50">
+                                <label class="block text-sm font-medium mb-1">Network</label>
+                                <select class="w-full px-4 py-2 border rounded-md focus:form-input-focus mb-6"><option>Base (Low Gas)</option><option>Ethereum</option></select>
+                                <button type="submit" class="w-full py-3 bg-dark text-white rounded-md font-bold hover:bg-black transition">Withdraw to Wallet</button>
+                            </form>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                            <h4 class="font-bold mb-4">Recent History</h4>
+                            <ul class="space-y-4 text-sm">
+                                <li class="flex justify-between items-center border-b pb-2"><span class="text-gray-500">Mar 15, 2026</span><span class="font-bold text-green-600">+$45.20</span></li>
+                                <li class="flex justify-between items-center border-b pb-2"><span class="text-gray-500">Feb 28, 2026</span><span class="font-bold text-gray-800">-$25.00</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="panel-settings" class="provider-panel hidden animate-fade-in">
+                <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+                    <h2 class="text-xl font-bold mb-6">Developer Settings</h2>
+                    <div class="space-y-6 max-w-2xl">
+                        <div><label class="block text-sm font-medium mb-1">Display Name</label><input type="text" class="w-full px-4 py-2 border rounded-md" value="John Developer"></div>
+                        <button class="px-6 py-2 bg-primary text-white rounded-md font-medium shadow-sm hover:bg-primary/90 mt-4">Save Changes</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Global State
+        let selectedRole = 'buyer';
+        let userLoggedIn = false;
+        let walletConnected = false; 
+        let chartInstance = null;
+
+        // Modals Control
+        function openModal(id) { document.getElementById(id).classList.replace('modal-inactive', 'modal-active'); }
+        function closeModal(id) { document.getElementById(id).classList.replace('modal-active', 'modal-inactive'); }
+
+        // Login Logic
+        function switchAuthTab(tab) {
+            document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
+            document.getElementById('registerForm').classList.toggle('hidden', tab === 'login');
+        }
+        function selectRole(role, btnElement) {
+            selectedRole = role;
+            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('bg-blue-50', 'border-blue-400', 'text-blue-600', 'bg-green-50', 'border-green-400', 'text-green-600'));
+            if(role === 'buyer') btnElement.classList.add('bg-blue-50', 'border-blue-400', 'text-blue-600');
+            if(role === 'provider') btnElement.classList.add('bg-green-50', 'border-green-400', 'text-green-600');
+        }
+        function executeLogin() {
+            userLoggedIn = true; closeModal('authModal'); document.getElementById('navLoginBtn').classList.add('hidden');
+            switchView(selectedRole === 'provider' ? 'provider' : 'buyer');
+        }
+        function logout() {
+            userLoggedIn = false; document.getElementById('navLoginBtn').classList.remove('hidden'); switchView('home');
+        }
+
+        // View Navigation
+        function switchView(view) {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-buyer').classList.add('hidden');
+            document.getElementById('view-provider').classList.add('hidden');
+            
+            document.getElementById('sharedNavbar').classList.remove('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+
+            if(view === 'home') document.getElementById('view-home').classList.remove('hidden');
+            else if (view === 'buyer') document.getElementById('view-buyer').classList.remove('hidden');
+            else if (view === 'provider') {
+                document.getElementById('sharedNavbar').classList.add('hidden');
+                document.getElementById('mainContent').classList.add('hidden');
+                document.getElementById('view-provider').classList.remove('hidden');
+                // Reload chart when provider view is active
+                setTimeout(initChart, 100);
+            }
+        }
+
+        // Provider Dashboard Inner Navigation
+        function switchProviderTab(tabId) {
+            document.querySelectorAll('.provider-tab').forEach(el => {
+                el.classList.remove('sidebar-active', 'bg-primary/10');
+                el.classList.add('hover:bg-light');
+            });
+            const activeTab = document.getElementById('tab-' + tabId);
+            activeTab.classList.add('sidebar-active', 'bg-primary/10');
+            activeTab.classList.remove('hover:bg-light');
+
+            document.querySelectorAll('.provider-panel').forEach(panel => panel.classList.add('hidden'));
+            document.getElementById('panel-' + tabId).classList.remove('hidden');
+            
+            const titles = { 'dashboard': 'Overview', 'publish-api': 'Publish API', 'my-apis': 'My APIs', 'earnings': 'Earnings & Withdrawals', 'settings': 'Account Settings' };
+            document.getElementById('dashTitle').innerText = titles[tabId];
+        }
+
+        // --- WALLET SYNC LOGIC ---
+        function simulateWalletConnect(walletName) {
+            // Target both buttons (Nav bar and Provider Header)
+            const btns = document.querySelectorAll('.wallet-btn');
+            
+            btns.forEach(btn => {
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Connecting...`; 
+                btn.classList.add('cursor-wait', 'opacity-70');
+            });
+
+            setTimeout(() => {
+                closeModal('walletModal');
+                walletConnected = true; 
+                const connectedHtml = `<span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>0x1A2B...3C4D`;
+                
+                btns.forEach(btn => {
+                    btn.innerHTML = connectedHtml;
+                    btn.classList.remove('cursor-wait', 'opacity-70', 'bg-primary', 'bg-gray-200', 'text-white', 'text-gray-700');
+                    btn.classList.add('bg-green-50', 'border', 'border-green-500', 'text-green-700');
+                });
+            }, 1500);
+        }
+
+        // --- BUYER FLOW LOGIC ---
+        function initiateBuy(apiName) {
+            if (!walletConnected) {
+                alert('Connection Required: Please connect your Web3 wallet to interact with smart contracts.');
+                openModal('walletModal');
+                return;
+            }
+            document.getElementById('buyApiTitle').innerText = 'Purchase: ' + apiName;
+            openModal('buyApiModal');
+        }
+
+        function closeBuyModal() {
+            closeModal('buyApiModal');
+            document.getElementById('apiStatusSection').classList.add('hidden');
+            document.getElementById('apiResultBox').classList.add('hidden');
+            document.getElementById('txStatusList').innerHTML = '';
+            document.getElementById('apiParamInput').value = '';
+            
+            const btn = document.getElementById('confirmBuyBtn');
+            btn.innerHTML = `<i class="fa-solid fa-bolt text-yellow-400"></i><span>Pay & Execute API</span>`;
+            btn.classList.remove('bg-gray-400', 'cursor-not-allowed', 'bg-success');
+            btn.classList.add('bg-dark', 'hover:bg-black');
+            btn.disabled = false;
+        }
+
+        function executeBuyFlow() {
+            const paramInput = document.getElementById('apiParamInput').value;
+            if(!paramInput) { alert('Please enter target parameters first.'); return; }
+
+            const btn = document.getElementById('confirmBuyBtn');
+            const statusSection = document.getElementById('apiStatusSection');
+            const statusList = document.getElementById('txStatusList');
+            const resultBox = document.getElementById('apiResultBox');
+
+            btn.disabled = true;
+            btn.className = "w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-lg cursor-not-allowed flex justify-center items-center gap-2";
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Processing transaction...</span>`;
+            
+            statusSection.classList.remove('hidden');
+            statusList.innerHTML = `<li class="flex items-center gap-2"><i class="fa-solid fa-circle-notch fa-spin text-primary"></i> Interacting with Smart Contract...</li>`;
+
+            setTimeout(() => {
+                statusList.innerHTML += `<li class="flex items-center gap-2 text-green-600"><i class="fa-solid fa-check"></i> Smart Contract Executed</li>`;
+                statusList.innerHTML += `<li class="flex items-center gap-2 mt-1"><i class="fa-solid fa-circle-notch fa-spin text-primary"></i> Minting Access Token...</li>`;
+                
+                setTimeout(() => {
+                    statusList.innerHTML += `<li class="flex items-center gap-2 text-green-600"><i class="fa-solid fa-check"></i> Token Minted Successfully</li>`;
+                    statusList.innerHTML += `<li class="flex items-center gap-2 mt-1"><i class="fa-solid fa-circle-notch fa-spin text-primary"></i> Gateway verifying token & calling API...</li>`;
+                    
+                    setTimeout(() => {
+                        statusList.innerHTML += `<li class="flex items-center gap-2 text-green-600"><i class="fa-solid fa-check"></i> API Request Successful</li>`;
+                        btn.className = "w-full bg-success text-white font-bold py-3 px-4 rounded-lg flex justify-center items-center gap-2";
+                        btn.innerHTML = `<i class="fa-solid fa-check-circle"></i><span>Purchase Complete</span>`;
+                        
+                        resultBox.classList.remove('hidden');
+                        resultBox.innerHTML = `
+                            <p class="font-bold text-gray-800 mb-1">API Response JSON:</p>
+                            {<br>&nbsp;&nbsp;"target": "${paramInput}",<br>&nbsp;&nbsp;"risk_score": 85,<br>&nbsp;&nbsp;"status": "High Risk",<br>&nbsp;&nbsp;"transaction_hash": "0x4f...9a1"<br>}
+                        `;
+                    }, 1500); 
+                }, 1500); 
+            }, 1000); 
+        }
+
+        // --- CHART INITIALIZATION ---
+        function initChart() {
+            const ctx = document.getElementById('earningsChart');
+            if(!ctx) return;
+            if(chartInstance) chartInstance.destroy(); 
+            
+            chartInstance = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['1', '5', '10', '15', '20', '25', '30'],
+                    datasets: [{
+                        label: 'Earnings (USD)', data: [12, 19, 35, 25, 42, 38, 55],
+                        borderColor: '#5E6AD2', backgroundColor: 'rgba(94, 106, 210, 0.15)',
+                        fill: true, tension: 0.4, borderWidth: 3, pointBackgroundColor: '#5E6AD2', pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#F5F7FA' }, border: { dash: [4, 4] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
