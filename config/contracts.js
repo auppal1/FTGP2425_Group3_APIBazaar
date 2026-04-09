@@ -1,9 +1,10 @@
-const { ethers } = require("ethers");
-const{provider, signer} = require('./web3');
-const contractABI = require('./contractABI.json');
-
-const contractAddress = process.env.CONTRACT_ADDRESS;
-const contract = new ethers.Contract(contractAddress, contractABI, signer);
-
-module.exports = contract;
-
+module.exports = {
+  async getCurrentDayBalance(address) {
+    console.log('[stub] getCurrentDayBalance', address);
+    return 1n; // act like everyone has 1 token
+  },
+  async consumeTokens(address, amount) {
+    console.log('[stub] consumeTokens', address, amount);
+    return { wait: async () => {} }; // pretend tx succeeded
+  }
+};
