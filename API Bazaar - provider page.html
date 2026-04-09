@@ -59,6 +59,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <div id="gatewayStatus"
+            style="font-size:12px;color:#718096;margin-bottom:8px;">
+        Gateway: checking…
+    </div>
 </head>
 <body class="font-inter bg-light text-textMain antialiased">
     <!-- Global Container -->
@@ -802,5 +807,23 @@
             });
         }
     </script>
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+
+        async function checkGateway() {
+            const el = document.getElementById('gatewayStatus');
+            try {
+                const res = await fetch(`${API_BASE}/health`);
+                const data = await res.json();
+                el.textContent = `Gateway: ${data.status} (time ${new Date(data.time || Date.now()).toLocaleTimeString()})`;
+                el.style.color = '#38A169'; // green
+        } catch (err) {
+            el.textContent = 'Gateway: unreachable';
+            el.style.color = '#E53E3E'; // red
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', checkGateway);
+</script>
 </body>
 </html>
