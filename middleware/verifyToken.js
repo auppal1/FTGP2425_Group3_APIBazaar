@@ -7,9 +7,9 @@ const verifyToken = async (req, res, next) => {
         return res.status(400).json({ error: 'Wallet address is required' });
     }
     try{
-        const balance = await contract.balanceOf(walletAddress);
-        if (balance > 0) {
-            next(); // wallet has tokens
+        const balance = await contract.getCurrentDayBalance(walletAddress);
+        if (balance <= On) {
+            return res.status(403).json({ error: 'Insufficient token balance' }); // wallet has tokens
         } else {
             return res.status(403).json({ error: 'Access denied: No tokens found' });
         }
