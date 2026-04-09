@@ -109,8 +109,13 @@ router.post('/request', verifyToken, async (req, res) => {
   }
 });
 
-router.get('/balance/:walletAddress', (req, res) =>
-  res.json({ wallet: req.params.walletAddress, balance: 'stub TBD' })
-);
+router.get('/balance/:walletAddress', async (req, res) => {
+  try {
+    const balance = await contract.getCurrentDayBalance(req.params.walletAddress);
+    res.json({ wallet: req.params.walletAddress, balance: balance.toString() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
