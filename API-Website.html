@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Bazaar - Web3 API Marketplace</title>
+    <title>API Bazaar - Full Integrated Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -11,12 +11,33 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: '#5E6AD2', secondary: '#165DFF', dark: '#2D3748', light: '#F5F7FA', success: '#10B981', warning: '#F59E0B', danger: '#EF4444', textMain: '#1A202C', textSub: '#718096' },
-                    fontFamily: { inter: ['Inter', 'system-ui', 'sans-serif'] },
-                    animation: { 'fade-in': 'fadeIn 0.3s ease-in-out', 'float': 'float 3s ease-in-out infinite' },
+                    colors: {
+                        primary: '#5E6AD2',
+                        secondary: '#165DFF',
+                        dark: '#2D3748',
+                        light: '#F5F7FA',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        textMain: '#1A202C',
+                        textSub: '#718096'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
                     keyframes: {
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } }
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
                     }
                 },
             }
@@ -24,521 +45,980 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
+            .content-auto { content-visibility: auto; }
+            .curve-visual {
+                stroke-dasharray: 1000;
+                stroke-dashoffset: 1000;
+                animation: dash 3s linear forwards;
+            }
+            @keyframes dash { to { stroke-dashoffset: 0; } }
             .nav-scrolled { @apply bg-white shadow-md; }
             .sidebar-active { @apply bg-primary/10 text-primary border-l-4 border-primary; }
-            .form-input-focus { @apply ring-2 ring-primary/50 border-primary outline-none; }
-            .modal-active { @apply opacity-100 visible; pointer-events: auto; }
-            .modal-inactive { @apply opacity-0 invisible; pointer-events: none; }
+            .form-input-focus { @apply ring-2 ring-primary/50 border-primary; }
+            .modal-active { @apply opacity-100 visible; }
+            
+            /* View routing classes */
+            .view-section { display: none; }
+            .view-active { display: block; animation: fadeIn 0.5s ease-in-out; }
+            .view-flex-active { display: flex; animation: fadeIn 0.5s ease-in-out; }
         }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="font-inter bg-light text-textMain antialiased h-screen overflow-hidden flex flex-col">
+<body class="font-inter bg-gray-50 text-textMain antialiased">
 
-    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 modal-inactive transition-all duration-300">
-        <div class="bg-white rounded-xl w-full max-w-md p-8 relative animate-fade-in shadow-2xl">
-            <button onclick="closeModal('authModal')" class="absolute top-4 right-4 text-textSub hover:text-textMain"><i class="fa-solid fa-xmark text-xl"></i></button>
+    <div id="authModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 opacity-0 invisible transition-all duration-300">
+        <div class="bg-white rounded-lg w-full max-w-md p-6 relative animate-fade-in">
+            <button id="closeModal" class="absolute top-4 right-4 text-textSub hover:text-textMain">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            
             <div class="flex border-b mb-6">
-                <button id="loginTab" class="px-4 py-2 font-medium border-b-2 border-primary text-primary w-1/2" onclick="switchAuthTab('login')">Login</button>
-                <button id="registerTab" class="px-4 py-2 font-medium text-textSub w-1/2" onclick="switchAuthTab('register')">Register</button>
+                <button id="loginTab" class="px-4 py-2 font-medium border-b-2 border-primary text-primary">Login</button>
+                <button id="registerTab" class="px-4 py-2 font-medium text-textSub">Register</button>
             </div>
+
             <div id="loginForm">
-                <h2 class="text-2xl font-bold mb-6 text-center text-primary">Welcome Back</h2>
-                <div class="space-y-4 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Select Role to Login</label>
-                        <div class="flex gap-4">
-                            <button onclick="selectRole('provider', this)" class="role-btn flex-1 py-3 border border-gray-200 rounded-lg flex flex-col items-center hover:bg-green-50 hover:border-green-400 transition">
-                                <span class="text-2xl mb-1">💻</span><span class="text-sm font-bold">Provider</span>
-                            </button>
-                            <button onclick="selectRole('buyer', this)" class="role-btn flex-1 py-3 border border-gray-200 rounded-lg flex flex-col items-center hover:bg-blue-50 hover:border-blue-400 transition bg-blue-50 border-blue-400 text-blue-600">
-                                <span class="text-2xl mb-1">🛒</span><span class="text-sm font-bold">Buyer</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div><label class="block text-sm font-medium mb-1">Email</label><input type="email" class="w-full px-4 py-2 border rounded-md focus:form-input-focus" value="demo@apibazaar.com"></div>
-                    <div><label class="block text-sm font-medium mb-1">Password</label><input type="password" class="w-full px-4 py-2 border rounded-md focus:form-input-focus" value="password"></div>
-                </div>
-                <button onclick="executeLogin()" class="w-full py-3 bg-primary text-white font-bold rounded-md hover:bg-primary/90 shadow-md">Enter App</button>
-            </div>
-            <div id="registerForm" class="hidden">
-                <h2 class="text-2xl font-bold mb-6 text-center text-primary">Create Account</h2>
+                <h2 class="text-xl font-bold mb-4">Welcome Back</h2>
                 <div class="space-y-4">
-                    <div><label class="block text-sm font-medium mb-1">Username</label><input type="text" class="w-full px-4 py-2 border rounded-md focus:form-input-focus"></div>
-                    <div><label class="block text-sm font-medium mb-1">Email</label><input type="email" class="w-full px-4 py-2 border rounded-md focus:form-input-focus"></div>
-                    <div><label class="block text-sm font-medium mb-1">Password</label><input type="password" class="w-full px-4 py-2 border rounded-md focus:form-input-focus"></div>
-                    <button onclick="executeLogin()" class="w-full py-3 bg-primary text-white font-bold rounded-md hover:bg-primary/90 shadow-md mt-4">Register</button>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Email</label>
+                        <input type="email" id="loginEmail" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Password</label>
+                        <input type="password" id="loginPwd" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <button id="loginBtn" class="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Login</button>
+                </div>
+            </div>
+
+            <div id="registerForm" class="hidden">
+                <h2 class="text-xl font-bold mb-4">Create Account</h2>
+                <div class="space-y-4">
+                    <div class="flex gap-4">
+                        <button id="providerBtn" class="flex-1 py-2 border border-primary text-primary rounded-md bg-primary/10 transition-colors">API Provider</button>
+                        <button id="buyerBtn" class="flex-1 py-2 border border-gray-300 text-textSub rounded-md transition-colors">API Buyer</button>
+                    </div>
+                    <input type="hidden" id="userRole" value="provider">
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Username</label>
+                        <input type="text" id="regUsername" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Email</label>
+                        <input type="email" id="regEmail" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Password</label>
+                        <input type="password" id="regPwd" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1">Confirm Password</label>
+                        <input type="password" id="regConfirmPwd" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                    </div>
+                    <button id="registerBtn" class="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Register</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="walletModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-50 modal-inactive transition-all duration-300">
-        <div class="bg-white rounded-xl shadow-2xl w-96 z-10 overflow-hidden animate-fade-in">
+    <div id="walletModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 opacity-0 invisible transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-96 z-10 overflow-hidden relative animate-fade-in">
             <div class="p-4 border-b flex justify-between items-center bg-gray-50">
                 <h3 class="font-bold text-lg text-gray-800">Connect your wallet</h3>
-                <button onclick="closeModal('walletModal')" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+                <button id="closeWalletModal" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
             </div>
             <div class="p-6 flex flex-col gap-4">
-                <button onclick="simulateWalletConnect('MetaMask')" class="flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition">
-                    <span class="font-bold text-gray-700">MetaMask</span><span class="text-2xl">🦊</span>
+                <button id="connectMetamask" class="flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition">
+                    <span class="font-bold text-gray-700">MetaMask</span>
+                    <span class="text-2xl">🦊</span>
                 </button>
-                <button onclick="simulateWalletConnect('WalletConnect')" class="flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition">
-                    <span class="font-bold text-gray-700">WalletConnect</span><span class="text-2xl">🔗</span>
+                <button class="flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition">
+                    <span class="font-bold text-gray-700">WalletConnect</span>
+                    <span class="text-2xl">🔗</span>
                 </button>
             </div>
-            <div class="p-4 bg-gray-50 text-center text-xs text-gray-500">By connecting a wallet, you agree to API Bazaar's Terms of Service.</div>
-        </div>
-    </div>
-
-    <div id="buyApiModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-50 modal-inactive transition-all duration-300">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg z-10 overflow-hidden animate-fade-in">
-            <div class="p-5 border-b flex justify-between items-center bg-gray-50">
-                <h3 class="font-bold text-lg text-gray-800" id="buyApiTitle">Purchase API Access</h3>
-                <button onclick="closeBuyModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
-            </div>
-            <div class="p-6">
-                <div id="apiInputSection" class="mb-6">
-                    <label class="block text-sm font-bold text-gray-700 mb-2">Input Parameters (Target Address/URL)</label>
-                    <input type="text" id="apiParamInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:form-input-focus bg-gray-50" placeholder="e.g., 0x742d...454e">
-                    <p class="text-xs text-gray-500 mt-2">Price per call: <span class="font-bold text-primary">0.01 ETH</span></p>
-                </div>
-                <div id="apiStatusSection" class="hidden mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <h4 class="font-bold text-sm mb-3 text-gray-700">Transaction Status</h4>
-                    <ul class="space-y-2 text-sm text-gray-600" id="txStatusList"></ul>
-                    <div id="apiResultBox" class="hidden mt-4 p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm font-mono break-words"></div>
-                </div>
-                <button id="confirmBuyBtn" onclick="executeBuyFlow()" class="w-full bg-dark hover:bg-black text-white font-bold py-3 px-4 rounded-lg transition-colors flex justify-center items-center gap-2">
-                    <i class="fa-solid fa-bolt text-yellow-400"></i><span>Pay & Execute API</span>
-                </button>
+            <div class="p-4 bg-gray-50 text-center text-xs text-gray-500">
+                By connecting a wallet, you agree to API Bazaar's Terms of Service.
             </div>
         </div>
     </div>
 
-    <nav id="sharedNavbar" class="fixed top-0 left-0 w-full z-40 transition-all duration-300 bg-white shadow-sm py-4">
-        <div class="container mx-auto px-4 md:px-8 flex justify-between items-center">
-            <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('home')">
-                <i class="fa-solid fa-link-chain text-primary text-2xl"></i>
-                <span class="text-xl font-bold text-textMain">API Bazaar</span>
+    <div id="view-home" class="view-section view-active bg-white">
+        <nav id="navbar" class="fixed top-0 left-0 w-full z-40 transition-all duration-300 bg-transparent py-4">
+            <div class="container mx-auto px-4 md:px-8 flex justify-between items-center">
+                <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('view-home')">
+                    <i class="fa-solid fa-link-chain text-primary text-2xl"></i>
+                    <span class="text-xl font-bold text-textMain">API Bazaar</span>
+                </div>
+                
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#values" class="text-textMain hover:text-primary transition-colors">Values</a>
+                    <a href="#" onclick="switchView('view-buyer')" class="text-textMain hover:text-primary transition-colors">Marketplace</a>
+                    <a href="#" onclick="switchView('view-wallet-states')" class="text-textMain hover:text-primary transition-colors">UI Demos</a>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button id="loginBtnMain" class="px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">Login / Auth</button>
+                    <button onclick="switchView('view-login')" class="hidden md:block px-4 py-2 border border-gray-300 text-textSub rounded-md hover:bg-gray-50 transition-colors">Roles</button>
+                    <button class="btn-open-wallet px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-wallet"></i>
+                        <span class="wallet-status-text">Connect Wallet</span>
+                    </button>
+                    <button id="menuBtn" class="md:hidden text-textMain text-xl">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
             </div>
-            <div class="hidden md:flex items-center gap-8" id="navLinks">
-                <a href="#" onclick="switchView('home')" class="text-textMain hover:text-primary font-medium">Home</a>
-                <a href="#" onclick="switchView('buyer')" class="text-textMain hover:text-primary font-medium">Marketplace</a>
+            
+            <div id="mobileMenu" class="md:hidden hidden bg-white shadow-lg absolute w-full top-full left-0">
+                <div class="container mx-auto px-4 py-4 flex flex-col gap-4">
+                    <a href="#values" class="text-textMain hover:text-primary transition-colors py-2">Values</a>
+                    <a href="#" onclick="switchView('view-buyer')" class="text-textMain hover:text-primary transition-colors py-2">Marketplace</a>
+                    <a href="#" onclick="switchView('view-login')" class="text-textMain hover:text-primary transition-colors py-2">Role Selection</a>
+                    <a href="#" onclick="switchView('view-provider')" class="text-primary py-2 font-medium">Developer Dashboard</a>
+                </div>
             </div>
-            <div class="flex items-center gap-4">
-                <button id="navLoginBtn" onclick="openModal('authModal')" class="px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary/5 transition">Login</button>
-                <button id="navWalletBtn" onclick="openModal('walletModal')" class="wallet-btn px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition flex items-center gap-2">
-                    <i class="fa-solid fa-wallet"></i><span>Connect Wallet</span>
-                </button>
-            </div>
-        </div>
-    </nav>
+        </nav>
 
-    <div id="mainContent" class="flex-1 overflow-y-auto mt-[72px]">
-        
-        <div id="view-home" class="block">
-            <section class="pt-20 pb-20 md:pt-32 md:pb-32 bg-light relative overflow-hidden">
-                <div class="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center gap-10">
-                    <div class="md:w-3/5 animate-fade-in">
-                        <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4 text-gray-800">Decentralized API Marketplace</h1>
-                        <p class="text-[clamp(1rem,2vw,1.25rem)] text-textSub mb-8 max-w-2xl">Purchase temporary API access seamlessly using our dynamic bonding curve pricing.</p>
-                        <div class="flex flex-wrap gap-4 mb-6">
-                            <button onclick="openModal('authModal')" class="px-8 py-3 bg-primary text-white rounded-md hover:bg-primary/90 font-bold shadow-lg">Start Building</button>
-                            <button onclick="switchView('buyer')" class="px-8 py-3 bg-white border-2 border-gray-200 text-gray-800 hover:border-gray-300 rounded-md font-bold shadow-sm">Explore APIs</button>
+        <section class="pt-32 pb-20 md:pt-40 md:pb-32 bg-light relative overflow-hidden">
+            <div class="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center gap-10">
+                <div class="md:w-3/5 animate-fade-in">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">
+                        Decentralized API Marketplace for the Long Tail
+                    </h1>
+                    <p class="text-[clamp(1rem,2vw,1.25rem)] text-textSub mb-8 max-w-2xl">
+                        A decentralized API marketplace built for indie developers, featuring transparent pricing via on-chain bonding curves, pay-as-you-go access, and no subscription lock-ins or high commission fees.
+                    </p>
+                    <div class="flex flex-wrap gap-4 mb-6">
+                        <button onclick="handleProtectedRoute('view-provider')" class="px-8 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors font-medium shadow-lg hover:shadow-xl">Publish API</button>
+                        <button onclick="switchView('view-buyer')" class="px-8 py-3 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors font-medium">Explore API Marketplace</button>
+                    </div>
+                    <p class="text-sm text-textSub">
+                        Quick wallet connection via QR code, gas fees as low as $0.01, and O(1) smart contracts ensure efficient transactions.
+                    </p>
+                </div>
+                <div class="md:w-2/5 relative animate-float">
+                    <div class="w-full h-80 relative">
+                        <svg width="100%" height="100%" viewBox="0 0 400 300" class="absolute top-0 left-0">
+                            <defs>
+                                <linearGradient id="curveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#5E6AD2" />
+                                    <stop offset="100%" stop-color="#165DFF" />
+                                </linearGradient>
+                            </defs>
+                            <line x1="50" y1="250" x2="350" y2="250" stroke="#718096" stroke-width="2" />
+                            <line x1="50" y1="250" x2="50" y2="50" stroke="#718096" stroke-width="2" />
+                            <path d="M50,250 Q150,240 250,150 T350,50" fill="none" stroke="url(#curveGradient)" stroke-width="3" class="curve-visual" />
+                            <text x="100" y="270" fill="#718096" font-size="12">Supply</text>
+                            <text x="30" y="70" fill="#718096" font-size="12" transform="rotate(-90, 30, 70)">Price</text>
+                            <text x="150" y="230" fill="#5E6AD2" font-size="10" class="font-medium">Near Constant Pricing</text>
+                            <text x="300" y="80" fill="#165DFF" font-size="10" class="font-medium">Infinite Price at Capacity</text>
+                        </svg>
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-4">
+                            <i class="fa-solid fa-code text-primary text-4xl"></i>
+                            <i class="fa-solid fa-coins text-secondary text-4xl"></i>
+                            <i class="fa-solid fa-shield-halved text-primary text-4xl"></i>
                         </div>
                     </div>
                 </div>
-            </section>
-        </div>
+            </div>
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 to-secondary/5 -z-10"></div>
+            <div class="absolute top-20 right-20 w-40 h-40 bg-primary/10 rounded-full -z-10 blur-3xl"></div>
+            <div class="absolute bottom-20 left-20 w-60 h-60 bg-secondary/10 rounded-full -z-10 blur-3xl"></div>
+        </section>
 
-        <div id="view-buyer" class="hidden container mx-auto px-4 md:px-8 py-12">
+        <section id="values" class="py-20 bg-white">
+            <div class="container mx-auto px-4 md:px-8">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-center mb-16">Why Choose API Bazaar?</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
+                        <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4"><i class="fa-solid fa-book-journal-whills text-primary text-xl"></i></div>
+                        <h3 class="text-xl font-semibold mb-3">Low Commission (0~5%)</h3>
+                        <p class="text-textSub">Say goodbye to 20-30% high commissions on traditional platforms. On-chain smart contracts automate revenue sharing.</p>
+                    </div>
+                    <div class="p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
+                        <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4"><i class="fa-solid fa-chart-line text-primary text-xl"></i></div>
+                        <h3 class="text-xl font-semibold mb-3">Pay-as-You-Go, No Subscriptions</h3>
+                        <p class="text-textSub">API call rights are represented by tokens, minted based on actual usage. Bonding curve pricing is hardcoded in smart contracts.</p>
+                    </div>
+                    <div class="p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
+                        <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4"><i class="fa-solid fa-shield-halved text-primary text-xl"></i></div>
+                        <h3 class="text-xl font-semibold mb-3">Anti-Abuse + Low Gas Fees</h3>
+                        <p class="text-textSub">Economic incentives replace rigid rate limits—bots need massive capital to exploit the curve. O(1) contract design keeps gas fees low.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 bg-primary text-white relative overflow-hidden">
+            <div class="container mx-auto px-4 md:px-8 text-center relative z-10">
+                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">Start Your Decentralized API Journey</h2>
+                <p class="text-white/80 mb-8 max-w-2xl mx-auto">Whether you're a developer publishing APIs or a user looking for niche APIs, connect your wallet now to start your experience.</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button onclick="handleProtectedRoute('view-provider')" class="px-8 py-3 bg-white text-primary rounded-md hover:bg-white/90 transition-colors font-medium shadow-lg">Publish My API</button>
+                    <button onclick="switchView('view-buyer')" class="px-8 py-3 border border-white text-white rounded-md hover:bg-white/10 transition-colors font-medium">Explore API Marketplace</button>
+                </div>
+            </div>
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
+        </section>
+
+        <footer class="bg-dark text-gray-400 py-12">
+            <div class="container mx-auto px-4 md:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                    <div>
+                        <div class="flex items-center gap-2 mb-4">
+                            <i class="fa-solid fa-link-chain text-primary text-xl"></i>
+                            <span class="text-xl font-bold text-white">API Bazaar</span>
+                        </div>
+                        <p class="text-sm leading-relaxed">Decentralized Marketplace for Long-Tail APIs<br>Making niche APIs monetizable, short-term needs accessible.</p>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Product</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" onclick="switchView('view-home')" class="hover:text-white transition-colors">Overview</a></li>
+                            <li><a href="#" onclick="switchView('view-buyer')" class="hover:text-white transition-colors">API Marketplace</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Developer Resources</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
+                            <li><a href="#" onclick="handleProtectedRoute('view-provider')" class="hover:text-white transition-colors">Developer Dashboard</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-semibold mb-4">Connect With Us</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-brands fa-twitter"></i> Twitter/X</a></li>
+                            <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-brands fa-telegram"></i> Telegram</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="pt-8 border-t border-gray-700 text-center text-sm">
+                    © 2026 API Bazaar. All rights reserved. Built on blockchain technology.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="view-login" class="view-section bg-gray-100 min-h-screen items-center justify-center relative">
+        <div class="absolute top-4 left-4">
+            <button onclick="switchView('view-home')" class="text-gray-500 hover:text-gray-800 font-bold flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Home</button>
+        </div>
+        <div class="bg-white p-10 rounded-xl shadow-2xl max-w-2xl w-full text-center m-4 animate-fade-in">
+            <h1 class="text-4xl font-extrabold text-blue-600 mb-4">API Bazaar</h1>
+            <p class="text-gray-500 mb-10 text-lg">The Decentralised Marketplace for Niche APIs.</p>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Choose your role to continue</h2>
+            <div class="flex flex-col md:flex-row gap-6 justify-center">
+                <button onclick="switchView('view-buyer')" class="flex-1 border-2 border-blue-200 hover:border-blue-600 hover:bg-blue-50 p-8 rounded-lg transition group cursor-pointer text-decoration-none">
+                    <div class="text-5xl mb-4">🛒</div>
+                    <h3 class="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">I am a Buyer</h3>
+                    <p class="text-gray-500 text-sm mt-2">Explore, purchase, and use niche APIs securely.</p>
+                </button>
+                <button onclick="handleProtectedRoute('view-provider')" class="flex-1 border-2 border-green-200 hover:border-green-600 hover:bg-green-50 p-8 rounded-lg transition group cursor-pointer text-decoration-none">
+                    <div class="text-5xl mb-4">💻</div>
+                    <h3 class="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors">I am a Provider</h3>
+                    <p class="text-gray-500 text-sm mt-2">Upload your API, set pricing, and earn on-chain.</p>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-buyer" class="view-section min-h-screen bg-gray-50">
+        <nav class="bg-white shadow-md p-4 flex justify-between items-center">
+            <button onclick="switchView('view-home')" class="text-2xl font-bold text-blue-600 hover:text-blue-800 flex items-center gap-2">
+                <i class="fa-solid fa-link-chain"></i> API Bazaar
+            </button>
+            <div class="flex gap-4">
+                <button onclick="handleProtectedRoute('view-provider')" class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">Provider Dashboard</button>
+                <button class="btn-open-wallet bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition wallet-status-text flex items-center gap-2">
+                    <i class="fa-solid fa-wallet"></i> Connect Wallet
+                </button>
+            </div>
+        </nav>
+        <main class="p-8 max-w-6xl mx-auto">
             <div class="mb-10 text-center animate-fade-in">
-                <h2 class="text-4xl font-extrabold mb-4 text-gray-800">Find the Best Web3 APIs</h2>
-                <div class="relative max-w-2xl mx-auto">
-                    <input type="text" placeholder="Search APIs..." class="w-full p-4 pl-12 border border-gray-300 rounded-lg shadow-sm focus:form-input-focus text-lg">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
+                <h2 class="text-4xl font-extrabold mb-4 text-gray-800">Find the Best Web3 & AI APIs</h2>
+                <p class="text-gray-600 mb-6">Purchase temporary API access seamlessly using our dynamic bonding curve pricing.</p>
+                <div class="relative w-full md:w-1/2 mx-auto">
+                    <input type="text" placeholder="Search APIs (e.g., Wallet Risk Scorer)..." class="w-full p-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-blue-500">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xl"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold">Wallet Risk Scoring</h3>
+                        <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">Web3</span>
                     </div>
-                    <h3 class="text-xl font-bold mb-1">Wallet Risk Oracle</h3>
                     <p class="text-gray-500 text-sm mb-4">By DataSec Team</p>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-4">
-                        <div class="flex flex-col"><span class="text-xs text-gray-500">Current Price</span><span class="text-primary font-bold">0.01 ETH / call</span></div>
-                        <button onclick="initiateBuy('Wallet Risk Oracle')" class="bg-dark hover:bg-black text-white px-5 py-2 rounded-lg text-sm font-medium transition">Buy Access</button>
+                    <p class="text-gray-700 mb-4 h-12">Assigns a dynamic risk score to wallets based on on-chain behavior.</p>
+                    <div class="flex justify-between items-center border-t pt-4">
+                        <span class="text-blue-600 font-bold">0.01 ETH / call</span>
+                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-center shadow">Buy Access</button>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-xl"><i class="fa-solid fa-eye"></i></div>
+                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-2">
+                        <h3 class="text-xl font-bold">AI Video Detection</h3>
+                        <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">AI/ML</span>
                     </div>
-                    <h3 class="text-xl font-bold mb-1">AI Video Detection</h3>
                     <p class="text-gray-500 text-sm mb-4">By VisionAI</p>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-4">
-                        <div class="flex flex-col"><span class="text-xs text-gray-500">Current Price</span><span class="text-primary font-bold">0.05 ETH / call</span></div>
-                        <button onclick="initiateBuy('AI Video Detection')" class="bg-dark hover:bg-black text-white px-5 py-2 rounded-lg text-sm font-medium transition">Buy Access</button>
+                    <p class="text-gray-700 mb-4 h-12">Identify infringing behaviors and verify if a video is AI generated.</p>
+                    <div class="flex justify-between items-center border-t pt-4">
+                        <span class="text-blue-600 font-bold">0.05 ETH / call</span>
+                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-center shadow">Buy Access</button>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
-    <div id="view-provider" class="hidden h-screen w-full flex bg-light absolute top-0 left-0 z-50 overflow-hidden">
-        
-        <aside class="w-64 bg-white shadow-md flex-shrink-0 h-full flex flex-col relative z-20">
-            <div class="p-4 border-b flex items-center justify-between">
-                <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('home')">
-                    <i class="fa-solid fa-link-chain text-primary text-xl"></i>
-                    <span class="text-xl font-bold text-gray-800">API Bazaar</span>
+    <div id="view-provider" class="view-section h-screen overflow-hidden bg-light">
+        <div class="flex h-full">
+            <aside class="w-64 bg-white shadow-md flex-shrink-0 h-full overflow-y-auto flex flex-col z-20">
+                <div class="p-4 border-b flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('view-home')">
+                        <i class="fa-solid fa-link-chain text-primary text-xl"></i>
+                        <span class="text-xl font-bold">API Bazaar</span>
+                    </div>
                 </div>
-            </div>
-            <nav class="py-4 flex-1 overflow-y-auto">
-                <ul class="space-y-1 px-2">
-                    <li><button onclick="switchProviderTab('dashboard')" id="tab-dashboard" class="provider-tab w-full sidebar-active flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"><i class="fa-solid fa-gauge w-5 text-left"></i><span>Dashboard</span></button></li>
-                    <li><button onclick="switchProviderTab('publish-api')" id="tab-publish-api" class="provider-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-cloud-upload w-5 text-left"></i><span>Publish API</span></button></li>
-                    <li><button onclick="switchProviderTab('my-apis')" id="tab-my-apis" class="provider-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-list-code w-5 text-left"></i><span>My APIs</span></button></li>
-                    <li><button onclick="switchProviderTab('earnings')" id="tab-earnings" class="provider-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-sack-dollar w-5 text-left"></i><span>Earnings</span></button></li>
-                    <li><button onclick="switchProviderTab('settings')" id="tab-settings" class="provider-tab w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-gear w-5 text-left"></i><span>Settings</span></button></li>
-                </ul>
-            </nav>
-            <div class="p-4 border-t">
-                <button onclick="logout()" class="w-full px-3 py-2 text-sm border border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-right-from-bracket"></i> Exit Dashboard
-                </button>
-            </div>
-        </aside>
+                <nav class="py-4 flex-1">
+                    <ul class="space-y-1 px-2" id="providerNav">
+                        <li><a href="#dash-main" class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a></li>
+                        <li><a href="#dash-publish" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-cloud-upload"></i><span>Publish New API</span></a></li>
+                        <li><a href="#dash-myapis" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-list-code"></i><span>My APIs</span></a></li>
+                        <li><a href="#dash-earnings" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-sack-dollar"></i><span>Earnings</span></a></li>
+                        <li><a href="#dash-settings" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-gear"></i><span>Settings</span></a></li>
+                    </ul>
+                </nav>
+                <div class="px-4 py-6 border-t mt-auto">
+                    <div class="bg-light rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium">Connected Wallet</span>
+                            <span class="text-xs px-2 py-1 bg-success/10 text-success rounded-full">Active</span>
+                        </div>
+                        <p class="text-sm text-textSub truncate dash-wallet-addr">Not Connected</p>
+                        
+                        <div id="gatewayStatus" class="text-xs mt-2 text-textSub">Gateway: checking…</div>
+                        
+                        <button id="disconnectWallet" class="mt-3 w-full px-3 py-2 text-sm bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-right-from-bracket text-xs"></i><span>Disconnect</span>
+                        </button>
+                        <button onclick="switchView('view-home')" class="mt-2 w-full px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-house text-xs"></i><span>Back to Home</span>
+                        </button>
+                    </div>
+                </div>
+            </aside>
 
-        <main class="flex-1 overflow-y-auto p-8 bg-light h-full">
-            <header class="flex justify-between items-center mb-8">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-800" id="dashTitle">Overview</h1>
-                    <p class="text-textSub text-sm mt-1">Manage your APIs and track earnings</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <button id="dashWalletBtn" onclick="openModal('walletModal')" class="wallet-btn bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-full flex items-center gap-2 text-sm hover:bg-gray-300 transition">
-                        Connect Wallet
-                    </button>
-                    <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold border-2 border-primary/30">JD</div>
-                </div>
-            </header>
+            <main class="flex-1 overflow-y-auto bg-light p-6">
+                <header class="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold">Developer Dashboard</h1>
+                        <p class="text-textSub text-sm">Manage your APIs and track earnings</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <button class="relative p-2 rounded-full hover:bg-white transition-colors">
+                            <i class="fa-solid fa-bell text-textSub"></i><span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+                        </button>
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><span class="text-xs font-medium" id="dashUserInitials">UN</span></div>
+                            <span class="text-sm font-medium hidden md:block" id="dashUsername">Guest User</span>
+                        </div>
+                    </div>
+                </header>
 
-            <section id="panel-dashboard" class="provider-panel animate-fade-in">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <p class="text-textSub text-sm font-medium">Total APIs</p>
-                        <h3 class="text-3xl font-bold mt-2 text-gray-800">5</h3>
-                        <p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> 2 new this month</p>
+                <section id="dash-main" class="dash-section block animate-fade-in">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-white rounded-lg shadow-sm p-6"><div class="flex justify-between items-start"><div><p class="text-textSub text-sm">Total APIs</p><h3 class="text-3xl font-bold mt-1">5</h3><p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> 2 from last month</p></div><div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fa-solid fa-code"></i></div></div></div>
+                        <div class="bg-white rounded-lg shadow-sm p-6"><div class="flex justify-between items-start"><div><p class="text-textSub text-sm">Total API Calls</p><h3 class="text-3xl font-bold mt-1">1,289</h3><p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> 15% from last week</p></div><div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary"><i class="fa-solid fa-receipt"></i></div></div></div>
+                        <div class="bg-white rounded-lg shadow-sm p-6"><div class="flex justify-between items-start"><div><p class="text-textSub text-sm">Total Earnings (USD)</p><h3 class="text-3xl font-bold mt-1">$128.90</h3><p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> $45.20 from last month</p></div><div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success"><i class="fa-solid fa-sack-dollar"></i></div></div></div>
+                        <div class="bg-white rounded-lg shadow-sm p-6"><div class="flex justify-between items-start"><div><p class="text-textSub text-sm">Pending Withdrawal</p><h3 class="text-3xl font-bold mt-1">$89.50</h3><button class="text-warning text-xs mt-2 flex items-center hover:underline"><i class="fa-solid fa-money-bill-transfer mr-1"></i> Withdraw now</button></div><div class="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center text-warning"><i class="fa-solid fa-wallet"></i></div></div></div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <p class="text-textSub text-sm font-medium">Total Calls</p>
-                        <h3 class="text-3xl font-bold mt-2 text-gray-800">1,289</h3>
-                        <p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> 15% from last week</p>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+                            <div class="flex justify-between items-center mb-4"><h3 class="font-semibold">Earnings Trend (Last 30 Days)</h3><div class="flex gap-2"><button class="px-3 py-1 text-xs bg-primary/10 text-primary rounded-md">Week</button><button class="px-3 py-1 text-xs bg-light text-textSub rounded-md">Month</button><button class="px-3 py-1 text-xs bg-light text-textSub rounded-md">Year</button></div></div>
+                            <div class="h-64"><canvas id="earningsChart"></canvas></div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-sm p-6">
+                            <h3 class="font-semibold mb-4">Recent API Calls</h3>
+                            <div class="space-y-4 max-h-64 overflow-y-auto">
+                                <div class="border-b pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">Wallet Risk API</span><span class="text-success text-xs">Success</span></div><p class="text-textSub text-xs mb-1">0x123...456 • 0.01 USD</p><p class="text-textSub text-xs">2 hours ago</p></div>
+                                <div class="border-b pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">Contract Scan API</span><span class="text-success text-xs">Success</span></div><p class="text-textSub text-xs mb-1">0x789...012 • 0.02 USD</p><p class="text-textSub text-xs">5 hours ago</p></div>
+                                <div class="border-b pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">Wallet Risk API</span><span class="text-danger text-xs">Failed</span></div><p class="text-textSub text-xs mb-1">0x456...789 • 0.01 USD</p><p class="text-textSub text-xs">1 day ago</p></div>
+                                <div class="pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">NFT Metadata API</span><span class="text-success text-xs">Success</span></div><p class="text-textSub text-xs mb-1">0x234...567 • 0.03 USD</p><p class="text-textSub text-xs">2 days ago</p></div>
+                            </div>
+                            <button class="w-full mt-4 px-4 py-2 text-sm border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">View All Calls</button>
+                        </div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                        <p class="text-textSub text-sm font-medium">Total Earnings</p>
-                        <h3 class="text-3xl font-bold mt-2 text-gray-800">$128.90</h3>
-                        <p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> +$45.20</p>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 bg-gradient-to-br from-primary/5 to-transparent">
-                        <p class="text-primary text-sm font-bold">Pending Withdrawal</p>
-                        <h3 class="text-3xl font-bold mt-2 text-primary">$89.50</h3>
-                        <button onclick="switchProviderTab('earnings')" class="text-primary hover:text-blue-800 font-medium text-xs mt-2 underline">Withdraw now &rarr;</button>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
-                    <h3 class="font-bold text-lg mb-4 text-gray-800">Earnings Trend (30 Days)</h3>
-                    <div class="h-64"><canvas id="earningsChart"></canvas></div>
-                </div>
-            </section>
+                </section>
 
-            <section id="panel-publish-api" class="provider-panel hidden animate-fade-in">
-                <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
-                    <h2 class="text-xl font-bold mb-6 border-b pb-4">Create New API Contract</h2>
-                    <form class="space-y-6" onsubmit="event.preventDefault(); alert('API Published to Sandbox!'); switchProviderTab('my-apis');">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div><label class="block text-sm font-medium mb-1">API Name *</label><input type="text" class="w-full px-4 py-2 border rounded-md focus:form-input-focus" required placeholder="e.g. NFT Metadata Scraper"></div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Category *</label>
-                                <select class="w-full px-4 py-2 border rounded-md focus:form-input-focus" required>
-                                    <option value="web3">Web3 / Blockchain</option><option value="ai">AI / ML</option><option value="data">Data Analytics</option>
+                <section id="dash-publish" class="dash-section hidden animate-fade-in">
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <h2 class="text-xl font-bold mb-4">Publish New API</h2>
+                        <form class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label class="block text-sm font-medium mb-1">API Name *</label><input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="e.g. Wallet Risk Assessment API"></div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">API Category *</label>
+                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">
+                                        <option value="">Select Category</option>
+                                        <option value="web3">Web3 / Blockchain</option>
+                                        <option value="ai">AI / Machine Learning</option>
+                                        <option value="data">Data Analytics</option>
+                                        <option value="utility">Utility Tools</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium mb-1">API Description *</label>
+                                    <textarea rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="Describe your API functionality, use cases, and requirements"></textarea>
+                                </div>
+                                <div><label class="block text-sm font-medium mb-1">API Endpoint URL *</label><input type="url" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="https://api.yourdomain.com/v1/endpoint"></div>
+                                <div><label class="block text-sm font-medium mb-1">Authentication Type</label><select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors"><option value="none">None</option><option value="api-key">API Key</option><option value="bearer">Bearer Token</option></select></div>
+                            </div>
+                            <div class="border-t pt-6">
+                                <h3 class="font-semibold mb-4">Bonding Curve Configuration</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div><label class="block text-sm font-medium mb-1">Initial Price (USD per call) *</label><input type="number" step="0.01" min="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="0.01"></div>
+                                    <div><label class="block text-sm font-medium mb-1">Capacity (Total Calls) *</label><input type="number" min="100" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="10000"></div>
+                                    <div><label class="block text-sm font-medium mb-1">Curve Type *</label><select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors"><option value="linear">Linear</option><option value="exponential">Exponential</option><option value="logarithmic">Logarithmic</option></select></div>
+                                </div>
+                                <div class="mt-4 p-4 bg-light rounded-md">
+                                    <p class="text-sm text-textSub mb-2">Bonding Curve Preview</p>
+                                    <div class="h-40 relative">
+                                        <svg width="100%" height="100%" viewBox="0 0 400 150" class="absolute">
+                                            <line x1="50" y1="120" x2="350" y2="120" stroke="#718096" stroke-width="1" />
+                                            <line x1="50" y1="120" x2="50" y2="20" stroke="#718096" stroke-width="1" />
+                                            <path d="M50,120 Q150,110 250,60 T350,20" fill="none" stroke="#5E6AD2" stroke-width="2" />
+                                            <text x="100" y="135" fill="#718096" font-size="10">Supply (Calls)</text>
+                                            <text x="30" y="30" fill="#718096" font-size="10" transform="rotate(-90, 30, 30)">Price (USD)</text>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-end gap-4 pt-4">
+                                <button type="button" class="px-6 py-2 border border-gray-300 text-textSub rounded-md hover:bg-light transition-colors">Save as Draft</button>
+                                <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2"><i class="fa-solid fa-cloud-upload"></i> Publish API</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section id="dash-myapis" class="dash-section hidden animate-fade-in">
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold">My Published APIs</h2>
+                            <button onclick="document.querySelector('a[href=\'#dash-publish\']').click()" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2 text-sm"><i class="fa-solid fa-plus"></i> New API</button>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-4 mb-6">
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm">Status:</label>
+                                <select class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:form-input-focus">
+                                    <option value="all">All</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="draft">Draft</option>
                                 </select>
                             </div>
-                            <div class="md:col-span-2"><label class="block text-sm font-medium mb-1">Endpoint URL *</label><input type="url" class="w-full px-4 py-2 border rounded-md focus:form-input-focus" required placeholder="https://api.yourdomain.com/v1"></div>
-                        </div>
-                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 mt-6">
-                            <h3 class="font-bold mb-4 text-primary"><i class="fa-solid fa-chart-line mr-2"></i>Bonding Curve Configuration</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div><label class="block text-sm font-medium mb-1">Initial Price (ETH) *</label><input type="number" step="0.001" class="w-full px-4 py-2 border rounded-md" value="0.01"></div>
-                                <div><label class="block text-sm font-medium mb-1">Capacity limit *</label><input type="number" class="w-full px-4 py-2 border rounded-md" value="10000"></div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1">Curve Type</label>
-                                    <select class="w-full px-4 py-2 border rounded-md"><option>Linear</option><option>Exponential</option></select>
+                            <div class="flex items-center gap-2">
+                                <label class="text-sm">Category:</label>
+                                <select class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:form-input-focus">
+                                    <option value="all">All</option>
+                                    <option value="web3">Web3 / Blockchain</option>
+                                    <option value="ai">AI / Machine Learning</option>
+                                    <option value="data">Data Analytics</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <div class="relative">
+                                    <input type="text" placeholder="Search APIs..." class="w-full px-4 py-1 pl-8 border border-gray-300 rounded-md text-sm focus:outline-none focus:form-input-focus">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-textSub text-sm"></i>
                                 </div>
                             </div>
                         </div>
-                        <div class="flex justify-end gap-4 pt-6">
-                            <button type="button" class="px-6 py-2 border border-gray-300 text-gray-600 rounded-md hover:bg-gray-50 font-medium">Draft</button>
-                            <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 font-medium shadow-md">Deploy Smart Contract</button>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead>
+                                    <tr class="border-b border-gray-200">
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">API Name</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Category</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Price (per call)</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Calls</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Earnings</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Status</th>
+                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b border-gray-100 hover:bg-light transition-colors">
+                                        <td class="py-3 px-4 text-sm font-medium">Wallet Risk Assessment API</td>
+                                        <td class="py-3 px-4 text-sm text-textSub">Web3 / Blockchain</td><td class="py-3 px-4 text-sm text-textSub">$0.01</td><td class="py-3 px-4 text-sm text-textSub">458</td><td class="py-3 px-4 text-sm text-textSub">$4.58</td>
+                                        <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Active</span></td>
+                                        <td class="py-3 px-4"><div class="flex gap-2"><button class="text-primary text-sm hover:underline">Edit</button><button class="text-warning text-sm hover:underline">Analytics</button><button class="text-danger text-sm hover:underline">Deactivate</button></div></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-100 hover:bg-light transition-colors">
+                                        <td class="py-3 px-4 text-sm font-medium">Smart Contract Scan API</td>
+                                        <td class="py-3 px-4 text-sm text-textSub">Web3 / Blockchain</td><td class="py-3 px-4 text-sm text-textSub">$0.02</td><td class="py-3 px-4 text-sm text-textSub">321</td><td class="py-3 px-4 text-sm text-textSub">$6.42</td>
+                                        <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Active</span></td>
+                                        <td class="py-3 px-4"><div class="flex gap-2"><button class="text-primary text-sm hover:underline">Edit</button><button class="text-warning text-sm hover:underline">Analytics</button><button class="text-danger text-sm hover:underline">Deactivate</button></div></td>
+                                    </tr>
+                                    <tr class="border-b border-gray-100 hover:bg-light transition-colors">
+                                        <td class="py-3 px-4 text-sm font-medium">NFT Metadata API</td>
+                                        <td class="py-3 px-4 text-sm text-textSub">Web3 / Blockchain</td><td class="py-3 px-4 text-sm text-textSub">$0.03</td><td class="py-3 px-4 text-sm text-textSub">210</td><td class="py-3 px-4 text-sm text-textSub">$6.30</td>
+                                        <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-warning/10 text-warning rounded-full">Under Review</span></td>
+                                        <td class="py-3 px-4"><div class="flex gap-2"><button class="text-primary text-sm hover:underline">Edit</button><button class="text-textSub text-sm hover:underline cursor-not-allowed">Analytics</button><button class="text-textSub text-sm hover:underline cursor-not-allowed">Deactivate</button></div></td>
+                                    </tr>
+                                    <tr class="hover:bg-light transition-colors">
+                                        <td class="py-3 px-4 text-sm font-medium">AI Image Generator API</td>
+                                        <td class="py-3 px-4 text-sm text-textSub">AI / ML</td><td class="py-3 px-4 text-sm text-textSub">$0.05</td><td class="py-3 px-4 text-sm text-textSub">0</td><td class="py-3 px-4 text-sm text-textSub">$0.00</td>
+                                        <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-gray-100 text-textSub rounded-full">Draft</span></td>
+                                        <td class="py-3 px-4"><div class="flex gap-2"><button class="text-primary text-sm hover:underline">Edit</button><button class="text-textSub text-sm hover:underline cursor-not-allowed">Analytics</button><button class="text-success text-sm hover:underline">Publish</button></div></td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                    </form>
-                </div>
-            </section>
-
-            <section id="panel-my-apis" class="provider-panel hidden animate-fade-in">
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-xl font-bold">Published APIs</h2>
-                        <button onclick="switchProviderTab('publish-api')" class="px-4 py-2 bg-primary text-white text-sm rounded-md hover:bg-primary/90"><i class="fa-solid fa-plus mr-1"></i> New</button>
+                        
+                        <div class="flex justify-between items-center mt-6">
+                            <p class="text-sm text-textSub">Showing 1-4 of 5 APIs</p>
+                            <div class="flex gap-2">
+                                <button class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md text-textSub hover:bg-light disabled:opacity-50 disabled:cursor-not-allowed" disabled><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                <button class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-md">1</button>
+                                <button class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-light">2</button>
+                                <button class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-light"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead>
-                                <tr class="border-b border-gray-200 text-textSub text-sm">
-                                    <th class="py-3 px-4 font-medium">Name</th>
-                                    <th class="py-3 px-4 font-medium">Price/Call</th>
-                                    <th class="py-3 px-4 font-medium">Total Calls</th>
-                                    <th class="py-3 px-4 font-medium">Status</th>
-                                    <th class="py-3 px-4 font-medium">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
-                                    <td class="py-4 px-4 font-bold text-sm">Wallet Risk Oracle</td>
-                                    <td class="py-4 px-4 text-sm">$0.01</td>
-                                    <td class="py-4 px-4 text-sm text-gray-500">458</td>
-                                    <td class="py-4 px-4"><span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-bold">Active</span></td>
-                                    <td class="py-4 px-4 flex gap-3 text-sm">
-                                        <button class="text-primary hover:underline">Edit</button>
-                                        <button class="text-danger hover:underline">Pause</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
+                </section>
 
-            <section id="panel-earnings" class="provider-panel hidden animate-fade-in">
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-6">
-                    <h2 class="text-xl font-bold mb-6">Withdraw Funds</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <p class="text-gray-500 text-sm mb-1">Available to withdraw</p>
-                            <h3 class="text-4xl font-extrabold text-gray-800 mb-6">$89.50</h3>
-                            <form onsubmit="event.preventDefault(); alert('Withdrawal initiated on Base network!');">
-                                <label class="block text-sm font-medium mb-1">Amount (USD)</label>
-                                <input type="number" class="w-full px-4 py-2 border rounded-md focus:form-input-focus mb-4" value="89.50" max="89.50">
-                                <label class="block text-sm font-medium mb-1">Network</label>
-                                <select class="w-full px-4 py-2 border rounded-md focus:form-input-focus mb-6"><option>Base (Low Gas)</option><option>Ethereum</option></select>
-                                <button type="submit" class="w-full py-3 bg-dark text-white rounded-md font-bold hover:bg-black transition">Withdraw to Wallet</button>
+                <section id="dash-earnings" class="dash-section hidden animate-fade-in">
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <h2 class="text-xl font-bold mb-6">Earnings & Withdrawals</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="p-4 border border-gray-100 rounded-lg"><p class="text-textSub text-sm">Total Earnings</p><h3 class="text-2xl font-bold mt-1">$128.90</h3><p class="text-success text-xs mt-2">+15% from last month</p></div>
+                            <div class="p-4 border border-gray-100 rounded-lg"><p class="text-textSub text-sm">Withdrawn Amount</p><h3 class="text-2xl font-bold mt-1">$39.40</h3><p class="text-textSub text-xs mt-2">4 withdrawals</p></div>
+                            <div class="p-4 border border-gray-100 rounded-lg"><p class="text-textSub text-sm">Pending Withdrawal</p><h3 class="text-2xl font-bold mt-1">$89.50</h3><button class="mt-2 px-3 py-1 text-xs bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Withdraw Now</button></div>
+                        </div>
+                        
+                        <div class="mb-6 border-t pt-6">
+                            <h3 class="font-semibold mb-4">Withdrawal History</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="border-b border-gray-200">
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Date</th>
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Amount</th>
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Wallet Address</th>
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Status</th>
+                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Tx Hash</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b border-gray-100 hover:bg-light transition-colors">
+                                            <td class="py-3 px-4 text-sm">2026-03-15</td><td class="py-3 px-4 text-sm font-medium">$25.00</td><td class="py-3 px-4 text-sm text-textSub">0x89...789</td>
+                                            <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Completed</span></td>
+                                            <td class="py-3 px-4 text-sm text-primary hover:underline cursor-pointer">0x123...456</td>
+                                        </tr>
+                                        <tr class="border-b border-gray-100 hover:bg-light transition-colors">
+                                            <td class="py-3 px-4 text-sm">2026-02-20</td><td class="py-3 px-4 text-sm font-medium">$14.40</td><td class="py-3 px-4 text-sm text-textSub">0x89...789</td>
+                                            <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Completed</span></td>
+                                            <td class="py-3 px-4 text-sm text-primary hover:underline cursor-pointer">0x789...012</td>
+                                        </tr>
+                                        <tr class="hover:bg-light transition-colors">
+                                            <td class="py-3 px-4 text-sm">2026-03-22</td><td class="py-3 px-4 text-sm font-medium">$89.50</td><td class="py-3 px-4 text-sm text-textSub">0x89...789</td>
+                                            <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-warning/10 text-warning rounded-full">Processing</span></td>
+                                            <td class="py-3 px-4 text-sm text-textSub">-</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-6">
+                            <h3 class="font-semibold mb-4">Request Withdrawal</h3>
+                            <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Withdrawal Amount (USD) *</label>
+                                    <input type="number" step="0.01" max="89.50" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="Enter amount">
+                                    <p class="text-xs text-textSub mt-1">Maximum withdrawable: $89.50</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Recipient Wallet Address *</label>
+                                    <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" value="0x89...789">
+                                    <p class="text-xs text-textSub mt-1">Connected wallet address</p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium mb-1">Network</label>
+                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">
+                                        <option value="ethereum">Ethereum</option>
+                                        <option value="base" selected>Base (Low Gas)</option>
+                                        <option value="arbitrum">Arbitrum</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2 flex justify-end"><button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Submit Withdrawal Request</button></div>
                             </form>
                         </div>
-                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                            <h4 class="font-bold mb-4">Recent History</h4>
-                            <ul class="space-y-4 text-sm">
-                                <li class="flex justify-between items-center border-b pb-2"><span class="text-gray-500">Mar 15, 2026</span><span class="font-bold text-green-600">+$45.20</span></li>
-                                <li class="flex justify-between items-center border-b pb-2"><span class="text-gray-500">Feb 28, 2026</span><span class="font-bold text-gray-800">-$25.00</span></li>
-                            </ul>
+                    </div>
+                </section>
+
+                <section id="dash-settings" class="dash-section hidden animate-fade-in">
+                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                        <h2 class="text-xl font-bold mb-6">Developer Settings</h2>
+                        
+                        <div class="mb-8">
+                            <h3 class="font-semibold mb-4">Profile Information</h3>
+                            <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div><label class="block text-sm font-medium mb-1">Display Name *</label><input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" value="John Developer"></div>
+                                <div><label class="block text-sm font-medium mb-1">Email Address</label><input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" value="john.dev@example.com"></div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium mb-1">Bio</label>
+                                    <textarea rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">Web3 developer specializing in blockchain APIs and smart contract development.</textarea>
+                                </div>
+                                <div class="md:col-span-2 flex justify-end"><button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Save Changes</button></div>
+                            </form>
+                        </div>
+
+                        <div class="mb-8 border-t pt-6">
+                            <h3 class="font-semibold mb-4">Wallet Settings</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center p-4 bg-light rounded-md">
+                                    <div><p class="font-medium">Primary Wallet</p><p class="text-sm text-textSub dash-wallet-addr">0x89...789 (Ethereum/Base)</p></div>
+                                    <button class="px-4 py-2 text-sm border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">Change</button>
+                                </div>
+                                <div class="flex justify-between items-center p-4 bg-light rounded-md">
+                                    <div><p class="font-medium">Gas Fee Preference</p><p class="text-sm text-textSub">Low (Base/Arbitrum)</p></div>
+                                    <button class="px-4 py-2 text-sm border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">Adjust</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="border-t pt-6">
+                            <h3 class="font-semibold mb-4">Notification Preferences</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div><p class="font-medium">API Call Notifications</p><p class="text-sm text-textSub">Receive alerts when your API is called</p></div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div><p class="font-medium">Earnings Notifications</p><p class="text-sm text-textSub">Receive alerts when you earn from API calls</p></div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div><p class="font-medium">Withdrawal Notifications</p><p class="text-sm text-textSub">Receive alerts when withdrawals are processed</p></div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div><p class="font-medium">Marketing Emails</p><p class="text-sm text-textSub">Receive updates about new features and promotions</p></div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                            <button class="mt-6 px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Save Notification Settings</button>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            </main>
+        </div>
+    </div>
 
-            <section id="panel-settings" class="provider-panel hidden animate-fade-in">
-                <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
-                    <h2 class="text-xl font-bold mb-6">Developer Settings</h2>
-                    <div class="space-y-6 max-w-2xl">
-                        <div><label class="block text-sm font-medium mb-1">Display Name</label><input type="text" class="w-full px-4 py-2 border rounded-md" value="John Developer"></div>
-                        <button class="px-6 py-2 bg-primary text-white rounded-md font-medium shadow-sm hover:bg-primary/90 mt-4">Save Changes</button>
-                    </div>
+    <div id="view-wallet-states" class="view-section min-h-screen pt-10 px-4">
+        <div class="absolute top-4 left-4">
+            <button onclick="switchView('view-home')" class="text-gray-500 hover:text-gray-800 font-bold flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Home</button>
+        </div>
+        <h1 class="text-3xl font-bold mb-8 text-center mt-8">Wallet Connection UI States (Reference)</h1>
+        <div class="bg-white p-8 rounded-lg shadow-md mb-10 max-w-4xl mx-auto">
+            <h2 class="text-xl font-bold mb-6 border-b pb-2">Button States (Top Navigation)</h2>
+            <div class="flex flex-col md:flex-row gap-8 items-center justify-center">
+                <div class="text-center">
+                    <p class="text-sm text-gray-500 mb-2">State 1: Not Connected</p>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow">Connect Wallet</button>
                 </div>
-            </section>
-        </main>
+                <div class="text-center">
+                    <p class="text-sm text-gray-500 mb-2">State 2: Connecting...</p>
+                    <button class="bg-gray-400 text-white font-bold py-2 px-6 rounded-full cursor-wait flex items-center justify-center gap-2"><span>⏳</span> Processing...</button>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm text-gray-500 mb-2">State 3: Connected</p>
+                    <button class="bg-green-100 border border-green-500 text-green-700 hover:bg-green-200 font-bold py-2 px-6 rounded-full flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-500"></span> 0x1A2B...3C4D
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
         // Global State
-        let selectedRole = 'buyer';
-        let userLoggedIn = false;
-        let walletConnected = false; 
-        let chartInstance = null;
+        let isLoggedIn = false;
+        let userData = { role: '', username: '', wallet: '' };
 
-        // Modals Control
-        function openModal(id) { document.getElementById(id).classList.replace('modal-inactive', 'modal-active'); }
-        function closeModal(id) { document.getElementById(id).classList.replace('modal-active', 'modal-inactive'); }
-
-        // Login Logic
-        function switchAuthTab(tab) {
-            document.getElementById('loginForm').classList.toggle('hidden', tab !== 'login');
-            document.getElementById('registerForm').classList.toggle('hidden', tab === 'login');
-        }
-        function selectRole(role, btnElement) {
-            selectedRole = role;
-            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('bg-blue-50', 'border-blue-400', 'text-blue-600', 'bg-green-50', 'border-green-400', 'text-green-600'));
-            if(role === 'buyer') btnElement.classList.add('bg-blue-50', 'border-blue-400', 'text-blue-600');
-            if(role === 'provider') btnElement.classList.add('bg-green-50', 'border-green-400', 'text-green-600');
-        }
-        function executeLogin() {
-            userLoggedIn = true; closeModal('authModal'); document.getElementById('navLoginBtn').classList.add('hidden');
-            switchView(selectedRole === 'provider' ? 'provider' : 'buyer');
-        }
-        function logout() {
-            userLoggedIn = false; document.getElementById('navLoginBtn').classList.remove('hidden'); switchView('home');
-        }
-
-        // View Navigation
-        function switchView(view) {
-            document.getElementById('view-home').classList.add('hidden');
-            document.getElementById('view-buyer').classList.add('hidden');
-            document.getElementById('view-provider').classList.add('hidden');
+        /* ----------------------------------
+           Routing & View Management
+           ---------------------------------- */
+        function switchView(viewId) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.remove('view-active', 'view-flex-active');
+            });
+            // Show targeted view
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                // Determine display type based on structure
+                if(viewId === 'view-login' || viewId === 'view-provider') {
+                     targetView.classList.add('view-flex-active');
+                } else {
+                     targetView.classList.add('view-active');
+                }
+            }
             
-            document.getElementById('sharedNavbar').classList.remove('hidden');
-            document.getElementById('mainContent').classList.remove('hidden');
+            // Close mobile menu if open
+            document.getElementById('mobileMenu').classList.add('hidden');
+            const menuIcon = document.querySelector('#menuBtn i');
+            if(menuIcon) { menuIcon.classList.remove('fa-times'); menuIcon.classList.add('fa-bars'); }
 
-            if(view === 'home') document.getElementById('view-home').classList.remove('hidden');
-            else if (view === 'buyer') document.getElementById('view-buyer').classList.remove('hidden');
-            else if (view === 'provider') {
-                document.getElementById('sharedNavbar').classList.add('hidden');
-                document.getElementById('mainContent').classList.add('hidden');
-                document.getElementById('view-provider').classList.remove('hidden');
-                // Reload chart when provider view is active
-                setTimeout(initChart, 100);
+            // Initialize Provider Chart if switching to provider dashboard
+            if (viewId === 'view-provider' && !window.chartInitialized) {
+                initProviderChart();
+                window.chartInitialized = true;
             }
         }
 
-        // Provider Dashboard Inner Navigation
-        function switchProviderTab(tabId) {
-            document.querySelectorAll('.provider-tab').forEach(el => {
-                el.classList.remove('sidebar-active', 'bg-primary/10');
-                el.classList.add('hover:bg-light');
-            });
-            const activeTab = document.getElementById('tab-' + tabId);
-            activeTab.classList.add('sidebar-active', 'bg-primary/10');
-            activeTab.classList.remove('hover:bg-light');
-
-            document.querySelectorAll('.provider-panel').forEach(panel => panel.classList.add('hidden'));
-            document.getElementById('panel-' + tabId).classList.remove('hidden');
-            
-            const titles = { 'dashboard': 'Overview', 'publish-api': 'Publish API', 'my-apis': 'My APIs', 'earnings': 'Earnings & Withdrawals', 'settings': 'Account Settings' };
-            document.getElementById('dashTitle').innerText = titles[tabId];
+        function handleProtectedRoute(viewId) {
+            if(!isLoggedIn && viewId === 'view-provider') {
+                document.getElementById('authModal').classList.add('modal-active');
+            } else {
+                switchView(viewId);
+            }
         }
 
-        // --- WALLET SYNC LOGIC ---
-        function simulateWalletConnect(walletName) {
-            // Target both buttons (Nav bar and Provider Header)
-            const btns = document.querySelectorAll('.wallet-btn');
-            
-            btns.forEach(btn => {
-                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Connecting...`; 
-                btn.classList.add('cursor-wait', 'opacity-70');
-            });
+        /* ----------------------------------
+           Navbar Scrolling & Mobile Menu
+           ---------------------------------- */
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('nav-scrolled', window.scrollY > 50);
+            if(window.scrollY > 50) {
+                navbar.classList.remove('bg-transparent', 'py-4');
+                navbar.classList.add('bg-white/90', 'backdrop-blur', 'py-3');
+            } else {
+                navbar.classList.add('bg-transparent', 'py-4');
+                navbar.classList.remove('bg-white/90', 'backdrop-blur', 'py-3');
+            }
+        });
 
-            setTimeout(() => {
-                closeModal('walletModal');
-                walletConnected = true; 
-                const connectedHtml = `<span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>0x1A2B...3C4D`;
+        document.getElementById('menuBtn').addEventListener('click', () => {
+            const mobileMenu = document.getElementById('mobileMenu');
+            const icon = document.querySelector('#menuBtn i');
+            mobileMenu.classList.toggle('hidden');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+
+        /* ----------------------------------
+           Auth Modal Management
+           ---------------------------------- */
+        const authModal = document.getElementById('authModal');
+        const loginBtnMain = document.getElementById('loginBtnMain');
+        const closeModal = document.getElementById('closeModal');
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        
+        loginBtnMain.addEventListener('click', () => authModal.classList.add('modal-active'));
+        closeModal.addEventListener('click', () => authModal.classList.remove('modal-active'));
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) authModal.classList.remove('modal-active');
+        });
+        
+        // Tab Switching
+        registerTab.addEventListener('click', () => {
+            loginTab.classList.remove('border-primary', 'text-primary');
+            registerTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+        });
+        loginTab.addEventListener('click', () => {
+            registerTab.classList.remove('border-primary', 'text-primary');
+            loginTab.classList.add('border-b-2', 'border-primary', 'text-primary');
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        });
+
+        // Register Role Toggles
+        document.getElementById('providerBtn').addEventListener('click', (e) => {
+            e.target.classList.add('bg-primary/10', 'border-primary', 'text-primary');
+            document.getElementById('buyerBtn').classList.remove('bg-primary/10', 'border-primary', 'text-primary');
+            document.getElementById('userRole').value = 'provider';
+        });
+        document.getElementById('buyerBtn').addEventListener('click', (e) => {
+            e.target.classList.add('bg-primary/10', 'border-primary', 'text-primary');
+            document.getElementById('providerBtn').classList.remove('bg-primary/10', 'border-primary', 'text-primary');
+            document.getElementById('userRole').value = 'buyer';
+        });
+
+        // Simulate Login & Register
+        function updateUIAuth() {
+            document.getElementById('dashUsername').textContent = userData.username;
+            document.getElementById('dashUserInitials').textContent = userData.username.slice(0,2).toUpperCase();
+            loginBtnMain.innerHTML = `<i class="fa-solid fa-user mr-2"></i>${userData.username}`;
+            loginBtnMain.classList.replace('text-primary', 'text-gray-700');
+            loginBtnMain.classList.replace('border-primary', 'border-gray-300');
+        }
+
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            isLoggedIn = true;
+            userData.username = document.getElementById('loginEmail').value.split('@')[0] || 'User';
+            userData.role = 'provider';
+            authModal.classList.remove('modal-active');
+            updateUIAuth();
+            if(document.getElementById('view-home').classList.contains('view-active')) {
+                switchView('view-provider');
+            }
+        });
+
+        document.getElementById('registerBtn').addEventListener('click', () => {
+            isLoggedIn = true;
+            userData.username = document.getElementById('regUsername').value || 'NewUser';
+            userData.role = document.getElementById('userRole').value;
+            authModal.classList.remove('modal-active');
+            updateUIAuth();
+            switchView(userData.role === 'provider' ? 'view-provider' : 'view-buyer');
+        });
+
+        /* ----------------------------------
+           Wallet Modal Management
+           ---------------------------------- */
+        const walletModal = document.getElementById('walletModal');
+        const closeWalletModal = document.getElementById('closeWalletModal');
+        const walletBtns = document.querySelectorAll('.btn-open-wallet');
+        const walletStatusTexts = document.querySelectorAll('.wallet-status-text');
+
+        walletBtns.forEach(btn => {
+            btn.addEventListener('click', () => walletModal.classList.add('modal-active'));
+        });
+        closeWalletModal.addEventListener('click', () => walletModal.classList.remove('modal-active'));
+        walletModal.addEventListener('click', (e) => {
+            if (e.target === walletModal) walletModal.classList.remove('modal-active');
+        });
+
+        document.getElementById('connectMetamask').addEventListener('click', async () => {
+            if (!window.ethereum) { alert('Please install MetaMask to test functionality!'); return; }
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const shortAddr = `${accounts[0].slice(0,6)}...${accounts[0].slice(-4)}`;
+                userData.wallet = accounts[0];
                 
-                btns.forEach(btn => {
-                    btn.innerHTML = connectedHtml;
-                    btn.classList.remove('cursor-wait', 'opacity-70', 'bg-primary', 'bg-gray-200', 'text-white', 'text-gray-700');
-                    btn.classList.add('bg-green-50', 'border', 'border-green-500', 'text-green-700');
+                walletStatusTexts.forEach(text => {
+                    text.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-300 inline-block mr-1"></span>${shortAddr}`;
                 });
-            }, 1500);
-        }
-
-        // --- BUYER FLOW LOGIC ---
-        function initiateBuy(apiName) {
-            if (!walletConnected) {
-                alert('Connection Required: Please connect your Web3 wallet to interact with smart contracts.');
-                openModal('walletModal');
-                return;
-            }
-            document.getElementById('buyApiTitle').innerText = 'Purchase: ' + apiName;
-            openModal('buyApiModal');
-        }
-
-        function closeBuyModal() {
-            closeModal('buyApiModal');
-            document.getElementById('apiStatusSection').classList.add('hidden');
-            document.getElementById('apiResultBox').classList.add('hidden');
-            document.getElementById('txStatusList').innerHTML = '';
-            document.getElementById('apiParamInput').value = '';
-            
-            const btn = document.getElementById('confirmBuyBtn');
-            btn.innerHTML = `<i class="fa-solid fa-bolt text-yellow-400"></i><span>Pay & Execute API</span>`;
-            btn.classList.remove('bg-gray-400', 'cursor-not-allowed', 'bg-success');
-            btn.classList.add('bg-dark', 'hover:bg-black');
-            btn.disabled = false;
-        }
-
-        function executeBuyFlow() {
-            const paramInput = document.getElementById('apiParamInput').value;
-            if(!paramInput) { alert('Please enter target parameters first.'); return; }
-
-            const btn = document.getElementById('confirmBuyBtn');
-            const statusSection = document.getElementById('apiStatusSection');
-            const statusList = document.getElementById('txStatusList');
-            const resultBox = document.getElementById('apiResultBox');
-
-            btn.disabled = true;
-            btn.className = "w-full bg-gray-400 text-white font-bold py-3 px-4 rounded-lg cursor-not-allowed flex justify-center items-center gap-2";
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>Processing transaction...</span>`;
-            
-            statusSection.classList.remove('hidden');
-            statusList.innerHTML = `<li class="flex items-center gap-2"><i class="fa-solid fa-circle-notch fa-spin text-primary"></i> Interacting with Smart Contract...</li>`;
-
-            setTimeout(() => {
-                statusList.innerHTML += `<li class="flex items-center gap-2 text-green-600"><i class="fa-solid fa-check"></i> Smart Contract Executed</li>`;
-                statusList.innerHTML += `<li class="flex items-center gap-2 mt-1"><i class="fa-solid fa-circle-notch fa-spin text-primary"></i> Minting Access Token...</li>`;
+                document.querySelectorAll('.dash-wallet-addr').forEach(el => el.textContent = shortAddr);
                 
-                setTimeout(() => {
-                    statusList.innerHTML += `<li class="flex items-center gap-2 text-green-600"><i class="fa-solid fa-check"></i> Token Minted Successfully</li>`;
-                    statusList.innerHTML += `<li class="flex items-center gap-2 mt-1"><i class="fa-solid fa-circle-notch fa-spin text-primary"></i> Gateway verifying token & calling API...</li>`;
-                    
-                    setTimeout(() => {
-                        statusList.innerHTML += `<li class="flex items-center gap-2 text-green-600"><i class="fa-solid fa-check"></i> API Request Successful</li>`;
-                        btn.className = "w-full bg-success text-white font-bold py-3 px-4 rounded-lg flex justify-center items-center gap-2";
-                        btn.innerHTML = `<i class="fa-solid fa-check-circle"></i><span>Purchase Complete</span>`;
-                        
-                        resultBox.classList.remove('hidden');
-                        resultBox.innerHTML = `
-                            <p class="font-bold text-gray-800 mb-1">API Response JSON:</p>
-                            {<br>&nbsp;&nbsp;"target": "${paramInput}",<br>&nbsp;&nbsp;"risk_score": 85,<br>&nbsp;&nbsp;"status": "High Risk",<br>&nbsp;&nbsp;"transaction_hash": "0x4f...9a1"<br>}
-                        `;
-                    }, 1500); 
-                }, 1500); 
-            }, 1000); 
-        }
+                walletModal.classList.remove('modal-active');
+            } catch (error) {
+                console.error(error);
+            }
+        });
 
-        // --- CHART INITIALIZATION ---
-        function initChart() {
-            const ctx = document.getElementById('earningsChart');
-            if(!ctx) return;
-            if(chartInstance) chartInstance.destroy(); 
-            
-            chartInstance = new Chart(ctx.getContext('2d'), {
+        document.getElementById('disconnectWallet').addEventListener('click', () => {
+            userData.wallet = '';
+            walletStatusTexts.forEach(text => text.innerHTML = `Connect Wallet`);
+            document.querySelectorAll('.dash-wallet-addr').forEach(el => el.textContent = 'Not Connected');
+        });
+
+        /* ----------------------------------
+           Provider Dashboard Sidebar
+           ---------------------------------- */
+        const dashNavLinks = document.querySelectorAll('#providerNav a');
+        const dashSections = document.querySelectorAll('.dash-section');
+
+        dashNavLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                dashNavLinks.forEach(nav => nav.classList.remove('sidebar-active'));
+                link.classList.add('sidebar-active');
+                
+                dashSections.forEach(sec => sec.classList.add('hidden'));
+                const targetId = link.getAttribute('href').substring(1);
+                document.getElementById(targetId).classList.remove('hidden');
+            });
+        });
+
+        /* ----------------------------------
+           Chart.js Initialization
+           ---------------------------------- */
+        function initProviderChart() {
+            const canvas = document.getElementById('earningsChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: ['1', '5', '10', '15', '20', '25', '30'],
                     datasets: [{
-                        label: 'Earnings (USD)', data: [12, 19, 35, 25, 42, 38, 55],
-                        borderColor: '#5E6AD2', backgroundColor: 'rgba(94, 106, 210, 0.15)',
-                        fill: true, tension: 0.4, borderWidth: 3, pointBackgroundColor: '#5E6AD2', pointRadius: 4
+                        label: 'Daily Earnings (USD)',
+                        data: [2.5, 3.8, 4.2, 3.5, 5.1, 4.8, 5.5],
+                        borderColor: '#5E6AD2',
+                        backgroundColor: 'rgba(94, 106, 210, 0.1)',
+                        fill: true,
+                        tension: 0.4
                     }]
                 },
                 options: {
-                    responsive: true, maintainAspectRatio: false,
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, grid: { color: '#F5F7FA' }, border: { dash: [4, 4] } },
+                        y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } },
                         x: { grid: { display: false } }
                     }
                 }
             });
         }
+
+        /* ----------------------------------
+           Gateway Health Check
+           ---------------------------------- */
+        const API_BASE = 'http://localhost:3000/api';
+
+        async function checkGateway() {
+            const el = document.getElementById('gatewayStatus');
+            if(!el) return;
+            try {
+                // Added a timeout mechanism for demo environments where the backend might not exist
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                const res = await fetch(`${API_BASE}/health`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                const data = await res.json();
+                el.textContent = `Gateway: ${data.status} (time ${new Date(data.time || Date.now()).toLocaleTimeString()})`;
+                el.style.color = '#38A169'; // green
+            } catch (err) {
+                el.textContent = 'Gateway: unreachable';
+                el.style.color = '#E53E3E'; // red
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', checkGateway);
     </script>
 </body>
 </html>
