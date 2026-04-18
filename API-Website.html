@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Bazaar - Full Integrated Platform</title>
+    <title>API Bazaar - Decentralized API Marketplace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -80,49 +80,45 @@
                 <button id="registerTab" class="px-4 py-2 font-medium text-textSub">Register</button>
             </div>
 
-            <div id="loginForm">
+            <form id="loginForm" onsubmit="return false;">
                 <h2 class="text-xl font-bold mb-4">Welcome Back</h2>
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-1">Email</label>
-                        <input type="email" id="loginEmail" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                        <input type="email" id="loginEmail" required class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Password</label>
-                        <input type="password" id="loginPwd" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                        <input type="password" id="loginPwd" required class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
                     </div>
-                    <button id="loginBtn" class="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Login</button>
+                    <button type="submit" id="loginBtn" class="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Login</button>
                 </div>
-            </div>
+            </form>
 
-            <div id="registerForm" class="hidden">
+            <form id="registerForm" class="hidden" onsubmit="return false;">
                 <h2 class="text-xl font-bold mb-4">Create Account</h2>
                 <div class="space-y-4">
                     <div class="flex gap-4">
-                        <button id="providerBtn" class="flex-1 py-2 border border-primary text-primary rounded-md bg-primary/10 transition-colors">API Provider</button>
-                        <button id="buyerBtn" class="flex-1 py-2 border border-gray-300 text-textSub rounded-md transition-colors">API Buyer</button>
+                        <button type="button" id="providerBtn" class="flex-1 py-2 border border-primary text-primary rounded-md bg-primary/10 transition-colors">API Provider</button>
+                        <button type="button" id="buyerBtn" class="flex-1 py-2 border border-gray-300 text-textSub rounded-md transition-colors">API Buyer</button>
                     </div>
                     <input type="hidden" id="userRole" value="provider">
                     
                     <div>
                         <label class="block text-sm font-medium mb-1">Username</label>
-                        <input type="text" id="regUsername" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                        <input type="text" id="regUsername" required class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Email</label>
-                        <input type="email" id="regEmail" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                        <input type="email" id="regEmail" required class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-medium mb-1">Password</label>
-                        <input type="password" id="regPwd" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
+                        <input type="password" id="regPwd" required class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Confirm Password</label>
-                        <input type="password" id="regConfirmPwd" class="w-full px-4 py-2 border rounded-md focus:form-input-focus outline-none">
-                    </div>
-                    <button id="registerBtn" class="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Register</button>
+                    <button type="submit" id="registerBtn" class="w-full py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Register</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -137,7 +133,7 @@
                     <span class="font-bold text-gray-700">MetaMask</span>
                     <span class="text-2xl">🦊</span>
                 </button>
-                <button class="flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition">
+                <button class="flex items-center justify-between p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition opacity-50 cursor-not-allowed">
                     <span class="font-bold text-gray-700">WalletConnect</span>
                     <span class="text-2xl">🔗</span>
                 </button>
@@ -151,21 +147,20 @@
     <div id="view-home" class="view-section view-active bg-white">
         <nav id="navbar" class="fixed top-0 left-0 w-full z-40 transition-all duration-300 bg-transparent py-4">
             <div class="container mx-auto px-4 md:px-8 flex justify-between items-center">
-                <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('view-home')">
-                    <i class="fa-solid fa-link-chain text-primary text-2xl"></i>
-                    <span class="text-xl font-bold text-textMain">API Bazaar</span>
+                <div class="flex items-center cursor-pointer" onclick="switchView('view-home')">
+                    <img src="logo.jpg" alt="API Bazaar Logo" class="h-10 md:h-12 object-contain hover:opacity-80 transition-opacity">
                 </div>
                 
                 <div class="hidden md:flex items-center gap-8">
-                    <a href="#values" class="text-textMain hover:text-primary transition-colors">Values</a>
-                    <a href="#" onclick="switchView('view-buyer')" class="text-textMain hover:text-primary transition-colors">Marketplace</a>
-                    <a href="#" onclick="switchView('view-wallet-states')" class="text-textMain hover:text-primary transition-colors">UI Demos</a>
+                    <a href="#values" class="text-textMain hover:text-primary transition-colors font-medium">Values</a>
+                    <a href="#" onclick="switchView('view-buyer')" class="text-textMain hover:text-primary transition-colors font-medium">Marketplace</a>
+                    <a href="#" onclick="switchView('view-wallet-states')" class="text-textMain hover:text-primary transition-colors font-medium">UI Demos</a>
                 </div>
                 
                 <div class="flex items-center gap-4">
-                    <button id="loginBtnMain" class="px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">Login / Auth</button>
-                    <button onclick="switchView('view-login')" class="hidden md:block px-4 py-2 border border-gray-300 text-textSub rounded-md hover:bg-gray-50 transition-colors">Roles</button>
-                    <button class="btn-open-wallet px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2">
+                    <button id="loginBtnMain" class="px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors font-medium">Login / Auth</button>
+                    <button onclick="switchView('view-login')" class="hidden md:block px-4 py-2 border border-gray-300 text-textSub rounded-md hover:bg-gray-50 transition-colors font-medium">Roles</button>
+                    <button class="btn-open-wallet px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2 font-medium">
                         <i class="fa-solid fa-wallet"></i>
                         <span class="wallet-status-text">Connect Wallet</span>
                     </button>
@@ -175,11 +170,11 @@
                 </div>
             </div>
             
-            <div id="mobileMenu" class="md:hidden hidden bg-white shadow-lg absolute w-full top-full left-0">
+            <div id="mobileMenu" class="md:hidden hidden bg-white shadow-lg absolute w-full top-full left-0 border-t">
                 <div class="container mx-auto px-4 py-4 flex flex-col gap-4">
-                    <a href="#values" class="text-textMain hover:text-primary transition-colors py-2">Values</a>
-                    <a href="#" onclick="switchView('view-buyer')" class="text-textMain hover:text-primary transition-colors py-2">Marketplace</a>
-                    <a href="#" onclick="switchView('view-login')" class="text-textMain hover:text-primary transition-colors py-2">Role Selection</a>
+                    <a href="#values" class="text-textMain hover:text-primary transition-colors py-2 font-medium">Values</a>
+                    <a href="#" onclick="switchView('view-buyer')" class="text-textMain hover:text-primary transition-colors py-2 font-medium">Marketplace</a>
+                    <a href="#" onclick="switchView('view-login')" class="text-textMain hover:text-primary transition-colors py-2 font-medium">Role Selection</a>
                     <a href="#" onclick="switchView('view-provider')" class="text-primary py-2 font-medium">Developer Dashboard</a>
                 </div>
             </div>
@@ -188,21 +183,21 @@
         <section class="pt-32 pb-20 md:pt-40 md:pb-32 bg-light relative overflow-hidden">
             <div class="container mx-auto px-4 md:px-8 flex flex-col md:flex-row items-center gap-10">
                 <div class="md:w-3/5 animate-fade-in">
-                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4 text-gray-900">
                         Decentralized API Marketplace for the Long Tail
                     </h1>
-                    <p class="text-[clamp(1rem,2vw,1.25rem)] text-textSub mb-8 max-w-2xl">
+                    <p class="text-[clamp(1rem,2vw,1.25rem)] text-textSub mb-8 max-w-2xl leading-relaxed">
                         A decentralized API marketplace built for indie developers, featuring transparent pricing via on-chain bonding curves, pay-as-you-go access, and no subscription lock-ins or high commission fees.
                     </p>
                     <div class="flex flex-wrap gap-4 mb-6">
-                        <button onclick="handleProtectedRoute('view-provider')" class="px-8 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors font-medium shadow-lg hover:shadow-xl">Publish API</button>
-                        <button onclick="switchView('view-buyer')" class="px-8 py-3 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors font-medium">Explore API Marketplace</button>
+                        <button onclick="handleProtectedRoute('view-provider')" class="px-8 py-3 bg-primary text-white rounded-md hover:bg-primary/90 transition-all font-medium shadow-lg hover:shadow-xl hover:-translate-y-0.5">Publish API</button>
+                        <button onclick="switchView('view-buyer')" class="px-8 py-3 border-2 border-primary text-primary bg-white rounded-md hover:bg-primary/5 transition-all font-medium">Explore API Marketplace</button>
                     </div>
-                    <p class="text-sm text-textSub">
-                        Quick wallet connection via QR code, gas fees as low as $0.01, and O(1) smart contracts ensure efficient transactions.
+                    <p class="text-sm text-textSub flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-warning"></i> Quick wallet connection, gas fees as low as $0.01
                     </p>
                 </div>
-                <div class="md:w-2/5 relative animate-float">
+                <div class="md:w-2/5 relative animate-float hidden md:block">
                     <div class="w-full h-80 relative">
                         <svg width="100%" height="100%" viewBox="0 0 400 300" class="absolute top-0 left-0">
                             <defs>
@@ -211,578 +206,496 @@
                                     <stop offset="100%" stop-color="#165DFF" />
                                 </linearGradient>
                             </defs>
-                            <line x1="50" y1="250" x2="350" y2="250" stroke="#718096" stroke-width="2" />
-                            <line x1="50" y1="250" x2="50" y2="50" stroke="#718096" stroke-width="2" />
-                            <path d="M50,250 Q150,240 250,150 T350,50" fill="none" stroke="url(#curveGradient)" stroke-width="3" class="curve-visual" />
-                            <text x="100" y="270" fill="#718096" font-size="12">Supply</text>
-                            <text x="30" y="70" fill="#718096" font-size="12" transform="rotate(-90, 30, 70)">Price</text>
-                            <text x="150" y="230" fill="#5E6AD2" font-size="10" class="font-medium">Near Constant Pricing</text>
-                            <text x="300" y="80" fill="#165DFF" font-size="10" class="font-medium">Infinite Price at Capacity</text>
+                            <line x1="50" y1="250" x2="350" y2="250" stroke="#CBD5E0" stroke-width="2" />
+                            <line x1="50" y1="250" x2="50" y2="50" stroke="#CBD5E0" stroke-width="2" />
+                            <path d="M50,250 Q150,240 250,150 T350,50" fill="none" stroke="url(#curveGradient)" stroke-width="4" class="curve-visual shadow-lg" />
+                            <text x="100" y="270" fill="#718096" font-size="12" font-weight="500">Supply</text>
+                            <text x="30" y="70" fill="#718096" font-size="12" font-weight="500" transform="rotate(-90, 30, 70)">Price</text>
                         </svg>
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex gap-4">
-                            <i class="fa-solid fa-code text-primary text-4xl"></i>
-                            <i class="fa-solid fa-coins text-secondary text-4xl"></i>
-                            <i class="fa-solid fa-shield-halved text-primary text-4xl"></i>
-                        </div>
                     </div>
                 </div>
             </div>
             <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 to-secondary/5 -z-10"></div>
-            <div class="absolute top-20 right-20 w-40 h-40 bg-primary/10 rounded-full -z-10 blur-3xl"></div>
-            <div class="absolute bottom-20 left-20 w-60 h-60 bg-secondary/10 rounded-full -z-10 blur-3xl"></div>
+            <div class="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full -z-10 blur-3xl"></div>
+            <div class="absolute bottom-20 left-20 w-80 h-80 bg-secondary/10 rounded-full -z-10 blur-3xl"></div>
         </section>
 
-        <section id="values" class="py-20 bg-white">
+        <section id="values" class="py-24 bg-white">
             <div class="container mx-auto px-4 md:px-8">
-                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-center mb-16">Why Choose API Bazaar?</h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-center mb-16 text-gray-900">Why Choose API Bazaar?</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
-                        <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4"><i class="fa-solid fa-book-journal-whills text-primary text-xl"></i></div>
-                        <h3 class="text-xl font-semibold mb-3">Low Commission (0~5%)</h3>
-                        <p class="text-textSub">Say goodbye to 20-30% high commissions on traditional platforms. On-chain smart contracts automate revenue sharing.</p>
+                    <div class="p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 bg-white">
+                        <div class="w-14 h-14 flex items-center justify-center bg-primary/10 rounded-lg mb-6"><i class="fa-solid fa-percent text-primary text-2xl"></i></div>
+                        <h3 class="text-xl font-bold mb-3 text-gray-900">Low Commission (0~5%)</h3>
+                        <p class="text-textSub leading-relaxed">Say goodbye to 20-30% high commissions on traditional platforms. On-chain smart contracts automate revenue sharing securely.</p>
                     </div>
-                    <div class="p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
-                        <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4"><i class="fa-solid fa-chart-line text-primary text-xl"></i></div>
-                        <h3 class="text-xl font-semibold mb-3">Pay-as-You-Go, No Subscriptions</h3>
-                        <p class="text-textSub">API call rights are represented by tokens, minted based on actual usage. Bonding curve pricing is hardcoded in smart contracts.</p>
+                    <div class="p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 bg-white">
+                        <div class="w-14 h-14 flex items-center justify-center bg-secondary/10 rounded-lg mb-6"><i class="fa-solid fa-chart-line text-secondary text-2xl"></i></div>
+                        <h3 class="text-xl font-bold mb-3 text-gray-900">Pay-as-You-Go</h3>
+                        <p class="text-textSub leading-relaxed">API call rights are represented by tokens, minted based on actual usage. Bonding curve pricing is hardcoded in smart contracts.</p>
                     </div>
-                    <div class="p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-light">
-                        <div class="w-12 h-12 flex items-center justify-center bg-primary/10 rounded-md mb-4"><i class="fa-solid fa-shield-halved text-primary text-xl"></i></div>
-                        <h3 class="text-xl font-semibold mb-3">Anti-Abuse + Low Gas Fees</h3>
-                        <p class="text-textSub">Economic incentives replace rigid rate limits—bots need massive capital to exploit the curve. O(1) contract design keeps gas fees low.</p>
+                    <div class="p-8 rounded-xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 bg-white">
+                        <div class="w-14 h-14 flex items-center justify-center bg-success/10 rounded-lg mb-6"><i class="fa-solid fa-shield-halved text-success text-2xl"></i></div>
+                        <h3 class="text-xl font-bold mb-3 text-gray-900">Anti-Abuse & Low Gas</h3>
+                        <p class="text-textSub leading-relaxed">Economic incentives replace rigid rate limits—bots need massive capital to exploit the curve. O(1) contract design keeps gas fees minimal.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="py-20 bg-primary text-white relative overflow-hidden">
-            <div class="container mx-auto px-4 md:px-8 text-center relative z-10">
-                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4">Start Your Decentralized API Journey</h2>
-                <p class="text-white/80 mb-8 max-w-2xl mx-auto">Whether you're a developer publishing APIs or a user looking for niche APIs, connect your wallet now to start your experience.</p>
-                <div class="flex flex-wrap justify-center gap-4">
-                    <button onclick="handleProtectedRoute('view-provider')" class="px-8 py-3 bg-white text-primary rounded-md hover:bg-white/90 transition-colors font-medium shadow-lg">Publish My API</button>
-                    <button onclick="switchView('view-buyer')" class="px-8 py-3 border border-white text-white rounded-md hover:bg-white/10 transition-colors font-medium">Explore API Marketplace</button>
-                </div>
-            </div>
-            <div class="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
-            <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-white/10 rounded-full blur-2xl"></div>
-        </section>
-
-        <footer class="bg-dark text-gray-400 py-12">
+        <footer class="bg-dark text-gray-400 py-16">
             <div class="container mx-auto px-4 md:px-8">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                    <div class="col-span-1 md:col-span-2">
                         <div class="flex items-center gap-2 mb-4">
-                            <i class="fa-solid fa-link-chain text-primary text-xl"></i>
+                            <img src="logo.jpg" alt="API Bazaar Logo" class="h-8 object-contain grayscale opacity-70">
                             <span class="text-xl font-bold text-white">API Bazaar</span>
                         </div>
-                        <p class="text-sm leading-relaxed">Decentralized Marketplace for Long-Tail APIs<br>Making niche APIs monetizable, short-term needs accessible.</p>
+                        <p class="text-sm leading-relaxed max-w-sm">Decentralized Marketplace for Long-Tail APIs. Making niche APIs monetizable, and short-term development needs accessible to everyone.</p>
                     </div>
                     <div>
-                        <h4 class="text-white font-semibold mb-4">Product</h4>
-                        <ul class="space-y-2 text-sm">
-                            <li><a href="#" onclick="switchView('view-home')" class="hover:text-white transition-colors">Overview</a></li>
-                            <li><a href="#" onclick="switchView('view-buyer')" class="hover:text-white transition-colors">API Marketplace</a></li>
+                        <h4 class="text-white font-semibold mb-4">Platform</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" onclick="switchView('view-home')" class="hover:text-primary transition-colors">Overview</a></li>
+                            <li><a href="#" onclick="switchView('view-buyer')" class="hover:text-primary transition-colors">Explore Marketplace</a></li>
+                            <li><a href="#" onclick="handleProtectedRoute('view-provider')" class="hover:text-primary transition-colors">Developer Dashboard</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="text-white font-semibold mb-4">Developer Resources</h4>
-                        <ul class="space-y-2 text-sm">
-                            <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
-                            <li><a href="#" onclick="handleProtectedRoute('view-provider')" class="hover:text-white transition-colors">Developer Dashboard</a></li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="text-white font-semibold mb-4">Connect With Us</h4>
-                        <ul class="space-y-2 text-sm">
-                            <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-brands fa-twitter"></i> Twitter/X</a></li>
-                            <li><a href="#" class="hover:text-white transition-colors flex items-center gap-2"><i class="fa-brands fa-telegram"></i> Telegram</a></li>
+                        <h4 class="text-white font-semibold mb-4">Connect</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" class="hover:text-primary transition-colors flex items-center gap-2"><i class="fa-brands fa-twitter"></i> Twitter/X</a></li>
+                            <li><a href="#" class="hover:text-primary transition-colors flex items-center gap-2"><i class="fa-brands fa-github"></i> GitHub</a></li>
+                            <li><a href="#" class="hover:text-primary transition-colors flex items-center gap-2"><i class="fa-brands fa-discord"></i> Discord</a></li>
                         </ul>
                     </div>
                 </div>
-                <div class="pt-8 border-t border-gray-700 text-center text-sm">
-                    © 2026 API Bazaar. All rights reserved. Built on blockchain technology.
+                <div class="pt-8 border-t border-gray-700 text-sm flex flex-col md:flex-row justify-between items-center">
+                    <p>© 2026 API Bazaar. Built on Web3 infrastructure.</p>
+                    <div class="flex gap-4 mt-4 md:mt-0">
+                        <a href="#" class="hover:text-white transition-colors">Terms</a>
+                        <a href="#" class="hover:text-white transition-colors">Privacy</a>
+                    </div>
                 </div>
             </div>
         </footer>
     </div>
 
-    <div id="view-login" class="view-section bg-gray-100 min-h-screen items-center justify-center relative">
-        <div class="absolute top-4 left-4">
-            <button onclick="switchView('view-home')" class="text-gray-500 hover:text-gray-800 font-bold flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Home</button>
+    <div id="view-login" class="view-section bg-gray-50 min-h-screen items-center justify-center relative">
+        <div class="absolute top-6 left-6">
+            <button onclick="switchView('view-home')" class="text-gray-500 hover:text-gray-900 font-medium flex items-center gap-2 transition-colors"><i class="fa-solid fa-arrow-left"></i> Back to Home</button>
         </div>
-        <div class="bg-white p-10 rounded-xl shadow-2xl max-w-2xl w-full text-center m-4 animate-fade-in">
-            <h1 class="text-4xl font-extrabold text-blue-600 mb-4">API Bazaar</h1>
-            <p class="text-gray-500 mb-10 text-lg">The Decentralised Marketplace for Niche APIs.</p>
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Choose your role to continue</h2>
+        <div class="bg-white p-12 rounded-2xl shadow-xl max-w-3xl w-full text-center m-4 animate-fade-in border border-gray-100">
+            <img src="logo.jpg" alt="API Bazaar" class="h-16 mx-auto mb-6">
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-2">Welcome to API Bazaar</h1>
+            <p class="text-gray-500 mb-12">The decentralized marketplace connecting niche API creators and consumers.</p>
+            
+            <h2 class="text-xl font-bold text-gray-800 mb-6">How do you want to use the platform?</h2>
             <div class="flex flex-col md:flex-row gap-6 justify-center">
-                <button onclick="switchView('view-buyer')" class="flex-1 border-2 border-blue-200 hover:border-blue-600 hover:bg-blue-50 p-8 rounded-lg transition group cursor-pointer text-decoration-none">
-                    <div class="text-5xl mb-4">🛒</div>
-                    <h3 class="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">I am a Buyer</h3>
-                    <p class="text-gray-500 text-sm mt-2">Explore, purchase, and use niche APIs securely.</p>
+                <button onclick="switchView('view-buyer')" class="flex-1 border-2 border-gray-200 hover:border-primary hover:bg-primary/5 p-8 rounded-xl transition-all group cursor-pointer text-left">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-cart-shopping text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">I am a Buyer</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">Explore, purchase, and integrate niche APIs seamlessly into your projects.</p>
                 </button>
-                <button onclick="handleProtectedRoute('view-provider')" class="flex-1 border-2 border-green-200 hover:border-green-600 hover:bg-green-50 p-8 rounded-lg transition group cursor-pointer text-decoration-none">
-                    <div class="text-5xl mb-4">💻</div>
-                    <h3 class="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors">I am a Provider</h3>
-                    <p class="text-gray-500 text-sm mt-2">Upload your API, set pricing, and earn on-chain.</p>
+                <button onclick="handleProtectedRoute('view-provider')" class="flex-1 border-2 border-gray-200 hover:border-secondary hover:bg-secondary/5 p-8 rounded-xl transition-all group cursor-pointer text-left">
+                    <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-code text-2xl text-secondary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">I am a Provider</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed">Upload your APIs, set bonding curve pricing, and earn revenue on-chain.</p>
                 </button>
             </div>
         </div>
     </div>
 
     <div id="view-buyer" class="view-section min-h-screen bg-gray-50">
-        <nav class="bg-white shadow-md p-4 flex justify-between items-center">
-            <button onclick="switchView('view-home')" class="text-2xl font-bold text-blue-600 hover:text-blue-800 flex items-center gap-2">
-                <i class="fa-solid fa-link-chain"></i> API Bazaar
+        <nav class="bg-white shadow-sm border-b p-4 flex justify-between items-center sticky top-0 z-30">
+            <button onclick="switchView('view-home')" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <img src="logo.jpg" alt="API Bazaar Logo" class="h-8 object-contain">
+                <span class="text-xl font-bold text-gray-900 hidden sm:block">Marketplace</span>
             </button>
-            <div class="flex gap-4">
-                <button onclick="handleProtectedRoute('view-provider')" class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition">Provider Dashboard</button>
-                <button class="btn-open-wallet bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition wallet-status-text flex items-center gap-2">
-                    <i class="fa-solid fa-wallet"></i> Connect Wallet
+            <div class="flex gap-3">
+                <button onclick="handleProtectedRoute('view-provider')" class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition">Dashboard</button>
+                <button class="btn-open-wallet bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md transition wallet-status-text flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-wallet"></i> Connect
                 </button>
             </div>
         </nav>
-        <main class="p-8 max-w-6xl mx-auto">
-            <div class="mb-10 text-center animate-fade-in">
-                <h2 class="text-4xl font-extrabold mb-4 text-gray-800">Find the Best Web3 & AI APIs</h2>
-                <p class="text-gray-600 mb-6">Purchase temporary API access seamlessly using our dynamic bonding curve pricing.</p>
-                <div class="relative w-full md:w-1/2 mx-auto">
-                    <input type="text" placeholder="Search APIs (e.g., Wallet Risk Scorer)..." class="w-full p-3 pl-10 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:border-blue-500">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        <main class="p-4 md:p-8 max-w-6xl mx-auto">
+            <div class="mb-12 text-center animate-fade-in pt-8">
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4 text-gray-900">Explore Web3 & AI APIs</h2>
+                <p class="text-gray-600 mb-8 max-w-2xl mx-auto">Access niche APIs instantly without subscriptions. Pay securely via smart contracts.</p>
+                <div class="relative w-full md:w-2/3 mx-auto shadow-sm">
+                    <input type="text" placeholder="Search APIs, tags, or providers..." class="w-full p-4 pl-12 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 text-lg">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl"></i>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
-                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="text-xl font-bold">Wallet Risk Scoring</h3>
-                        <span class="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">Web3</span>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center"><i class="fa-solid fa-shield-halved text-blue-600"></i></div>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">Web3 Security</span>
                     </div>
-                    <p class="text-gray-500 text-sm mb-4">By DataSec Team</p>
-                    <p class="text-gray-700 mb-4 h-12">Assigns a dynamic risk score to wallets based on on-chain behavior.</p>
-                    <div class="flex justify-between items-center border-t pt-4">
-                        <span class="text-blue-600 font-bold">0.01 ETH / call</span>
-                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-center shadow">Buy Access</button>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">Wallet Risk Scoring</h3>
+                    <p class="text-gray-500 text-xs mb-3 font-medium">By DataSec Labs</p>
+                    <p class="text-gray-600 mb-6 text-sm flex-grow">Assigns a dynamic risk score (0-100) to EVM wallets based on historical on-chain behavior and interaction with known malicious contracts.</p>
+                    <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
+                        <div>
+                            <span class="text-primary font-bold block">0.01 USDC</span>
+                            <span class="text-xs text-gray-400">per call</span>
+                        </div>
+                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow">Buy Access</button>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition">
-                    <div class="flex justify-between items-start mb-2">
-                        <h3 class="text-xl font-bold">AI Video Detection</h3>
-                        <span class="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full">AI/ML</span>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center"><i class="fa-solid fa-robot text-purple-600"></i></div>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">AI / ML</span>
                     </div>
-                    <p class="text-gray-500 text-sm mb-4">By VisionAI</p>
-                    <p class="text-gray-700 mb-4 h-12">Identify infringing behaviors and verify if a video is AI generated.</p>
-                    <div class="flex justify-between items-center border-t pt-4">
-                        <span class="text-blue-600 font-bold">0.05 ETH / call</span>
-                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded text-center shadow">Buy Access</button>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">Deepfake Detector</h3>
+                    <p class="text-gray-500 text-xs mb-3 font-medium">By VisionAI</p>
+                    <p class="text-gray-600 mb-6 text-sm flex-grow">Analyze video frames to detect manipulation, face-swapping, and AI generation artifacts with 98% accuracy.</p>
+                    <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
+                        <div>
+                            <span class="text-primary font-bold block">0.05 USDC</span>
+                            <span class="text-xs text-gray-400">per call</span>
+                        </div>
+                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow">Buy Access</button>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center"><i class="fa-solid fa-chart-pie text-green-600"></i></div>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">Data Analytics</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">DEX Volume Aggregator</h3>
+                    <p class="text-gray-500 text-xs mb-3 font-medium">By ChainMetrics</p>
+                    <p class="text-gray-600 mb-6 text-sm flex-grow">Get real-time trading volumes across Uniswap, SushiSwap, and Curve aggregated by token pair.</p>
+                    <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
+                        <div>
+                            <span class="text-primary font-bold block">0.02 USDC</span>
+                            <span class="text-xs text-gray-400">per call</span>
+                        </div>
+                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow">Buy Access</button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="view-provider" class="view-section h-screen overflow-hidden bg-light">
+    <div id="view-provider" class="view-section h-screen overflow-hidden bg-gray-50">
         <div class="flex h-full">
-            <aside class="w-64 bg-white shadow-md flex-shrink-0 h-full overflow-y-auto flex flex-col z-20">
-                <div class="p-4 border-b flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2 cursor-pointer" onclick="switchView('view-home')">
-                        <i class="fa-solid fa-link-chain text-primary text-xl"></i>
-                        <span class="text-xl font-bold">API Bazaar</span>
+            <aside class="w-64 bg-white shadow-sm border-r border-gray-200 flex-shrink-0 h-full overflow-y-auto flex flex-col z-20">
+                <div class="p-5 border-b border-gray-100 flex items-center justify-between gap-2">
+                    <div class="flex items-center cursor-pointer w-full" onclick="switchView('view-home')">
+                        <img src="logo.jpg" alt="API Bazaar Logo" class="h-8 object-contain">
                     </div>
                 </div>
-                <nav class="py-4 flex-1">
-                    <ul class="space-y-1 px-2" id="providerNav">
-                        <li><a href="#dash-main" class="sidebar-active flex items-center gap-3 px-4 py-3 rounded-lg transition-colors"><i class="fa-solid fa-gauge"></i><span>Dashboard</span></a></li>
-                        <li><a href="#dash-publish" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-cloud-upload"></i><span>Publish New API</span></a></li>
-                        <li><a href="#dash-myapis" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-list-code"></i><span>My APIs</span></a></li>
-                        <li><a href="#dash-earnings" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-sack-dollar"></i><span>Earnings</span></a></li>
-                        <li><a href="#dash-settings" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-light transition-colors"><i class="fa-solid fa-gear"></i><span>Settings</span></a></li>
+                <nav class="py-6 flex-1 px-3">
+                    <p class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Menu</p>
+                    <ul class="space-y-1" id="providerNav">
+                        <li><a href="#dash-main" class="sidebar-active flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors font-medium text-sm"><i class="fa-solid fa-gauge w-5"></i><span>Dashboard</span></a></li>
+                        <li><a href="#dash-publish" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors font-medium text-sm"><i class="fa-solid fa-cloud-upload w-5"></i><span>Publish API</span></a></li>
+                        <li><a href="#dash-myapis" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors font-medium text-sm"><i class="fa-solid fa-list-code w-5"></i><span>My APIs</span></a></li>
+                        <li><a href="#dash-earnings" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors font-medium text-sm"><i class="fa-solid fa-sack-dollar w-5"></i><span>Earnings</span></a></li>
+                        <li><a href="#dash-settings" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors font-medium text-sm mt-4"><i class="fa-solid fa-gear w-5"></i><span>Settings</span></a></li>
                     </ul>
                 </nav>
-                <div class="px-4 py-6 border-t mt-auto">
-                    <div class="bg-light rounded-lg p-4">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-medium">Connected Wallet</span>
-                            <span class="text-xs px-2 py-1 bg-success/10 text-success rounded-full">Active</span>
-                        </div>
-                        <p class="text-sm text-textSub truncate dash-wallet-addr">Not Connected</p>
-                        
-                        <div id="gatewayStatus" class="text-xs mt-2 text-textSub">Gateway: checking…</div>
-                        
-                        <button id="disconnectWallet" class="mt-3 w-full px-3 py-2 text-sm bg-primary/10 text-primary rounded-md hover:bg-primary/20 transition-colors flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-right-from-bracket text-xs"></i><span>Disconnect</span>
-                        </button>
-                        <button onclick="switchView('view-home')" class="mt-2 w-full px-3 py-2 text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-house text-xs"></i><span>Back to Home</span>
-                        </button>
+                <div class="p-4 border-t border-gray-100 mt-auto bg-gray-50/50">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Wallet</span>
+                        <span class="text-[10px] px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-bold">Active</span>
                     </div>
+                    <p class="text-sm text-gray-800 font-mono truncate dash-wallet-addr bg-white p-2 rounded border border-gray-200">Not Connected</p>
+                    <div id="gatewayStatus" class="text-xs mt-3 flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-gray-300 animate-pulse"></span> Checking gateway...</div>
+                    <button class="btn-disconnect-wallet mt-4 w-full px-3 py-2 text-sm bg-white border border-gray-200 text-gray-600 rounded-md hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 font-medium shadow-sm">
+                        <i class="fa-solid fa-right-from-bracket text-xs"></i><span>Disconnect</span>
+                    </button>
                 </div>
             </aside>
 
-            <main class="flex-1 overflow-y-auto bg-light p-6">
-                <header class="flex justify-between items-center mb-6">
+            <main class="flex-1 overflow-y-auto bg-gray-50 p-6 md:p-8">
+                <header class="flex justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
                     <div>
-                        <h1 class="text-2xl font-bold">Developer Dashboard</h1>
-                        <p class="text-textSub text-sm">Manage your APIs and track earnings</p>
+                        <h1 class="text-xl font-bold text-gray-900">Provider Console</h1>
                     </div>
-                    <div class="flex items-center gap-4">
-                        <button class="relative p-2 rounded-full hover:bg-white transition-colors">
-                            <i class="fa-solid fa-bell text-textSub"></i><span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+                    <div class="flex items-center gap-5">
+                        <button class="relative text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa-solid fa-bell text-lg"></i>
+                            <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
                         </button>
-                        <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><span class="text-xs font-medium" id="dashUserInitials">UN</span></div>
-                            <span class="text-sm font-medium hidden md:block" id="dashUsername">Guest User</span>
+                        <div class="h-6 w-px bg-gray-200"></div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white shadow-sm">
+                                <span class="text-sm font-bold" id="dashUserInitials">UN</span>
+                            </div>
+                            <span class="text-sm font-bold text-gray-700 hidden md:block" id="dashUsername">Guest User</span>
                         </div>
                     </div>
                 </header>
 
                 <section id="dash-main" class="dash-section block animate-fade-in">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <div class="bg-white rounded-lg shadow-sm p-6"><div class="flex justify-between items-start"><div><p class="text-textSub text-sm">Total APIs</p><h3 class="text-3xl font-bold mt-1">5</h3><p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> 2 from last month</p></div><div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary"><i class="fa-solid fa-code"></i></div></div></div>
-                        <div class="bg-white rounded-lg shadow-sm p-6"><div class="flex justify-between items-start"><div><p class="text-textSub text-sm">Total API Calls</p><h3 class="text-3xl font-bold mt-1">1,289</h3><p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> 15% from last week</p></div><div class="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary"><i class="fa-solid fa-receipt"></i></div></div></div>
-                        <div class="bg-white rounded-lg shadow-sm p-6"><div class="flex justify-between items-start"><div><p class="text-textSub text-sm">Total Earnings (USD)</p><h3 class="text-3xl font-bold mt-1">$128.90</h3><p class="text-success text-xs mt-2 flex items-center"><i class="fa-solid fa-arrow-up mr-1"></i> $45.20 from last month</p></div><div class="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center text-success"><i class="fa-solid fa-sack-dollar"></i></div></div></div>
-                        <div class="bg-white rounded-lg shadow-sm p-6"><div class="flex justify-between items-start"><div><p class="text-textSub text-sm">Pending Withdrawal</p><h3 class="text-3xl font-bold mt-1">$89.50</h3><button class="text-warning text-xs mt-2 flex items-center hover:underline"><i class="fa-solid fa-money-bill-transfer mr-1"></i> Withdraw now</button></div><div class="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center text-warning"><i class="fa-solid fa-wallet"></i></div></div></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><i class="fa-solid fa-code text-xl"></i></div>
+                                <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">+2 this mo</span>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">Active APIs</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900" id="stat-apis">5</h3>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600"><i class="fa-solid fa-receipt text-xl"></i></div>
+                                <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">+15%</span>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">Total Calls</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900" id="stat-calls">1,289</h3>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 rounded-lg bg-green-50 flex items-center justify-center text-green-600"><i class="fa-solid fa-sack-dollar text-xl"></i></div>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">Total Earned</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900" id="stat-earned">$128.90</h3>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+                            <div class="flex justify-between items-start mb-4">
+                                <div class="w-12 h-12 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600"><i class="fa-solid fa-wallet text-xl"></i></div>
+                            </div>
+                            <p class="text-gray-500 text-sm font-medium mb-1">Available to Withdraw</p>
+                            <div class="flex items-end justify-between">
+                                <h3 class="text-3xl font-extrabold text-gray-900" id="stat-balance">$89.50</h3>
+                                <button onclick="document.querySelector('a[href=\'#dash-earnings\']').click()" class="text-sm text-primary font-bold hover:underline">Withdraw</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
-                            <div class="flex justify-between items-center mb-4"><h3 class="font-semibold">Earnings Trend (Last 30 Days)</h3><div class="flex gap-2"><button class="px-3 py-1 text-xs bg-primary/10 text-primary rounded-md">Week</button><button class="px-3 py-1 text-xs bg-light text-textSub rounded-md">Month</button><button class="px-3 py-1 text-xs bg-light text-textSub rounded-md">Year</button></div></div>
-                            <div class="h-64"><canvas id="earningsChart"></canvas></div>
-                        </div>
-                        <div class="bg-white rounded-lg shadow-sm p-6">
-                            <h3 class="font-semibold mb-4">Recent API Calls</h3>
-                            <div class="space-y-4 max-h-64 overflow-y-auto">
-                                <div class="border-b pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">Wallet Risk API</span><span class="text-success text-xs">Success</span></div><p class="text-textSub text-xs mb-1">0x123...456 • 0.01 USD</p><p class="text-textSub text-xs">2 hours ago</p></div>
-                                <div class="border-b pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">Contract Scan API</span><span class="text-success text-xs">Success</span></div><p class="text-textSub text-xs mb-1">0x789...012 • 0.02 USD</p><p class="text-textSub text-xs">5 hours ago</p></div>
-                                <div class="border-b pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">Wallet Risk API</span><span class="text-danger text-xs">Failed</span></div><p class="text-textSub text-xs mb-1">0x456...789 • 0.01 USD</p><p class="text-textSub text-xs">1 day ago</p></div>
-                                <div class="pb-3"><div class="flex justify-between mb-1"><span class="font-medium text-sm">NFT Metadata API</span><span class="text-success text-xs">Success</span></div><p class="text-textSub text-xs mb-1">0x234...567 • 0.03 USD</p><p class="text-textSub text-xs">2 days ago</p></div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:col-span-2">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-bold text-gray-900">Earnings Trend</h3>
+                                <select class="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-primary focus:border-primary block px-3 py-1.5"><option>Last 7 Days</option><option selected>Last 30 Days</option></select>
                             </div>
-                            <button class="w-full mt-4 px-4 py-2 text-sm border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">View All Calls</button>
+                            <div class="h-64 w-full"><canvas id="earningsChart"></canvas></div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 class="font-bold text-gray-900 mb-4">Recent Activity</h3>
+                            <div class="space-y-4 max-h-[250px] overflow-y-auto pr-2" id="recent-calls-list">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div><p class="text-sm font-bold text-gray-900">Wallet Risk API</p><p class="text-xs text-gray-500 mt-0.5">0x12...456 calls endpoint</p></div>
+                                    <div class="text-right"><p class="text-sm font-bold text-green-600">+$0.01</p><p class="text-xs text-gray-400">2h ago</p></div>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                    <div><p class="text-sm font-bold text-gray-900">Contract Scan API</p><p class="text-xs text-gray-500 mt-0.5">0x78...012 calls endpoint</p></div>
+                                    <div class="text-right"><p class="text-sm font-bold text-green-600">+$0.02</p><p class="text-xs text-gray-400">5h ago</p></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 <section id="dash-publish" class="dash-section hidden animate-fade-in">
-                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-                        <h2 class="text-xl font-bold mb-4">Publish New API</h2>
-                        <form class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><label class="block text-sm font-medium mb-1">API Name *</label><input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="e.g. Wallet Risk Assessment API"></div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1">API Category *</label>
-                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">
-                                        <option value="">Select Category</option>
-                                        <option value="web3">Web3 / Blockchain</option>
-                                        <option value="ai">AI / Machine Learning</option>
-                                        <option value="data">Data Analytics</option>
-                                        <option value="utility">Utility Tools</option>
-                                    </select>
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium mb-1">API Description *</label>
-                                    <textarea rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="Describe your API functionality, use cases, and requirements"></textarea>
-                                </div>
-                                <div><label class="block text-sm font-medium mb-1">API Endpoint URL *</label><input type="url" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="https://api.yourdomain.com/v1/endpoint"></div>
-                                <div><label class="block text-sm font-medium mb-1">Authentication Type</label><select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors"><option value="none">None</option><option value="api-key">API Key</option><option value="bearer">Bearer Token</option></select></div>
-                            </div>
-                            <div class="border-t pt-6">
-                                <h3 class="font-semibold mb-4">Bonding Curve Configuration</h3>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div><label class="block text-sm font-medium mb-1">Initial Price (USD per call) *</label><input type="number" step="0.01" min="0.01" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="0.01"></div>
-                                    <div><label class="block text-sm font-medium mb-1">Capacity (Total Calls) *</label><input type="number" min="100" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="10000"></div>
-                                    <div><label class="block text-sm font-medium mb-1">Curve Type *</label><select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors"><option value="linear">Linear</option><option value="exponential">Exponential</option><option value="logarithmic">Logarithmic</option></select></div>
-                                </div>
-                                <div class="mt-4 p-4 bg-light rounded-md">
-                                    <p class="text-sm text-textSub mb-2">Bonding Curve Preview</p>
-                                    <div class="h-40 relative">
-                                        <svg width="100%" height="100%" viewBox="0 0 400 150" class="absolute">
-                                            <line x1="50" y1="120" x2="350" y2="120" stroke="#718096" stroke-width="1" />
-                                            <line x1="50" y1="120" x2="50" y2="20" stroke="#718096" stroke-width="1" />
-                                            <path d="M50,120 Q150,110 250,60 T350,20" fill="none" stroke="#5E6AD2" stroke-width="2" />
-                                            <text x="100" y="135" fill="#718096" font-size="10">Supply (Calls)</text>
-                                            <text x="30" y="30" fill="#718096" font-size="10" transform="rotate(-90, 30, 30)">Price (USD)</text>
-                                        </svg>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-4xl">
+                        <div class="mb-8 border-b pb-4">
+                            <h2 class="text-2xl font-bold text-gray-900">Publish New API</h2>
+                            <p class="text-gray-500 text-sm mt-1">Configure your endpoint and set your bonding curve pricing.</p>
+                        </div>
+                        
+                        <form id="publishApiForm" class="space-y-8">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm">1</span> Basic Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pl-8">
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-bold text-gray-700 mb-1.5">API Name <span class="text-red-500">*</span></label>
+                                        <input type="text" id="api-name" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="e.g. Real-time Gas Tracker">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Description <span class="text-red-500">*</span></label>
+                                        <textarea id="api-desc" required rows="3" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="Describe what data your API returns..."></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Category <span class="text-red-500">*</span></label>
+                                        <select id="api-category" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition">
+                                            <option value="">Select Category</option>
+                                            <option value="web3">Web3 / Blockchain</option>
+                                            <option value="ai">AI / Machine Learning</option>
+                                            <option value="data">Data Analytics</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Auth Type</label>
+                                        <select id="api-auth" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition">
+                                            <option value="none">None (Open)</option>
+                                            <option value="api-key">API Key</option>
+                                            <option value="bearer">Bearer Token</option>
+                                        </select>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Endpoint URL <span class="text-red-500">*</span></label>
+                                        <input type="url" id="api-endpoint" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition" placeholder="https://api.yourdomain.com/v1/data">
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex justify-end gap-4 pt-4">
-                                <button type="button" class="px-6 py-2 border border-gray-300 text-textSub rounded-md hover:bg-light transition-colors">Save as Draft</button>
-                                <button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2"><i class="fa-solid fa-cloud-upload"></i> Publish API</button>
+
+                            <div class="border-t border-gray-100 pt-8">
+                                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-sm">2</span> Economic Model (Bonding Curve)</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pl-8">
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Initial Price (USDC) <span class="text-red-500">*</span></label>
+                                        <input type="number" id="api-price" step="0.01" min="0.01" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 outline-none" placeholder="0.01">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Capacity Limit <span class="text-red-500">*</span></label>
+                                        <input type="number" id="api-capacity" min="100" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 outline-none" placeholder="10000">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Curve Type</label>
+                                        <select id="api-curve" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 outline-none">
+                                            <option value="linear">Linear (Constant)</option>
+                                            <option value="exponential">Exponential</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pt-6 flex justify-end gap-4 border-t border-gray-100">
+                                <button type="button" class="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-bold rounded-lg hover:bg-gray-50 transition shadow-sm">Save Draft</button>
+                                <button type="submit" class="px-8 py-2.5 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition shadow-md flex items-center gap-2">Deploy to Contract <i class="fa-solid fa-arrow-right"></i></button>
                             </div>
                         </form>
                     </div>
                 </section>
 
                 <section id="dash-myapis" class="dash-section hidden animate-fade-in">
-                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
                         <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-xl font-bold">My Published APIs</h2>
-                            <button onclick="document.querySelector('a[href=\'#dash-publish\']').click()" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2 text-sm"><i class="fa-solid fa-plus"></i> New API</button>
+                            <h2 class="text-xl font-bold text-gray-900">API Management</h2>
+                            <button onclick="document.querySelector('a[href=\'#dash-publish\']').click()" class="px-4 py-2 bg-primary text-white font-medium rounded-lg hover:bg-primary/90 transition shadow-sm flex items-center gap-2 text-sm"><i class="fa-solid fa-plus"></i> Create API</button>
                         </div>
                         
-                        <div class="flex flex-wrap gap-4 mb-6">
-                            <div class="flex items-center gap-2">
-                                <label class="text-sm">Status:</label>
-                                <select class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:form-input-focus">
-                                    <option value="all">All</option>
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="draft">Draft</option>
-                                </select>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <label class="text-sm">Category:</label>
-                                <select class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:form-input-focus">
-                                    <option value="all">All</option>
-                                    <option value="web3">Web3 / Blockchain</option>
-                                    <option value="ai">AI / Machine Learning</option>
-                                    <option value="data">Data Analytics</option>
-                                </select>
-                            </div>
-                            <div class="flex-1">
-                                <div class="relative">
-                                    <input type="text" placeholder="Search APIs..." class="w-full px-4 py-1 pl-8 border border-gray-300 rounded-md text-sm focus:outline-none focus:form-input-focus">
-                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-textSub text-sm"></i>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="overflow-x-auto">
-                            <table class="w-full">
-                                <thead>
-                                    <tr class="border-b border-gray-200">
-                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">API Name</th>
-                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Category</th>
-                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Price (per call)</th>
-                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Calls</th>
-                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Earnings</th>
-                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Status</th>
-                                        <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Actions</th>
+                        <div class="overflow-x-auto rounded-lg border border-gray-200">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-bold">
+                                    <tr>
+                                        <th class="p-4 border-b">API Name</th>
+                                        <th class="p-4 border-b">Category</th>
+                                        <th class="p-4 border-b">Price/Call</th>
+                                        <th class="p-4 border-b">Total Calls</th>
+                                        <th class="p-4 border-b">Status</th>
+                                        <th class="p-4 border-b">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <tr class="border-b border-gray-100 hover:bg-light transition-colors">
-                                        <td class="py-3 px-4 text-sm font-medium">Wallet Risk Assessment API</td>
-                                        <td class="py-3 px-4 text-sm text-textSub">Web3 / Blockchain</td><td class="py-3 px-4 text-sm text-textSub">$0.01</td><td class="py-3 px-4 text-sm text-textSub">458</td><td class="py-3 px-4 text-sm text-textSub">$4.58</td>
-                                        <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Active</span></td>
-                                        <td class="py-3 px-4"><div class="flex gap-2"><button class="text-primary text-sm hover:underline">Edit</button><button class="text-warning text-sm hover:underline">Analytics</button><button class="text-danger text-sm hover:underline">Deactivate</button></div></td>
-                                    </tr>
-                                    <tr class="border-b border-gray-100 hover:bg-light transition-colors">
-                                        <td class="py-3 px-4 text-sm font-medium">Smart Contract Scan API</td>
-                                        <td class="py-3 px-4 text-sm text-textSub">Web3 / Blockchain</td><td class="py-3 px-4 text-sm text-textSub">$0.02</td><td class="py-3 px-4 text-sm text-textSub">321</td><td class="py-3 px-4 text-sm text-textSub">$6.42</td>
-                                        <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Active</span></td>
-                                        <td class="py-3 px-4"><div class="flex gap-2"><button class="text-primary text-sm hover:underline">Edit</button><button class="text-warning text-sm hover:underline">Analytics</button><button class="text-danger text-sm hover:underline">Deactivate</button></div></td>
-                                    </tr>
-                                    <tr class="border-b border-gray-100 hover:bg-light transition-colors">
-                                        <td class="py-3 px-4 text-sm font-medium">NFT Metadata API</td>
-                                        <td class="py-3 px-4 text-sm text-textSub">Web3 / Blockchain</td><td class="py-3 px-4 text-sm text-textSub">$0.03</td><td class="py-3 px-4 text-sm text-textSub">210</td><td class="py-3 px-4 text-sm text-textSub">$6.30</td>
-                                        <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-warning/10 text-warning rounded-full">Under Review</span></td>
-                                        <td class="py-3 px-4"><div class="flex gap-2"><button class="text-primary text-sm hover:underline">Edit</button><button class="text-textSub text-sm hover:underline cursor-not-allowed">Analytics</button><button class="text-textSub text-sm hover:underline cursor-not-allowed">Deactivate</button></div></td>
-                                    </tr>
-                                    <tr class="hover:bg-light transition-colors">
-                                        <td class="py-3 px-4 text-sm font-medium">AI Image Generator API</td>
-                                        <td class="py-3 px-4 text-sm text-textSub">AI / ML</td><td class="py-3 px-4 text-sm text-textSub">$0.05</td><td class="py-3 px-4 text-sm text-textSub">0</td><td class="py-3 px-4 text-sm text-textSub">$0.00</td>
-                                        <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-gray-100 text-textSub rounded-full">Draft</span></td>
-                                        <td class="py-3 px-4"><div class="flex gap-2"><button class="text-primary text-sm hover:underline">Edit</button><button class="text-textSub text-sm hover:underline cursor-not-allowed">Analytics</button><button class="text-success text-sm hover:underline">Publish</button></div></td>
+                                <tbody class="text-sm text-gray-800" id="api-table-body">
+                                    <tr class="border-b hover:bg-gray-50/50 transition">
+                                        <td class="p-4 font-bold">Wallet Risk Assessment</td><td class="p-4 text-gray-500">Web3</td><td class="p-4">$0.01</td><td class="p-4">458</td>
+                                        <td class="p-4"><span class="px-2.5 py-1 text-xs bg-green-100 text-green-700 rounded-full font-bold">Active</span></td>
+                                        <td class="p-4"><button class="text-primary font-medium hover:underline text-sm mr-3">Edit</button><button class="text-red-500 font-medium hover:underline text-sm">Pause</button></td>
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
-                        
-                        <div class="flex justify-between items-center mt-6">
-                            <p class="text-sm text-textSub">Showing 1-4 of 5 APIs</p>
-                            <div class="flex gap-2">
-                                <button class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md text-textSub hover:bg-light disabled:opacity-50 disabled:cursor-not-allowed" disabled><i class="fa-solid fa-chevron-left text-xs"></i></button>
-                                <button class="w-8 h-8 flex items-center justify-center bg-primary text-white rounded-md">1</button>
-                                <button class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-light">2</button>
-                                <button class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded-md hover:bg-light"><i class="fa-solid fa-chevron-right text-xs"></i></button>
-                            </div>
                         </div>
                     </div>
                 </section>
 
                 <section id="dash-earnings" class="dash-section hidden animate-fade-in">
-                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-                        <h2 class="text-xl font-bold mb-6">Earnings & Withdrawals</h2>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <div class="p-4 border border-gray-100 rounded-lg"><p class="text-textSub text-sm">Total Earnings</p><h3 class="text-2xl font-bold mt-1">$128.90</h3><p class="text-success text-xs mt-2">+15% from last month</p></div>
-                            <div class="p-4 border border-gray-100 rounded-lg"><p class="text-textSub text-sm">Withdrawn Amount</p><h3 class="text-2xl font-bold mt-1">$39.40</h3><p class="text-textSub text-xs mt-2">4 withdrawals</p></div>
-                            <div class="p-4 border border-gray-100 rounded-lg"><p class="text-textSub text-sm">Pending Withdrawal</p><h3 class="text-2xl font-bold mt-1">$89.50</h3><button class="mt-2 px-3 py-1 text-xs bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Withdraw Now</button></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 lg:col-span-1">
+                            <h2 class="text-xl font-bold text-gray-900 mb-6">Withdraw Funds</h2>
+                            <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+                                <p class="text-sm text-blue-600 font-bold mb-1">Available Balance</p>
+                                <h3 class="text-3xl font-extrabold text-blue-900" id="withdraw-max-display">$89.50</h3>
+                            </div>
+                            
+                            <form id="withdrawForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Amount (USDC)</label>
+                                    <input type="number" id="withdraw-amount" step="0.01" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 outline-none font-mono" placeholder="0.00">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Destination Address</label>
+                                    <input type="text" id="withdraw-address" required class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-primary/50 outline-none text-sm text-gray-500 dash-wallet-addr" readonly placeholder="Connect wallet first">
+                                </div>
+                                <button type="submit" class="w-full py-3 bg-gray-900 text-white font-bold rounded-lg hover:bg-black transition shadow mt-2">Confirm Withdrawal</button>
+                            </form>
                         </div>
                         
-                        <div class="mb-6 border-t pt-6">
-                            <h3 class="font-semibold mb-4">Withdrawal History</h3>
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 lg:col-span-2">
+                            <h2 class="text-xl font-bold text-gray-900 mb-6">Transaction History</h2>
                             <div class="overflow-x-auto">
-                                <table class="w-full">
-                                    <thead>
-                                        <tr class="border-b border-gray-200">
-                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Date</th>
-                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Amount</th>
-                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Wallet Address</th>
-                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Status</th>
-                                            <th class="text-left py-3 px-4 text-sm font-medium text-textSub">Tx Hash</th>
-                                        </tr>
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-bold">
+                                        <tr><th class="p-3 border-b rounded-tl-lg">Date</th><th class="p-3 border-b">Type</th><th class="p-3 border-b">Amount</th><th class="p-3 border-b">Status</th><th class="p-3 border-b rounded-tr-lg">Tx Hash</th></tr>
                                     </thead>
-                                    <tbody>
-                                        <tr class="border-b border-gray-100 hover:bg-light transition-colors">
-                                            <td class="py-3 px-4 text-sm">2026-03-15</td><td class="py-3 px-4 text-sm font-medium">$25.00</td><td class="py-3 px-4 text-sm text-textSub">0x89...789</td>
-                                            <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Completed</span></td>
-                                            <td class="py-3 px-4 text-sm text-primary hover:underline cursor-pointer">0x123...456</td>
-                                        </tr>
-                                        <tr class="border-b border-gray-100 hover:bg-light transition-colors">
-                                            <td class="py-3 px-4 text-sm">2026-02-20</td><td class="py-3 px-4 text-sm font-medium">$14.40</td><td class="py-3 px-4 text-sm text-textSub">0x89...789</td>
-                                            <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-success/10 text-success rounded-full">Completed</span></td>
-                                            <td class="py-3 px-4 text-sm text-primary hover:underline cursor-pointer">0x789...012</td>
-                                        </tr>
-                                        <tr class="hover:bg-light transition-colors">
-                                            <td class="py-3 px-4 text-sm">2026-03-22</td><td class="py-3 px-4 text-sm font-medium">$89.50</td><td class="py-3 px-4 text-sm text-textSub">0x89...789</td>
-                                            <td class="py-3 px-4"><span class="px-2 py-1 text-xs bg-warning/10 text-warning rounded-full">Processing</span></td>
-                                            <td class="py-3 px-4 text-sm text-textSub">-</td>
+                                    <tbody class="text-sm text-gray-800">
+                                        <tr class="border-b hover:bg-gray-50/50">
+                                            <td class="p-3 text-gray-500">2026-04-18</td><td class="p-3 font-medium">Withdrawal</td><td class="p-3 font-bold">$25.00</td>
+                                            <td class="p-3"><span class="text-green-600 font-bold text-xs"><i class="fa-solid fa-check-circle mr-1"></i>Done</span></td>
+                                            <td class="p-3"><a href="#" class="text-primary hover:underline font-mono text-xs">0x12...a4b</a></td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
-
-                        <div class="border-t pt-6">
-                            <h3 class="font-semibold mb-4">Request Withdrawal</h3>
-                            <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium mb-1">Withdrawal Amount (USD) *</label>
-                                    <input type="number" step="0.01" max="89.50" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" placeholder="Enter amount">
-                                    <p class="text-xs text-textSub mt-1">Maximum withdrawable: $89.50</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-1">Recipient Wallet Address *</label>
-                                    <input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" value="0x89...789">
-                                    <p class="text-xs text-textSub mt-1">Connected wallet address</p>
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium mb-1">Network</label>
-                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">
-                                        <option value="ethereum">Ethereum</option>
-                                        <option value="base" selected>Base (Low Gas)</option>
-                                        <option value="arbitrum">Arbitrum</option>
-                                    </select>
-                                </div>
-                                <div class="md:col-span-2 flex justify-end"><button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Submit Withdrawal Request</button></div>
-                            </form>
-                        </div>
                     </div>
                 </section>
 
                 <section id="dash-settings" class="dash-section hidden animate-fade-in">
-                    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-                        <h2 class="text-xl font-bold mb-6">Developer Settings</h2>
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8 max-w-3xl">
+                        <h2 class="text-2xl font-bold text-gray-900 mb-8">Developer Profile</h2>
                         
-                        <div class="mb-8">
-                            <h3 class="font-semibold mb-4">Profile Information</h3>
-                            <form class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div><label class="block text-sm font-medium mb-1">Display Name *</label><input type="text" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" value="John Developer"></div>
-                                <div><label class="block text-sm font-medium mb-1">Email Address</label><input type="email" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors" value="john.dev@example.com"></div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium mb-1">Bio</label>
-                                    <textarea rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:form-input-focus transition-colors">Web3 developer specializing in blockchain APIs and smart contract development.</textarea>
+                        <form id="settingsForm" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Display Name</label>
+                                    <input type="text" id="setting-name" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white outline-none" value="John Developer">
                                 </div>
-                                <div class="md:col-span-2 flex justify-end"><button type="submit" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Save Changes</button></div>
-                            </form>
-                        </div>
-
-                        <div class="mb-8 border-t pt-6">
-                            <h3 class="font-semibold mb-4">Wallet Settings</h3>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center p-4 bg-light rounded-md">
-                                    <div><p class="font-medium">Primary Wallet</p><p class="text-sm text-textSub dash-wallet-addr">0x89...789 (Ethereum/Base)</p></div>
-                                    <button class="px-4 py-2 text-sm border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">Change</button>
-                                </div>
-                                <div class="flex justify-between items-center p-4 bg-light rounded-md">
-                                    <div><p class="font-medium">Gas Fee Preference</p><p class="text-sm text-textSub">Low (Base/Arbitrum)</p></div>
-                                    <button class="px-4 py-2 text-sm border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors">Adjust</button>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Contact Email</label>
+                                    <input type="email" id="setting-email" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white outline-none" value="john@example.com">
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="border-t pt-6">
-                            <h3 class="font-semibold mb-4">Notification Preferences</h3>
-                            <div class="space-y-4">
-                                <div class="flex items-center justify-between">
-                                    <div><p class="font-medium">API Call Notifications</p><p class="text-sm text-textSub">Receive alerts when your API is called</p></div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            
+                            <div class="border-t pt-6 mt-6">
+                                <h3 class="text-lg font-bold text-gray-900 mb-4">Notification Preferences</h3>
+                                <div class="space-y-3">
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" id="notif-calls" checked class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary">
+                                        <span class="text-sm text-gray-700 font-medium">Alert me on high API usage spikes</span>
                                     </label>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div><p class="font-medium">Earnings Notifications</p><p class="text-sm text-textSub">Receive alerts when you earn from API calls</p></div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                    </label>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div><p class="font-medium">Withdrawal Notifications</p><p class="text-sm text-textSub">Receive alerts when withdrawals are processed</p></div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" checked class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                                    </label>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <div><p class="font-medium">Marketing Emails</p><p class="text-sm text-textSub">Receive updates about new features and promotions</p></div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" id="notif-withdraw" checked class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary">
+                                        <span class="text-sm text-gray-700 font-medium">Email receipts for withdrawals</span>
                                     </label>
                                 </div>
                             </div>
-                            <button class="mt-6 px-6 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors">Save Notification Settings</button>
-                        </div>
+                            <div class="pt-4 flex justify-end">
+                                <button type="submit" class="px-6 py-2.5 bg-gray-900 text-white font-bold rounded-lg hover:bg-black transition shadow">Save Preferences</button>
+                            </div>
+                        </form>
                     </div>
                 </section>
             </main>
         </div>
     </div>
 
-    <div id="view-wallet-states" class="view-section min-h-screen pt-10 px-4">
-        <div class="absolute top-4 left-4">
-            <button onclick="switchView('view-home')" class="text-gray-500 hover:text-gray-800 font-bold flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Home</button>
-        </div>
-        <h1 class="text-3xl font-bold mb-8 text-center mt-8">Wallet Connection UI States (Reference)</h1>
-        <div class="bg-white p-8 rounded-lg shadow-md mb-10 max-w-4xl mx-auto">
-            <h2 class="text-xl font-bold mb-6 border-b pb-2">Button States (Top Navigation)</h2>
-            <div class="flex flex-col md:flex-row gap-8 items-center justify-center">
-                <div class="text-center">
-                    <p class="text-sm text-gray-500 mb-2">State 1: Not Connected</p>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow">Connect Wallet</button>
-                </div>
-                <div class="text-center">
-                    <p class="text-sm text-gray-500 mb-2">State 2: Connecting...</p>
-                    <button class="bg-gray-400 text-white font-bold py-2 px-6 rounded-full cursor-wait flex items-center justify-center gap-2"><span>⏳</span> Processing...</button>
-                </div>
-                <div class="text-center">
-                    <p class="text-sm text-gray-500 mb-2">State 3: Connected</p>
-                    <button class="bg-green-100 border border-green-500 text-green-700 hover:bg-green-200 font-bold py-2 px-6 rounded-full flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-green-500"></span> 0x1A2B...3C4D
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Global State
+        /**
+         * ==========================================
+         * PART 1: UI & ROUTING LOGIC (Frontend Only)
+         * ==========================================
+         */
         let isLoggedIn = false;
         let userData = { role: '', username: '', wallet: '' };
 
-        /* ----------------------------------
-           Routing & View Management
-           ---------------------------------- */
         function switchView(viewId) {
-            // Hide all views
             document.querySelectorAll('.view-section').forEach(view => {
                 view.classList.remove('view-active', 'view-flex-active');
             });
-            // Show targeted view
             const targetView = document.getElementById(viewId);
             if (targetView) {
-                // Determine display type based on structure
                 if(viewId === 'view-login' || viewId === 'view-provider') {
                      targetView.classList.add('view-flex-active');
                 } else {
@@ -790,12 +703,10 @@
                 }
             }
             
-            // Close mobile menu if open
             document.getElementById('mobileMenu').classList.add('hidden');
             const menuIcon = document.querySelector('#menuBtn i');
             if(menuIcon) { menuIcon.classList.remove('fa-times'); menuIcon.classList.add('fa-bars'); }
 
-            // Initialize Provider Chart if switching to provider dashboard
             if (viewId === 'view-provider' && !window.chartInitialized) {
                 initProviderChart();
                 window.chartInitialized = true;
@@ -810,22 +721,22 @@
             }
         }
 
-        /* ----------------------------------
-           Navbar Scrolling & Mobile Menu
-           ---------------------------------- */
-        const navbar = document.getElementById('navbar');
+        // Scroll & Menu Listeners
         window.addEventListener('scroll', () => {
-            navbar.classList.toggle('nav-scrolled', window.scrollY > 50);
-            if(window.scrollY > 50) {
-                navbar.classList.remove('bg-transparent', 'py-4');
-                navbar.classList.add('bg-white/90', 'backdrop-blur', 'py-3');
-            } else {
-                navbar.classList.add('bg-transparent', 'py-4');
-                navbar.classList.remove('bg-white/90', 'backdrop-blur', 'py-3');
+            const navbar = document.getElementById('navbar');
+            if(navbar) {
+                navbar.classList.toggle('nav-scrolled', window.scrollY > 50);
+                if(window.scrollY > 50) {
+                    navbar.classList.remove('bg-transparent', 'py-4');
+                    navbar.classList.add('bg-white/90', 'backdrop-blur', 'py-3');
+                } else {
+                    navbar.classList.add('bg-transparent', 'py-4');
+                    navbar.classList.remove('bg-white/90', 'backdrop-blur', 'py-3');
+                }
             }
         });
 
-        document.getElementById('menuBtn').addEventListener('click', () => {
+        document.getElementById('menuBtn')?.addEventListener('click', () => {
             const mobileMenu = document.getElementById('mobileMenu');
             const icon = document.querySelector('#menuBtn i');
             mobileMenu.classList.toggle('hidden');
@@ -833,139 +744,35 @@
             icon.classList.toggle('fa-times');
         });
 
-        /* ----------------------------------
-           Auth Modal Management
-           ---------------------------------- */
+        // Modals Logic
         const authModal = document.getElementById('authModal');
-        const loginBtnMain = document.getElementById('loginBtnMain');
-        const closeModal = document.getElementById('closeModal');
-        const loginTab = document.getElementById('loginTab');
-        const registerTab = document.getElementById('registerTab');
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        
-        loginBtnMain.addEventListener('click', () => authModal.classList.add('modal-active'));
-        closeModal.addEventListener('click', () => authModal.classList.remove('modal-active'));
-        authModal.addEventListener('click', (e) => {
-            if (e.target === authModal) authModal.classList.remove('modal-active');
-        });
-        
-        // Tab Switching
-        registerTab.addEventListener('click', () => {
-            loginTab.classList.remove('border-primary', 'text-primary');
-            registerTab.classList.add('border-b-2', 'border-primary', 'text-primary');
-            loginForm.classList.add('hidden');
-            registerForm.classList.remove('hidden');
-        });
-        loginTab.addEventListener('click', () => {
-            registerTab.classList.remove('border-primary', 'text-primary');
-            loginTab.classList.add('border-b-2', 'border-primary', 'text-primary');
-            registerForm.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-        });
-
-        // Register Role Toggles
-        document.getElementById('providerBtn').addEventListener('click', (e) => {
-            e.target.classList.add('bg-primary/10', 'border-primary', 'text-primary');
-            document.getElementById('buyerBtn').classList.remove('bg-primary/10', 'border-primary', 'text-primary');
-            document.getElementById('userRole').value = 'provider';
-        });
-        document.getElementById('buyerBtn').addEventListener('click', (e) => {
-            e.target.classList.add('bg-primary/10', 'border-primary', 'text-primary');
-            document.getElementById('providerBtn').classList.remove('bg-primary/10', 'border-primary', 'text-primary');
-            document.getElementById('userRole').value = 'buyer';
-        });
-
-        // Simulate Login & Register
-        function updateUIAuth() {
-            document.getElementById('dashUsername').textContent = userData.username;
-            document.getElementById('dashUserInitials').textContent = userData.username.slice(0,2).toUpperCase();
-            loginBtnMain.innerHTML = `<i class="fa-solid fa-user mr-2"></i>${userData.username}`;
-            loginBtnMain.classList.replace('text-primary', 'text-gray-700');
-            loginBtnMain.classList.replace('border-primary', 'border-gray-300');
-        }
-
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            isLoggedIn = true;
-            userData.username = document.getElementById('loginEmail').value.split('@')[0] || 'User';
-            userData.role = 'provider';
-            authModal.classList.remove('modal-active');
-            updateUIAuth();
-            if(document.getElementById('view-home').classList.contains('view-active')) {
-                switchView('view-provider');
-            }
-        });
-
-        document.getElementById('registerBtn').addEventListener('click', () => {
-            isLoggedIn = true;
-            userData.username = document.getElementById('regUsername').value || 'NewUser';
-            userData.role = document.getElementById('userRole').value;
-            authModal.classList.remove('modal-active');
-            updateUIAuth();
-            switchView(userData.role === 'provider' ? 'view-provider' : 'view-buyer');
-        });
-
-        /* ----------------------------------
-           Wallet Modal Management
-           ---------------------------------- */
         const walletModal = document.getElementById('walletModal');
-        const closeWalletModal = document.getElementById('closeWalletModal');
-        const walletBtns = document.querySelectorAll('.btn-open-wallet');
-        const walletStatusTexts = document.querySelectorAll('.wallet-status-text');
-
-        walletBtns.forEach(btn => {
+        
+        document.getElementById('loginBtnMain')?.addEventListener('click', () => authModal.classList.add('modal-active'));
+        document.getElementById('closeModal')?.addEventListener('click', () => authModal.classList.remove('modal-active'));
+        document.getElementById('closeWalletModal')?.addEventListener('click', () => walletModal.classList.remove('modal-active'));
+        
+        document.querySelectorAll('.btn-open-wallet').forEach(btn => {
             btn.addEventListener('click', () => walletModal.classList.add('modal-active'));
         });
-        closeWalletModal.addEventListener('click', () => walletModal.classList.remove('modal-active'));
-        walletModal.addEventListener('click', (e) => {
-            if (e.target === walletModal) walletModal.classList.remove('modal-active');
-        });
 
-        document.getElementById('connectMetamask').addEventListener('click', async () => {
-            if (!window.ethereum) { alert('Please install MetaMask to test functionality!'); return; }
-            try {
-                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                const shortAddr = `${accounts[0].slice(0,6)}...${accounts[0].slice(-4)}`;
-                userData.wallet = accounts[0];
-                
-                walletStatusTexts.forEach(text => {
-                    text.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-300 inline-block mr-1"></span>${shortAddr}`;
-                });
-                document.querySelectorAll('.dash-wallet-addr').forEach(el => el.textContent = shortAddr);
-                
-                walletModal.classList.remove('modal-active');
-            } catch (error) {
-                console.error(error);
-            }
-        });
-
-        document.getElementById('disconnectWallet').addEventListener('click', () => {
-            userData.wallet = '';
-            walletStatusTexts.forEach(text => text.innerHTML = `Connect Wallet`);
-            document.querySelectorAll('.dash-wallet-addr').forEach(el => el.textContent = 'Not Connected');
-        });
-
-        /* ----------------------------------
-           Provider Dashboard Sidebar
-           ---------------------------------- */
+        // Dashboard Sidebar Logic
         const dashNavLinks = document.querySelectorAll('#providerNav a');
         const dashSections = document.querySelectorAll('.dash-section');
 
         dashNavLinks.forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
-                dashNavLinks.forEach(nav => nav.classList.remove('sidebar-active'));
+                dashNavLinks.forEach(nav => nav.classList.remove('sidebar-active', 'bg-gray-50', 'text-primary'));
                 link.classList.add('sidebar-active');
                 
                 dashSections.forEach(sec => sec.classList.add('hidden'));
                 const targetId = link.getAttribute('href').substring(1);
-                document.getElementById(targetId).classList.remove('hidden');
+                document.getElementById(targetId)?.classList.remove('hidden');
             });
         });
 
-        /* ----------------------------------
-           Chart.js Initialization
-           ---------------------------------- */
+        // Chart Initialization
         function initProviderChart() {
             const canvas = document.getElementById('earningsChart');
             if(!canvas) return;
@@ -983,42 +790,175 @@
                         tension: 0.4
                     }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } },
-                        x: { grid: { display: false } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } }, x: { grid: { display: false } } } }
             });
         }
 
-        /* ----------------------------------
-           Gateway Health Check
-           ---------------------------------- */
-        const API_BASE = 'http://localhost:3000/api';
 
+        /**
+         * ==========================================
+         * PART 2: BACKEND INTEGRATION HOOKS (For Charlie)
+         * Charlie, you can extract everything below this 
+         * block into your 'script.js' file.
+         * ==========================================
+         */
+        
+        const API_BASE = 'http://localhost:3000/api'; // Base URL for backend
+
+        // --- 1. Authentication Hooks ---
+        document.getElementById('loginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const pwd = document.getElementById('loginPwd').value;
+            
+            console.log('--- API CALL: User Login ---', { email, pwd });
+            // TODO (Charlie): Call auth API here. 
+            // const res = await fetch(`${API_BASE}/login`, { method: 'POST', ... });
+            
+            // Mock Success UI Update
+            isLoggedIn = true;
+            userData.username = email.split('@')[0];
+            document.getElementById('dashUsername').textContent = userData.username;
+            document.getElementById('dashUserInitials').textContent = userData.username.slice(0,2).toUpperCase();
+            document.getElementById('loginBtnMain').innerHTML = `<i class="fa-solid fa-user mr-2"></i>${userData.username}`;
+            authModal.classList.remove('modal-active');
+            if(document.getElementById('view-home').classList.contains('view-active')) switchView('view-provider');
+        });
+
+        // Tab and Role switching logic for Auth Modal
+        document.getElementById('registerTab')?.addEventListener('click', () => {
+            document.getElementById('loginTab').classList.remove('border-b-2', 'border-primary', 'text-primary');
+            document.getElementById('registerTab').classList.add('border-b-2', 'border-primary', 'text-primary');
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        });
+        document.getElementById('loginTab')?.addEventListener('click', () => {
+            document.getElementById('registerTab').classList.remove('border-b-2', 'border-primary', 'text-primary');
+            document.getElementById('loginTab').classList.add('border-b-2', 'border-primary', 'text-primary');
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        });
+        document.getElementById('providerBtn')?.addEventListener('click', (e) => {
+            e.target.classList.add('bg-primary/10', 'border-primary', 'text-primary');
+            document.getElementById('buyerBtn').classList.remove('bg-primary/10', 'border-primary', 'text-primary');
+            document.getElementById('userRole').value = 'provider';
+        });
+        document.getElementById('buyerBtn')?.addEventListener('click', (e) => {
+            e.target.classList.add('bg-primary/10', 'border-primary', 'text-primary');
+            document.getElementById('providerBtn').classList.remove('bg-primary/10', 'border-primary', 'text-primary');
+            document.getElementById('userRole').value = 'buyer';
+        });
+
+        document.getElementById('registerForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const role = document.getElementById('userRole').value;
+            
+            console.log('--- API CALL: User Register ---', { username, email, role });
+            // TODO (Charlie): Call register API here.
+            
+            // Mock Success
+            isLoggedIn = true;
+            userData.username = username;
+            authModal.classList.remove('modal-active');
+            switchView(role === 'provider' ? 'view-provider' : 'view-buyer');
+        });
+
+        // --- 2. Wallet Connections Hooks ---
+        document.getElementById('connectMetamask')?.addEventListener('click', async () => {
+            if (!window.ethereum) { alert('Please install MetaMask to test functionality!'); return; }
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const walletAddress = accounts[0];
+                const shortAddr = `${walletAddress.slice(0,6)}...${walletAddress.slice(-4)}`;
+                
+                console.log('--- WALLET CONNECTED ---', { walletAddress });
+                // TODO (Charlie): Handle wallet binding to user account in backend
+
+                // UI Updates
+                userData.wallet = walletAddress;
+                document.querySelectorAll('.wallet-status-text').forEach(el => el.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-300 inline-block mr-1"></span>${shortAddr}`);
+                document.querySelectorAll('.dash-wallet-addr').forEach(el => {
+                    if(el.tagName === 'INPUT') el.value = shortAddr;
+                    else el.textContent = shortAddr;
+                });
+                document.getElementById('withdraw-address').value = walletAddress; // fill withdraw form
+                walletModal.classList.remove('modal-active');
+            } catch (error) {
+                console.error(error);
+            }
+        });
+
+        document.querySelectorAll('.btn-disconnect-wallet').forEach(btn => {
+            btn.addEventListener('click', () => {
+                userData.wallet = '';
+                document.querySelectorAll('.wallet-status-text').forEach(el => el.innerHTML = `Connect Wallet`);
+                document.querySelectorAll('.dash-wallet-addr').forEach(el => {
+                    if(el.tagName === 'INPUT') el.value = '';
+                    else el.textContent = 'Not Connected';
+                });
+            });
+        });
+
+        // --- 3. Provider Forms Hooks ---
+        document.getElementById('publishApiForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const apiData = {
+                name: document.getElementById('api-name').value,
+                desc: document.getElementById('api-desc').value,
+                category: document.getElementById('api-category').value,
+                endpoint: document.getElementById('api-endpoint').value,
+                price: document.getElementById('api-price').value,
+                capacity: document.getElementById('api-capacity').value,
+            };
+            
+            console.log('--- API CALL: Publish New API ---', apiData);
+            // TODO (Charlie): Send API setup to backend and trigger Smart Contract interaction
+            alert('Drafting API submission logic triggered! See console.');
+        });
+
+        document.getElementById('withdrawForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = document.getElementById('withdraw-amount').value;
+            const address = document.getElementById('withdraw-address').value;
+            
+            console.log('--- API CALL: Request Withdrawal ---', { amount, address });
+            // TODO (Charlie): Call withdraw endpoint
+            alert('Withdraw request logic triggered! See console.');
+        });
+
+        document.getElementById('settingsForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const settings = {
+                name: document.getElementById('setting-name').value,
+                email: document.getElementById('setting-email').value,
+                alerts: document.getElementById('notif-calls').checked
+            };
+            console.log('--- API CALL: Update Settings ---', settings);
+            // TODO (Charlie): Update user profile API
+            alert('Settings update triggered! See console.');
+        });
+
+        // --- 4. Gateway Health Check ---
         async function checkGateway() {
             const el = document.getElementById('gatewayStatus');
             if(!el) return;
             try {
-                // Added a timeout mechanism for demo environments where the backend might not exist
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
+                // Call your actual backend health endpoint
                 const res = await fetch(`${API_BASE}/health`, { signal: controller.signal });
                 clearTimeout(timeoutId);
                 const data = await res.json();
-                el.textContent = `Gateway: ${data.status} (time ${new Date(data.time || Date.now()).toLocaleTimeString()})`;
-                el.style.color = '#38A169'; // green
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500"></span> Gateway: ${data.status || 'Online'}`;
             } catch (err) {
-                el.textContent = 'Gateway: unreachable';
-                el.style.color = '#E53E3E'; // red
+                el.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span> Gateway: Disconnected`;
+                console.warn('Backend is not running at', API_BASE);
             }
         }
-
         document.addEventListener('DOMContentLoaded', checkGateway);
+
     </script>
 </body>
 </html>
