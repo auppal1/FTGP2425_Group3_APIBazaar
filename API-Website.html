@@ -830,6 +830,100 @@
         let signer = null;
         let registryContract = null;
 
+        function buildListingCard(address, meta, basePrice, userBalance) {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col';
+            card.dataset.listingAddress = address;
+
+            const hasBalance = userBalance > 0n;
+            const shortAddr = `${address.slice(0,6)}...${address.slice(-4)}`;
+            const priceEth = ethers.formatEther(basePrice);
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-code text-primary"></i>
+                    </div>
+                    <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full font-mono">${shortAddr}</span>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">${meta.name}</h3>
+                <p class="text-gray-500 text-xs mb-3 font-medium">Symbol: ${meta.symbol}</p>
+                <p class="text-gray-600 mb-4 text-sm flex-grow truncate">${meta.endpoint}</p>
+
+                <!-- Balance display -->
+                <div class="balance-container flex items-center gap-2 mb-4 p-3 rounded-lg ${hasBalance ? 'bg-green-50 border border-green-100' : 'bg-gray-50 border border-gray-100'}">
+                    <i class="balance-icon fa-solid fa-coins text-sm ${hasBalance ? 'text-green-500' : 'text-gray-300'}"></i>
+                    <div>
+                        <span class="text-xs font-medium ${hasBalance ? 'text-green-600' : 'text-gray-400'}">Your balance today</span>
+                        <p class="balance-text font-bold text-lg leading-tight ${hasBalance ? 'text-green-700' : 'text-gray-500'} listing-balance" data-address="${address}">
+                            ${userBalance.toString()} tokens
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
+                    <div>
+                        <span class="text-primary font-bold block">${priceEth} ETH</span>
+                        <span class="text-xs text-gray-400">per token</span>
+                    </div>
+                    <button class="buy-btn bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow">
+                        Buy Tokens
+                    </button>
+                </div>
+            `;
+
+            // Wire up Buy Tokens button after innerHTML is set
+            const buyBtn = card.querySelector('.buy-btn');
+            const balanceContainer = card.querySelector('.balance-container');
+            const balanceText = card.querySelector('.balance-text');
+            const balanceIcon = card.querySelector('.balance-icon');
+
+            buyBtn.addEventListener('click', async () => {
+                if (!signer) {
+                    walletModal.classList.add('modal-active');
+                    return;
+                }
+                try {
+                    buyBtn.disabled = true;
+                    buyBtn.textContent = 'Buying...';
+
+                    const listingContract = new ethers.Contract(address, LISTING_ABI, signer);
+                    const price = await listingContract.getPurchasePrice(1n);
+                    const tx = await listingContract.buyTokens(1n, { value: price });
+
+                    buyBtn.textContent = 'Confirming...';
+                    await tx.wait(); // wait for block confirmation
+
+                    // Refresh balance on this card
+                    const newBalance = await listingContract.getCurrentDayBalance(userData.wallet);
+                    balanceText.textContent = `${newBalance.toString()} tokens`;
+
+                    if (newBalance > 0n) {
+                        balanceContainer.classList.replace('bg-gray-50', 'bg-green-50');
+                        balanceContainer.classList.replace('border-gray-100', 'border-green-100');
+                        balanceText.classList.replace('text-gray-500', 'text-green-700');
+                        balanceIcon.classList.replace('text-gray-300', 'text-green-500');
+                    }
+
+                    buyBtn.textContent = '✓ Bought!';
+                    setTimeout(() => {
+                        buyBtn.disabled = false;
+                        buyBtn.textContent = 'Buy Tokens';
+                    }, 2000);
+
+                } catch (err) {
+                    console.error('Buy failed:', err);
+                    buyBtn.textContent = 'Failed';
+                    setTimeout(() => {
+                        buyBtn.disabled = false;
+                        buyBtn.textContent = 'Buy Tokens';
+                    }, 2000);
+                }
+            });
+
+            return card;
+        }
+
         // Loads all listings from registry and renders cards with live balances < Abhay >
         async function loadListings() {
             const grid = document.getElementById('listings-grid');
@@ -882,50 +976,6 @@
             }
         }
 
-        function buildListingCard(address, meta, basePrice, userBalance) {
-            const card = document.createElement('div');
-            card.className = 'bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col';
-            card.dataset.listingAddress = address;
-
-            const hasBalance = userBalance > 0n;
-            const shortAddr = `${address.slice(0,6)}...${address.slice(-4)}`;
-            const priceEth = ethers.formatEther(basePrice);
-
-            card.innerHTML = `
-                <div class="flex justify-between items-start mb-3">
-                    <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <i class="fa-solid fa-code text-primary"></i>
-                    </div>
-                    <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full font-mono">${shortAddr}</span>
-                </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-1">${meta.name}</h3>
-                <p class="text-gray-500 text-xs mb-3 font-medium">Symbol: ${meta.symbol}</p>
-                <p class="text-gray-600 mb-4 text-sm flex-grow truncate">${meta.endpoint}</p>
-
-                <!-- Balance display -->
-                <div class="flex items-center gap-2 mb-4 p-3 rounded-lg ${hasBalance ? 'bg-green-50 border border-green-100' : 'bg-gray-50 border border-gray-100'}">
-                    <i class="fa-solid fa-coins text-sm ${hasBalance ? 'text-green-500' : 'text-gray-300'}"></i>
-                    <div>
-                        <span class="text-xs font-medium ${hasBalance ? 'text-green-600' : 'text-gray-400'}">Your balance today</span>
-                        <p class="font-bold text-lg leading-tight ${hasBalance ? 'text-green-700' : 'text-gray-500'} listing-balance" data-address="${address}">
-                            ${userBalance.toString()} tokens
-                        </p>
-                    </div>
-                </div>
-
-                <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
-                    <div>
-                        <span class="text-primary font-bold block">${priceEth} ETH</span>
-                        <span class="text-xs text-gray-400">per token</span>
-                    </div>
-                    <button onclick="alert('Purchase flow coming soon!')" 
-                        class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow">
-                        Buy Tokens
-                    </button>
-                </div>
-            `;
-            return card;
-        }
         const API_BASE = 'http://localhost:3000/api'; // Base URL for backend
 
         // --- 1. Authentication Hooks ---
