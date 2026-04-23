@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 
+require('./jobs/dailySettle');
+
 const cors = require('cors');
 app.use(cors()); 
 
