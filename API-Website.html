@@ -160,10 +160,18 @@
                 <div class="flex items-center gap-4">
                     <button id="loginBtnMain" class="px-4 py-2 border border-primary text-primary rounded-md hover:bg-primary/5 transition-colors font-medium">Login / Auth</button>
                     <button onclick="switchView('view-login')" class="hidden md:block px-4 py-2 border border-gray-300 text-textSub rounded-md hover:bg-gray-50 transition-colors font-medium">Roles</button>
-                    <button class="btn-open-wallet px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors flex items-center gap-2 font-medium">
+                <div class="flex items-center gap-3">
+                    <!-- Token balance badge — hidden until wallet is connected and a listing is selected -->
+                <div id="buyer-balance-badge" class="hidden items-center gap-2 bg-primary/10 text-primary text-sm font-bold px-3 py-1.5 rounded-full border border-primary/20">
+                    <i class="fa-solid fa-coins text-xs"></i>
+                    <span id="buyer-balance-value">0</span>
+                    <span class="text-xs font-medium text-primary/70">tokens today</span>
+                </div>
+                    <button class="btn-open-wallet bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-md transition flex items-center gap-2 shadow-sm">
                         <i class="fa-solid fa-wallet"></i>
-                        <span class="wallet-status-text">Connect Wallet</span>
+                        <span class="wallet-status-text">Connect</span>
                     </button>
+                </div>
                     <button id="menuBtn" class="md:hidden text-textMain text-xl">
                         <i class="fa-solid fa-bars"></i>
                     </button>
@@ -333,55 +341,14 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center"><i class="fa-solid fa-shield-halved text-blue-600"></i></div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">Web3 Security</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-1">Wallet Risk Scoring</h3>
-                    <p class="text-gray-500 text-xs mb-3 font-medium">By DataSec Labs</p>
-                    <p class="text-gray-600 mb-6 text-sm flex-grow">Assigns a dynamic risk score (0-100) to EVM wallets based on historical on-chain behavior and interaction with known malicious contracts.</p>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
-                        <div>
-                            <span class="text-primary font-bold block">0.01 USDC</span>
-                            <span class="text-xs text-gray-400">per call</span>
-                        </div>
-                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow">Buy Access</button>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center"><i class="fa-solid fa-robot text-purple-600"></i></div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">AI / ML</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-1">Deepfake Detector</h3>
-                    <p class="text-gray-500 text-xs mb-3 font-medium">By VisionAI</p>
-                    <p class="text-gray-600 mb-6 text-sm flex-grow">Analyze video frames to detect manipulation, face-swapping, and AI generation artifacts with 98% accuracy.</p>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
-                        <div>
-                            <span class="text-primary font-bold block">0.05 USDC</span>
-                            <span class="text-xs text-gray-400">per call</span>
-                        </div>
-                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow">Buy Access</button>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center"><i class="fa-solid fa-chart-pie text-green-600"></i></div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">Data Analytics</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-1">DEX Volume Aggregator</h3>
-                    <p class="text-gray-500 text-xs mb-3 font-medium">By ChainMetrics</p>
-                    <p class="text-gray-600 mb-6 text-sm flex-grow">Get real-time trading volumes across Uniswap, SushiSwap, and Curve aggregated by token pair.</p>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
-                        <div>
-                            <span class="text-primary font-bold block">0.02 USDC</span>
-                            <span class="text-xs text-gray-400">per call</span>
-                        </div>
-                        <button onclick="alert('Purchase flow demo...')" class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow">Buy Access</button>
-                    </div>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in" id="listings-grid">
+                <!-- Loading skeleton -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-pulse" id="listings-skeleton">
+                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                    <div class="h-3 bg-gray-100 rounded w-1/2 mb-6"></div>
+                    <div class="h-16 bg-gray-100 rounded mb-4"></div>
+                    <div class="h-8 bg-gray-200 rounded"></div>
+                </div>    
             </div>
         </main>
     </div>
@@ -688,6 +655,37 @@
     <script type="module">
         // import ethers this way (as node.js hasnt been used)
         import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
+
+                // Connecting to solidity contracts:
+
+        // Store registry address
+        const REGISTRY_ADDRESS = "0xBeD7F16398220AbB9B6B72F7dA5E400b27A1E281"
+
+        // Manually create ABIs (as node.js hasnt been used)
+        const REGISTRY_ABI = [
+            "function createAPIListing(string name, string symbol, string endpoint, uint256 capacity, uint256 basePrice) external",
+            "function getAllListings() view returns (address[])",
+            "function getProviderListings(address provider) view returns (address[])",
+            "function getListing(address listingAddress) view returns (tuple(address provider, address listingAddress, string name, string symbol, string endpoint, uint256 createdAt))",
+            "event CreatedListing(address indexed provider, address indexed apiListing, string name, string symbol)"
+        ];
+
+        const LISTING_ABI = [
+            "function tokenName() view returns (string)",
+            "function tokenSymbol() view returns (string)",
+            "function provider() view returns (address)",
+            "function capacity() view returns (uint256)",
+            "function basePrice() view returns (uint256)",
+            "function getPurchasePrice(uint256 amount) view returns (uint256)",
+            "function getSalePrice(uint256 amount) view returns (uint256)",
+            "function getCurrentDaySupply() view returns (uint256)",
+            "function getCurrentDayBalance(address user) view returns (uint256)",
+            "function credits(address user) view returns (uint256)",
+            "function buyTokens(uint256 amount) payable returns (bool)",
+            "function sellTokens(uint256 amount) returns (bool)",
+            "function withdraw() returns (bool)",
+            "function isTerminated() view returns (bool)"
+        ];
         /**
          * ==========================================
          * PART 1: UI & ROUTING LOGIC (Frontend Only)
@@ -717,7 +715,13 @@
                 initProviderChart();
                 window.chartInitialized = true;
             }
+            if (viewId === 'view-buyer' && !window.listingsLoaded) {
+                window.listingsLoaded=true;
+                loadListings();
+            }
         }
+
+        window.switchView = switchView; 
 
         function handleProtectedRoute(viewId) {
             if(!isLoggedIn && viewId === 'view-provider') {
@@ -726,6 +730,7 @@
                 switchView(viewId);
             }
         }
+        window.handleProtectedRoute = handleProtectedRoute;
 
         // Scroll & Menu Listeners
         window.addEventListener('scroll', () => {
@@ -757,7 +762,8 @@
         document.getElementById('loginBtnMain')?.addEventListener('click', () => authModal.classList.add('modal-active'));
         document.getElementById('closeModal')?.addEventListener('click', () => authModal.classList.remove('modal-active'));
         document.getElementById('closeWalletModal')?.addEventListener('click', () => walletModal.classList.remove('modal-active'));
-        
+    
+
         document.querySelectorAll('.btn-open-wallet').forEach(btn => {
             btn.addEventListener('click', () => walletModal.classList.add('modal-active'));
         });
@@ -800,43 +806,126 @@
             });
         }
 
-
-        // Connecting to solidity contracts:
-
-        // Store registry address
-        const REGISTRY_ADDRESS = "0xBeD7F16398220AbB9B6B72F7dA5E400b27A1E281"
-
-        // Manually create ABIs (as node.js hasnt been used)
-        const REGISTRY_ABI = [
-            "function createAPIListing(string name, string symbol, string endpoint, uint256 capacity, uint256 basePrice) external",
-            "function getAllListings() view returns (address[])",
-            "function getProviderListings(address provider) view returns (address[])",
-            "function getListing(address listingAddress) view returns (tuple(address provider, address listingAddress, string name, string symbol, string endpoint, uint256 createdAt))",
-            "event CreatedListing(address indexed provider, address indexed apiListing, string name, string symbol)"
-        ];
-
-        const LISTING_ABI = [
-            "function tokenName() view returns (string)",
-            "function tokenSymbol() view returns (string)",
-            "function provider() view returns (address)",
-            "function capacity() view returns (uint256)",
-            "function basePrice() view returns (uint256)",
-            "function getPurchasePrice(uint256 amount) view returns (uint256)",
-            "function getSalePrice(uint256 amount) view returns (uint256)",
-            "function getCurrentDaySupply() view returns (uint256)",
-            "function getCurrentDayBalance(address user) view returns (uint256)",
-            "function credits(address user) view returns (uint256)",
-            "function buyTokens(uint256 amount) payable returns (bool)",
-            "function sellTokens(uint256 amount) returns (bool)",
-            "function withdraw() returns (bool)",
-            "function isTerminated() view returns (bool)"
-        ];
+        // Fetches the connected user's token balance across all listings
+        // and updates the buyer balance badge < Abhay 1>
+        async function refreshAllCardBalances(walletAddress) {
+            const balanceEls = document.querySelectorAll('.listing-balance');
+            for (const el of balanceEls) {
+                try {
+                    const res = await fetch(`${API_BASE}/balance/${walletAddress}`);
+                    const data = await res.json();
+                    const bal = BigInt(data.balance);
+                    el.textContent = `${bal.toString()} tokens`;
+                    if (bal > 0n) {
+                        const container = el.closest('.flex');
+                        container.classList.replace('bg-gray-50', 'bg-green-50');
+                        container.classList.replace('border-gray-100', 'border-green-100');
+                        el.classList.replace('text-gray-500', 'text-green-700');
+                    }
+                } catch (_) {}
+            }
+        }
 
         let provider = null;
         let signer = null;
         let registryContract = null;
 
+        // Loads all listings from registry and renders cards with live balances < Abhay >
+        async function loadListings() {
+            const grid = document.getElementById('listings-grid');
+            const skeleton = document.getElementById('listings-skeleton');
+            if (!grid) return;
 
+            grid.innerHTML = `
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-pulse" id="listings-skeleton">
+                    <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                    <div class="h-3 bg-gray-100 rounded w-1/2 mb-6"></div>
+                    <div class="h-16 bg-gray-100 rounded mb-4"></div>
+                    <div class="h-8 bg-gray-200 rounded"></div>
+                </div>`;
+
+            try {
+                // Use a read-only provider to fetch listings without needing wallet
+                const readProvider = new ethers.JsonRpcProvider('https://sepolia.rpc.thirdweb.com');
+                const registryRead = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, readProvider);
+                const listingAddresses = await registryRead.getAllListings();
+
+                // Remove skeleton
+                skeleton?.remove();
+
+                if (listingAddresses.length === 0) {
+                    grid.innerHTML = `<p class="text-gray-400 col-span-3 text-center py-12">No API listings found.</p>`;
+                    return;
+                }
+
+                for (const listingAddr of listingAddresses) {
+                    // Fetch listing metadata
+                    const listingMeta = await registryRead.getListing(listingAddr);
+                    const listingContract = new ethers.Contract(listingAddr, LISTING_ABI, readProvider);
+                    const basePrice = await listingContract.basePrice();
+
+                    // Fetch user's balance for this listing (0 if wallet not connected)
+                    let userBalance = 0n;
+                    if (userData.wallet) {
+                        try {
+                            userBalance = await listingContract.getCurrentDayBalance(userData.wallet);
+                        } catch (_) {}
+                    }
+
+                    const card = buildListingCard(listingAddr, listingMeta, basePrice, userBalance);
+                    grid.appendChild(card);
+                }
+
+            } catch (err) {
+                console.error('Failed to load listings:', err);
+                if (skeleton) skeleton.innerHTML = `<p class="text-red-400 text-sm">Failed to load listings. Is your RPC URL set?</p>`;
+            }
+        }
+
+        function buildListingCard(address, meta, basePrice, userBalance) {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:-translate-y-1 transition-all flex flex-col';
+            card.dataset.listingAddress = address;
+
+            const hasBalance = userBalance > 0n;
+            const shortAddr = `${address.slice(0,6)}...${address.slice(-4)}`;
+            const priceEth = ethers.formatEther(basePrice);
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <div class="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-code text-primary"></i>
+                    </div>
+                    <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full font-mono">${shortAddr}</span>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">${meta.name}</h3>
+                <p class="text-gray-500 text-xs mb-3 font-medium">Symbol: ${meta.symbol}</p>
+                <p class="text-gray-600 mb-4 text-sm flex-grow truncate">${meta.endpoint}</p>
+
+                <!-- Balance display -->
+                <div class="flex items-center gap-2 mb-4 p-3 rounded-lg ${hasBalance ? 'bg-green-50 border border-green-100' : 'bg-gray-50 border border-gray-100'}">
+                    <i class="fa-solid fa-coins text-sm ${hasBalance ? 'text-green-500' : 'text-gray-300'}"></i>
+                    <div>
+                        <span class="text-xs font-medium ${hasBalance ? 'text-green-600' : 'text-gray-400'}">Your balance today</span>
+                        <p class="font-bold text-lg leading-tight ${hasBalance ? 'text-green-700' : 'text-gray-500'} listing-balance" data-address="${address}">
+                            ${userBalance.toString()} tokens
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center border-t border-gray-100 pt-4 mt-auto">
+                    <div>
+                        <span class="text-primary font-bold block">${priceEth} ETH</span>
+                        <span class="text-xs text-gray-400">per token</span>
+                    </div>
+                    <button onclick="alert('Purchase flow coming soon!')" 
+                        class="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2 rounded-lg text-sm font-medium transition shadow">
+                        Buy Tokens
+                    </button>
+                </div>
+            `;
+            return card;
+        }
         const API_BASE = 'http://localhost:3000/api'; // Base URL for backend
 
         // --- 1. Authentication Hooks ---
@@ -926,6 +1015,10 @@
                 });
                 document.getElementById('withdraw-address').value = walletAddress; // fill withdraw form
                 walletModal.classList.remove('modal-active');
+
+                // Fetch balances
+                await loadListings();
+                await refreshAllCardBalances(walletAddress);
             } catch (error) {
                 console.error(error);
             }
