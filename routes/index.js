@@ -4,6 +4,7 @@ const verifyToken = require('../middleware/verifyToken');
 const axios = require('axios');
 const contract = require('../config/contracts');
 const rateLimit = require('express-rate-limit');
+const { runDailySettle } = require('../jobs/dailySettle');
 
 // Protected route test
 router.get('/protected', verifyToken, (req, res) => {
@@ -116,6 +117,12 @@ router.get('/balance/:walletAddress', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// TEMPORARY TEST ROUTE — remove before production!
+router.get('/admin/settle', async (req, res) => {
+    await runDailySettle();
+    res.json({ message: 'Settle job ran' });
 });
 
 module.exports = router;
