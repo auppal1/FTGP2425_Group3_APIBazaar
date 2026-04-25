@@ -1,0 +1,28 @@
+{
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^4.0.8",
+    "@nomicfoundation/hardhat-ignition": "^0.15.0",
+    "@nomicfoundation/hardhat-ignition-ethers": "^0.15.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.0.0",
+    "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/hardhat": "^9.0.0",
+    "chai": "^4.2.0",
+    "ethers": "^6.16.0",
+    "hardhat": "^2.14.0",
+    "hardhat-deploy": "1",
+    "hardhat-deploy-ethers": "^0.4.2",
+    "hardhat-gas-reporter": "^2.3.0",
+    "solidity-coverage": "^0.8.0",
+    "typechain": "^8.3.0"
+  },
+  "scripts": {
+    "test": "yarn hardhat test",
+    "localtest": "yarn hardhat test --network localhost",
+    "deploy": "yarn hardhat run ./scripts/deploy.js",
+    "localdeploy": "yarn hardhat run ./scripts/deploy.js --network localhost"
+  }
+}
