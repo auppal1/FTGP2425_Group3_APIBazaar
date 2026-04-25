@@ -65,7 +65,7 @@ contract APIListing {
     }
 
     // CONSTRUCTOR
-    // Initialise parameters based on provider's params set in APIBazaarFactory.sol
+    // Initialise parameters based on provider's params set in APIBazaarRegistry.sol
     constructor(
         address provider_,
         address feeRecipient_,
@@ -74,7 +74,7 @@ contract APIListing {
         uint256 capacity_,
         uint256 basePrice_
         ) {
-        // Initialise parameters from APIBazaarFactory.sol
+        // Initialise parameters from APIBazaarRegistry.sol
         provider = provider_;
         feeRecipient = feeRecipient_;
         tokenName = tokenName_;

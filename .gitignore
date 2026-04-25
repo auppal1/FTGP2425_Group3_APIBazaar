@@ -1,3 +1,21 @@
+.encryptedKey.json
+node_modules
+.env
+coverage
+coverage.json
+typechain
+fundme-test.js
+
+# vscode
+.vscode
+
+#Hardhat files
+cache
+artifacts
+ignition
+hardhat.config.js
+package.json
 .DS_Store
 .deps/
-artifacts/
+gas-report.txt
+deployments

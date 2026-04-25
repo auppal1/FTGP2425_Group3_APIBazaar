@@ -45,5 +45,3 @@ contract PlatformTreasury {
         return address(this).balance;
     }
 }
-
-
