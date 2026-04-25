@@ -23,6 +23,7 @@
     "test": "yarn hardhat test",
     "localtest": "yarn hardhat test --network localhost",
     "deploy": "yarn hardhat run ./scripts/deploy.js",
-    "localdeploy": "yarn hardhat run ./scripts/deploy.js --network localhost"
+    "localdeploy": "yarn hardhat run ./scripts/deploy.js --network localhost",
+    "accounts": "yarn hardhat accounts"
   }
 }

@@ -44,4 +44,8 @@ contract PlatformTreasury {
     function getBalance() external view returns (uint256) {
         return address(this).balance;
     }
+
+    function getOwner() public view returns (address) {
+        return owner;
+    }
 }
