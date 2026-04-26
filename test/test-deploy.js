@@ -72,7 +72,7 @@ describe("API Bazaar", function() {
         // Deploy the contract
         // constructor arguments required by the contract are passed to the deploy()
         // function
-        // - in this case the constructor requires the wallet address of the treasury owner
+        // - in this case the constructor requires the address of the registry contract
         // - it is passed wrapped in double quotes
         APIListingDeployer = await APIListingDeployerFactory.deploy(registryContractAddress);
         // Wait for the contract to finish deploying
@@ -86,6 +86,7 @@ describe("API Bazaar", function() {
         // Create contract factory
         treasuryFactory = await ethers.getContractFactory("PlatformTreasury");
         // Deploy the contract
+        // - in this case the constructor requires the wallet address of the treasury owner
         platformTreasury = await treasuryFactory.deploy(treasuryOwner);
         // Wait for the contract to finish deploying
         await platformTreasury.waitForDeployment();
@@ -95,17 +96,31 @@ describe("API Bazaar", function() {
         console.log();
     })
 
+    // Tests for the registry contract
+    describe("APIBazaarRegistry", function() {
+        
+        // Test the constructor - it only needs to do one thing
+        describe("Constructor", function() {
+            // Each test opens with a string saying what "it" should do
+            it("Should set the registry admin correctly", async function () {
+                // call APIBazaarRegistry contract's getAdmin() function
+                const contractOwner = await APIBazaarRegistry.getAdmin();
+                // We need to extract the address from the registryOwner object
+                // The object itself includes loads of other data
+                assert.equal(contractOwner, registryOwner.address);
+            })
+        })
+    })
+
     // Tests for the treasury contract
     describe("PlatformTreasury", function() {
         
         // Test the constructor - it only needs to do one thing
         describe("Constructor", function() {
-            // Each test opens with a string saying what "it" should do
             it("Should set the treasury owner correctly", async function () {
                 // call platformTreasury contract's getOwner() function
                 const contractOwner = await platformTreasury.getOwner();
-                // We need to extract the address from the treasuryOwner object
-                // The object itself includes loads of other data
+                // Extract address from treasuryOwner object
                 assert.equal(contractOwner, treasuryOwner.address);
             })
         })

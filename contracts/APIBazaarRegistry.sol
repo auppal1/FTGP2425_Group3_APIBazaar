@@ -142,4 +142,8 @@ contract APIBazaarRegistry {
         return providerListings[provider];
     }
 
+    function getAdmin() public view returns (address) {
+        return admin;
+    }
+
 }
