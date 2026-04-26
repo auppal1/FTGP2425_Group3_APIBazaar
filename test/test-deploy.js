@@ -145,6 +145,20 @@ describe("API Bazaar", function() {
         })
     })
 
+    // Tests for the listing deployer contract
+    describe("APIListingDeployer", function() {
+        
+        // Test the constructor - it only needs to do one thing
+        describe("Constructor", function() {
+            it("Should set the address of the registry contract correctly", async function () {
+                // call platformTreasury contract's getOwner() function
+                const registryAddress = await APIListingDeployer.getRegistry();
+                // Extract address from treasuryOwner object
+                assert.equal(registryAddress, registryContractAddress);
+            })
+        })
+    })
+
     // Tests for the treasury contract
     describe("PlatformTreasury", function() {
         

@@ -28,4 +28,10 @@ contract APIListingDeployer {
         APIListing apiContract = new APIListing(provider, feeRecipient, name, symbol, capacity, basePrice);
         return address(apiContract);
     }
+
+    // Getter functions
+    
+    function getRegistry() public view returns (address) {
+        return registry;
+    }
 }
