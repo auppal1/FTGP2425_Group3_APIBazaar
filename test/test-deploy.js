@@ -14,14 +14,17 @@ describe("API Bazaar", function() {
     // For registry contrcat
     let registryFactory;
     let APIBazaarRegistry;
+    let registryContractAddress; // the address the contract is deployed to
 
     // For listing deployer contract
     let APIListingDeployerFactory;
     let APIListingDeployer;
+    let listingDeployerAddress;
 
     // For treasury contract
     let treasuryFactory;
     let platformTreasury;
+    let treasuryContractAddress;
 
     // Initialise accounts to use for testing
     let registryOwner;
@@ -58,7 +61,7 @@ describe("API Bazaar", function() {
         // Get the address that the registry contract has been deployed to - we need this 
         // to pass it to the constructor of the listing deployer contract 
         // .target gets the address the contract has been deployed to
-        const registryContractAddress = APIBazaarRegistry.target;
+        registryContractAddress = APIBazaarRegistry.target;
         // Console logs to check that this is all doing what we want it to
         // Whitespace before first console log
         console.log();
@@ -77,8 +80,11 @@ describe("API Bazaar", function() {
         APIListingDeployer = await APIListingDeployerFactory.deploy(registryContractAddress);
         // Wait for the contract to finish deploying
         await APIListingDeployer.waitForDeployment();
+        // Get the address that the deployer contract has been deployed to - we need this 
+        // to test the setDeployer() function in the registry contract
+        listingDeployerAddress = APIListingDeployer.target;
         // Console logs
-        console.log(`Deployed APIListingDeployer contract to: ${APIListingDeployer.target}`);
+        console.log(`Deployed APIListingDeployer contract to: ${listingDeployerAddress}`);
         // Whitespace before next console log
         console.log();
 
@@ -90,8 +96,11 @@ describe("API Bazaar", function() {
         platformTreasury = await treasuryFactory.deploy(treasuryOwner);
         // Wait for the contract to finish deploying
         await platformTreasury.waitForDeployment();
+        // Get the address that the treasury contract has been deployed to - we need this 
+        // to test the setTreasury() function in the registry contract
+        treasuryContractAddress = platformTreasury.target;
         // Console logs
-        console.log(`Deployed PlatformTreasury contract to: ${platformTreasury.target}`);
+        console.log(`Deployed PlatformTreasury contract to: ${treasuryContractAddress}`);
         // Whitespace before next console log
         console.log();
     })
@@ -108,6 +117,30 @@ describe("API Bazaar", function() {
                 // We need to extract the address from the registryOwner object
                 // The object itself includes loads of other data
                 assert.equal(contractOwner, registryOwner.address);
+            })
+        })
+
+        // Test the setDeployer() function
+        describe("setDeployer", function() {
+            it("Should set the address of the APIListingDeployer contract correctly", async function () {
+                // call setDeployer() function with the address of the deployer contract
+                await APIBazaarRegistry.setDeployer(listingDeployerAddress);
+                // Get the deployer contract address from registry contract
+                const deployerContractAddress = await APIBazaarRegistry.getDeployer()
+                // assert that deployerContractAddress should = deployerContractAddress
+                assert.equal(deployerContractAddress, listingDeployerAddress);
+            })
+        })
+
+        // Test the setDeployer() function
+        describe("setTreasury", function() {
+            it("Should set the address of the platformTreasury contract correctly", async function () {
+                // call setTreasury() function with the address of the treasury contract
+                await APIBazaarRegistry.setTreasury(treasuryContractAddress);
+                // Get the treasury contract address from registry contract
+                const treasuryAddress = await APIBazaarRegistry.getTreasury()
+                // assert that treasuryAddress should = treasuryContractAddress
+                assert.equal(treasuryAddress, treasuryContractAddress);
             })
         })
     })

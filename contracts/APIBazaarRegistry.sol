@@ -146,4 +146,12 @@ contract APIBazaarRegistry {
         return admin;
     }
 
+    function getDeployer() public view returns (address) {
+        return deployer;
+    }
+
+    function getTreasury() public view returns (address) {
+        return treasury;
+    }
+
 }
