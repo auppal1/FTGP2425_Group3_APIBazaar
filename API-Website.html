@@ -820,33 +820,10 @@
                             <div class="overflow-x-auto border border-gray-100 rounded-2xl shadow-inner">
                                 <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]">
                                     <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-widest font-black">
-                                        <tr><th class="p-5 border-b border-gray-200">API Name</th><th class="p-5 border-b border-gray-200">Category</th><th class="p-5 border-b border-gray-200">Current Price</th><th class="p-5 border-b border-gray-200">Total Calls</th><th class="p-5 border-b border-gray-200">Total Earned</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200 text-right">Actions</th></tr>
+                                        <tr><th class="p-5 border-b border-gray-200">API Name</th><th class="p-5 border-b border-gray-200">Address</th><th class="p-5 border-b border-gray-200">Base Price</th><th class="p-5 border-b border-gray-200">Supply Today</th><th class="p-5 border-b border-gray-200">Capacity</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200 text-right">Endpoint</th></tr>
                                     </thead>
-                                    <tbody class="text-sm font-medium text-gray-800 divide-y divide-gray-100">
-                                        <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="p-5 font-black text-gray-900 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-shield"></i></div> Wallet Risk Assessment</td>
-                                            <td class="p-5 text-gray-500">Web3 / Security</td><td class="p-5 font-mono text-primary font-black">0.01 USDC</td><td class="p-5 font-bold">458</td><td class="p-5 font-black">4.58 USDC</td>
-                                            <td class="p-5"><span class="px-3 py-1 text-[10px] bg-green-100 text-green-700 rounded-lg font-black uppercase tracking-wider border border-green-200">Active</span></td>
-                                            <td class="p-5 text-right"><button class="text-gray-400 hover:text-primary transition mr-4" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="text-gray-400 hover:text-red-500 transition" title="Pause Contract"><i class="fa-solid fa-pause"></i></button></td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="p-5 font-black text-gray-900 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-500 flex items-center justify-center"><i class="fa-solid fa-file-contract"></i></div> Smart Contract Scan</td>
-                                            <td class="p-5 text-gray-500">Web3 / Security</td><td class="p-5 font-mono text-primary font-black">0.02 USDC</td><td class="p-5 font-bold">321</td><td class="p-5 font-black">6.42 USDC</td>
-                                            <td class="p-5"><span class="px-3 py-1 text-[10px] bg-green-100 text-green-700 rounded-lg font-black uppercase tracking-wider border border-green-200">Active</span></td>
-                                            <td class="p-5 text-right"><button class="text-gray-400 hover:text-primary transition mr-4" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="text-gray-400 hover:text-red-500 transition" title="Pause Contract"><i class="fa-solid fa-pause"></i></button></td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="p-5 font-black text-gray-900 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center"><i class="fa-solid fa-image"></i></div> NFT Metadata API</td>
-                                            <td class="p-5 text-gray-500">Web3 / Utility</td><td class="p-5 font-mono text-primary font-black">0.03 USDC</td><td class="p-5 font-bold">210</td><td class="p-5 font-black">6.30 USDC</td>
-                                            <td class="p-5"><span class="px-3 py-1 text-[10px] bg-yellow-100 text-yellow-700 rounded-lg font-black uppercase tracking-wider border border-yellow-200">Under Review</span></td>
-                                            <td class="p-5 text-right"><button class="text-gray-400 hover:text-primary transition mr-4" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="text-gray-300 cursor-not-allowed transition" title="Cannot pause"><i class="fa-solid fa-pause"></i></button></td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="p-5 font-black text-gray-900 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center"><i class="fa-solid fa-robot"></i></div> AI Image Generator</td>
-                                            <td class="p-5 text-gray-500">AI / ML</td><td class="p-5 font-mono text-primary font-black">0.05 USDC</td><td class="p-5 font-bold">0</td><td class="p-5 font-black">0.00 USDC</td>
-                                            <td class="p-5"><span class="px-3 py-1 text-[10px] bg-gray-200 text-gray-600 rounded-lg font-black uppercase tracking-wider border border-gray-300">Draft</span></td>
-                                            <td class="p-5 text-right"><button class="text-gray-400 hover:text-primary transition mr-4" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="text-gray-400 hover:text-green-500 transition" title="Publish"><i class="fa-solid fa-rocket"></i></button></td>
-                                        </tr>
+                                    <tbody id="myApisTable" class="text-sm font-medium text-gray-800 divide-y divide-gray-100">
+                                         <tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Connect your wallet to see your APIs.</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -1270,6 +1247,9 @@
 
                 // Close walletModal to remove metasmask popup 
                 closeModal('walletModal');
+
+                // Load provider listings for MyAPIs table
+                loadProviderListings();
             } catch (err) {
                 console.error('Wallet connect failed', err);
             }
@@ -1724,6 +1704,8 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
                     btn.classList.replace('bg-green-600', 'bg-primary'); 
                     document.getElementById('publishForm').reset(); 
                     initBondingCurveChart(); // reset chart
+                    // Load the provider listings section for the new listing to be seen
+                    loadProviderListings();
                     showProviderSection('dash-myapis'); 
                 }, 2000);
 
@@ -1767,12 +1749,115 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
             }, 2000);
         });
 
+        // Function that live-updates provider's API listing in the My APIs table
+        // Based on the number of listings associated with the connected wallet
+        // Uses the getProviderListings view function in APIBazaarRegistry.sol
+       async function loadProviderListings() {
+
+            // Get table body to add rows to
+            const tbody = document.getElementById('myApisTable');
+
+            // Stop if table doesn't exist
+            if (!tbody) {
+                return;
+            }
+
+            // Ensure metamask is connected, if not thens stop
+            if (!registryContract || !signer) {
+                return;
+            } 
+
+            try {
+                // Get current wallet address
+                const myWalletAdd = await signer.getAddress()
+
+                // Get all listing contract addresses associated with this wallet using Solidity funticon
+                const listingAddresses = await registryContract.getProviderListings(myWalletAdd)
+
+                // if no listings found, show message and stop
+                if (listingAddresses.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">No APIs published yet.</td></tr>';
+                    return;
+                }
+
+                let allRows = '';
+
+                // Go through each listing address one by one
+                for (let i = 0; i < listingAddresses.length; i++) {
+                    const addr = listingAddresses[i];
+
+                    // get metadata from this listing from solidity view function
+                    const metadata = await registryContract.getListing(addr);
+
+                    // Create contract object for this listing via APIListing.sol
+                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+
+                    // Default values if fail
+                    let priceWei = '-'
+                    let terminated = false;
+                    let dailySupply = '-'
+                    let capacity = '-'
+
+                    try {
+                        // Read base price from deployed listing contract
+                        priceWei = await listing.basePrice();
+
+                        // Read daily supply from deployed listing constract
+                        dailySupply = await listing.getCurrentDaySupply()
+
+                        // Read APIs capacity
+                        capacity = await listing.capacity()
+
+                        // Check if listing is terminated
+                        terminated = await listing.isTerminated();
+                    } catch (err) {
+                        console.warn('Could not read listing details', addr, err);
+                    }
+                    
+                    // Create a status for html
+                    let status = '';
+
+                    // SHow termination status
+                    if (terminated) {
+                        // Show terminated in the HTML
+                        status = '<span class="px-2 py-1 rounded bg-red-100 text-red-700">Terminated</span>';
+                    } else {
+                        // Show active in the HTML
+                        status = '<span class="px-2 py-1 rounded bg-green-100 text-green-700">Active</span>';
+                    }
+
+                    // Add one table row for this listing 
+                    // Formatted same as groupmate's previous placeholder table rows from old commit 
+                    allRows += `
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-5 font-black text-gray-900">${metadata.name} <span class="text-xs text-gray-400 font-mono">(${metadata.symbol.toUpperCase()})</span></td>
+                            <td class="p-5 text-gray-500 font-mono text-xs">${addr.slice(0, 6)}...${addr.slice(-4)}</td>
+                            <td class="p-5 font-mono text-primary font-black">${priceWei} Wei</td>
+                            <td class="p-5 font-bold">${dailySupply}</td>
+                            <td class="p-5 font-black">${capacity}</td>
+                            <td class="p-5">${status}</td>
+                            <td class="p-5 text-right text-gray-400 text-xs font-mono">${metadata.endpoint.slice(0, 30)}...</td>
+                        </tr>`;
+                }
+                
+                // Put all rows into table body
+                tbody.innerHTML = allRows;
+
+            } catch (err) {
+                console.error('loadProviderListings failed', err);
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-red-400 font-medium">Failed to load listings.</td></tr>';
+            }
+        }
+
+
+
         // Globalise functions for inline HTML (as now using type="module" to import ethers.js)
         window.switchView = switchView;
         window.handleProtectedRoute = handleProtectedRoute;
         window.openModal = openModal;
         window.closeModal = closeModal;
         window.showProviderSection = showProviderSection;
+        window.loadProviderListings = loadProviderListings;
 
         // Initialize App
         window.onload = updateUIState;
