@@ -1652,23 +1652,71 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
             refreshUnreadCount();
         }
 
-        /** BACKEND HOOKS FOR PROVIDER FORMS */
-        document.getElementById('publishForm')?.addEventListener('submit', (e) => {
+        // Create API listing through registry contract and ask metamask to confirm transaction
+        document.getElementById('publishForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = { 
-                name: document.getElementById('pubName').value, 
-                url: document.getElementById('pubUrl').value, 
-                price: document.getElementById('bondingInitialPrice').value,
-                capacity: document.getElementById('bondingCapacity').value,
-                curve: document.getElementById('bondingCurveType').value
-            };
-            console.log('BACKEND HOOK: Publish API Payload ->', data);
-            
+
             const btn = e.target.querySelector('button[type="submit"]');
             const ogText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Deploying Contract...';
-            
-            setTimeout(() => {
+
+            try {
+                // Get Solidity params from input field
+                const name = document.getElementById('pubName').value.trim(); 
+                const symbol = document.getElementById('pubSymbol').value.trim();
+                const endpoint = document.getElementById('pubUrl').value.trim();
+                const price = document.getElementById('curveBasePrice').value.trim();
+                const capacity = document.getElementById('curveMaxCapacity').value.trim();
+
+                // Validate inputs that are needed for Solidity
+                if (!name || name.length > 50) throw new Error('Name must be 1–50 characters.');
+                if (!symbol || symbol.length > 10) throw new Error('Symbol must be 1–10 characters.');
+                if (!endpoint || endpoint.length > 250) throw new Error('Endpoint must be 1–250 characters.');
+                if (!registryContract) throw new Error('Please connect your wallet first.');
+
+                // Ensure that numerial inputs are whole positive numbers (needed for discrete math in solidity)
+                let capacityNum = Number(capacity);
+                let priceNum = Number(price);
+                if (!Number.isInteger(capacityNum) || capacityNum <= 0) {
+                    throw new Error('Capacity must be a positive whole number');
+                }
+                if (!Number.isInteger(priceNum) || priceNum <= 0) {
+                    throw new Error('Price must be a positive whole number in wei');
+                }
+
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Deploying Contract...';
+
+                // Call createAPIListing in the registry contract to create a new listing with these paramgs
+                const tx = await registryContract.createAPIListing(name, symbol, endpoint, BigInt(capacity), BigInt(price));
+                const receipt = await tx.wait();
+                console.log('Transaction mined')
+
+                // get the address of the new listing
+                let listingAddress = null;
+
+                // Go through all logs in transsaction receipt to get listing address
+                for (let i = 0; i < receipt.logs.length; i++) {
+                    let currentLog = receipt.logs[i];
+
+                    try {
+                        // Parse this log using the registry contract ABI
+                        let parsed = registryContract.interface.parseLog(currentLog);
+
+                        // If the parsed log is CreatedListing event from Solidity, then extract the contract address
+                        if (parsed?.name === 'CreatedListing') {
+                            listingAddress = parsed.args.apiListing;
+                            break;
+                        }
+                    } catch { }
+                }
+                
+                // Send alert that API has been published
+                alert(
+                    `API Listing published!\n`+
+                    `Listing contract: ${listingAddress}\n`+
+                    `TX Hash: ${tx.hash}\n`
+                );
+
+                // Show success state
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Deployed Successfully'; 
                 btn.classList.replace('bg-primary', 'bg-green-600');
                 setTimeout(() => { 
@@ -1678,7 +1726,11 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
                     initBondingCurveChart(); // reset chart
                     showProviderSection('dash-myapis'); 
                 }, 2000);
-            }, 1500);
+
+            } catch (err) {
+                alert('Publish failed' + err)
+                btn.innerHTML = ogText; 
+            }
         });
 
         document.getElementById('withdrawForm')?.addEventListener('submit', (e) => {
