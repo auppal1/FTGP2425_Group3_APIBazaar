@@ -1102,7 +1102,46 @@
     </div>
 
 
-    <script>
+    <script type="module">
+
+        // Import Ethers.js (need to use URL as html not using node.js)
+        import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
+        
+        // Connecting to solidity contracts:
+
+        // Store registry address
+        const REGISTRY_ADDRESS = "0xBeD7F16398220AbB9B6B72F7dA5E400b27A1E281"
+
+        // Manually create ABIs (as node.js hasnt been used)
+        const REGISTRY_ABI = [
+            "function createAPIListing(string name, string symbol, string endpoint, uint256 capacity, uint256 basePrice) external",
+            "function getAllListings() view returns (address[])",
+            "function getProviderListings(address provider) view returns (address[])",
+            "function getListing(address listingAddress) view returns (tuple(address provider, address listingAddress, string name, string symbol, string endpoint, uint256 createdAt))",
+            "event CreatedListing(address indexed provider, address indexed apiListing, string name, string symbol)"
+        ];
+
+        const LISTING_ABI = [
+            "function tokenName() view returns (string)",
+            "function tokenSymbol() view returns (string)",
+            "function provider() view returns (address)",
+            "function capacity() view returns (uint256)",
+            "function basePrice() view returns (uint256)",
+            "function getPurchasePrice(uint256 amount) view returns (uint256)",
+            "function getSalePrice(uint256 amount) view returns (uint256)",
+            "function getCurrentDaySupply() view returns (uint256)",
+            "function getCurrentDayBalance(address user) view returns (uint256)",
+            "function credits(address user) view returns (uint256)",
+            "function buyTokens(uint256 amount) payable returns (bool)",
+            "function sellTokens(uint256 amount) returns (bool)",
+            "function withdraw() returns (bool)",
+            "function isTerminated() view returns (bool)"
+        ];
+
+        let provider = null;
+        let signer = null;
+        let registryContract = null;
+
         /** GLOBAL STATE */
         const state = { 
             isLoggedIn: false, 
