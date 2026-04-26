@@ -1719,26 +1719,91 @@
                 btn.innerHTML = ogText; 
             }
         });
+        
 
-        document.getElementById('withdrawForm')?.addEventListener('submit', (e) => {
+        // Withdrawal IGNORES the amount to be withdrawn, and withdraws everything
+        // This matches the structure of the solidity contract (no option for how much to withdarw)
+        document.getElementById('withdrawForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!state.wallet) return alert('Please connect a wallet first to withdraw.');
-            const data = { amount: document.getElementById('wdAmount').value, to: document.getElementById('wdAddress').value };
-            console.log('BACKEND HOOK: Withdraw Payload ->', data);
             
             const btn = e.target.querySelector('button[type="submit"]');
             const ogText = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Submitting Tx...';
             
-            setTimeout(() => { 
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Transfer Complete'; 
-                btn.classList.replace('bg-primary', 'bg-green-600');
+            try {
+                // Get current wallet address
+                const myWalletAdd = await signer.getAddress();
+
+                // Get all listing APIs from this provider
+                const listingAddresses = await registryContract.getProviderListings(myWalletAdd);
+
+                // Empty list to store listings that have credits
+                let listingsWithCredits = []
+
+                // Check each listing for credits:
+                for (let i = 0; i < listingAddresses.length; i++) {
+                    const addr = listingAddresses[i];
+
+                    // Create contract object for this listing
+                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+
+                    // Read current credits for this wallet address
+                    const credits = await listing.credits(myWalletAdd);
+
+                    // If credits are greater than zero then save this listing
+                    if (credits > 0n) {
+                        listingsWithCredits.push(listing);
+                    } 
+                }
+
+                // If ther are no listings with credits, then stop here
+                if (listingsWithCredits.length === 0) {
+                    alert('No credits to withdraw');
+                    // reset button
+                    btn.innerHTML = ogText;
+                    return;
+                }
+
+                // Tracker for how many listings have been withdrawn from
+                let withdrawCount = 0;
+
+                // Go through each listing and withdraw credits
+                for (let i = 0; i < listingsWithCredits.length; i++) {
+                    const listing = listingsWithCredits[i];
+
+                    // Withdraw from this listing
+                    const tx = await listing.withdraw();
+
+                    // Wait for transaction to be confirmed
+                    await tx.wait();
+
+                    // Add 1 to withdraw counter
+                    withdrawCount += 1;
+                }
+
+                alert('Withdrew from ' + withdrawCount + ' listings');
+
+                // Show button success
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Transfer Complete';
+                
+                // Reload dashboard stats
+                getDashboardStats();
+
                 setTimeout(() => { 
-                    btn.innerHTML = ogText; 
-                    btn.classList.replace('bg-green-600', 'bg-primary');
-                    document.getElementById('withdrawForm').reset(); 
-                }, 2000); 
-            }, 1500);
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Transfer Complete'; 
+                    btn.classList.replace('bg-primary', 'bg-green-600');
+                    setTimeout(() => { 
+                        btn.innerHTML = ogText; 
+                        btn.classList.replace('bg-green-600', 'bg-primary');
+                        document.getElementById('withdrawForm').reset(); 
+                    }, 2000); 
+                }, 1500);
+            } catch (err) {
+                console.error('Withdraw failed', err);
+                alert('Withdraw failed', err);
+                btn.innerHTML = ogText;
+            }
         });
 
         document.getElementById('settingsForm')?.addEventListener('submit', (e) => {
@@ -1836,7 +1901,7 @@
                     allRows += `
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="p-5 font-black text-gray-900">${metadata.name} <span class="text-xs text-gray-400 font-mono">(${metadata.symbol.toUpperCase()})</span></td>
-                            <td class="p-5 text-gray-500 font-mono text-xs">${addr.slice(0, 6)}...${addr.slice(-4)}</td>
+                            <td class="p-5 text-gray-500 font-mono text-xs">${addr}</td>
                             <td class="p-5 font-mono text-primary font-black">${priceWei} Wei</td>
                             <td class="p-5 font-bold">${dailySupply}</td>
                             <td class="p-5 font-black">${capacity}</td>
