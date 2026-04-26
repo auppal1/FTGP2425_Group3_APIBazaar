@@ -192,6 +192,19 @@ describe("API Bazaar", function() {
                     "Nothing to withdraw"
                 );
             })
+
+            describe("getBalance", function () {
+                it("Should return the current balance of the treasury", async function () {
+                    // Call getBalance() immediately after deployment - at this point 
+                    // there will be no money in the contract so we expect the balance
+                    // to be 0
+                    const treasuryBalance = await platformTreasury.getBalance();
+                    // Assert that the balance should = 0
+                    // As treasuryBalance will be bigNumber data type, convert to string
+                    // for the comparison
+                    assert.equal(treasuryBalance.toString(), "0");
+                })
+            })
         })
     })
 })
