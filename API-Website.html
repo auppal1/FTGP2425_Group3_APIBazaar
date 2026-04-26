@@ -718,20 +718,20 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
                                 <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-code text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-arrow-up mr-1"></i>2</span></div>
-                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total APIs Active</p><h3 class="text-3xl font-black text-gray-900">5</h3></div>
+                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total APIs Active</p><h3 id="statApiActive" class="text-3xl font-black text-gray-900">-</h3></div>
                             </div>
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
-                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-bolt text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-arrow-up mr-1"></i>15%</span></div>
-                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total Calls (30d)</p><h3 class="text-3xl font-black text-gray-900">1,289</h3></div>
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-warehouse text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-arrow-up mr-1"></i>15%</span></div>
+                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total Supply (today)</p><h3 id="statTotalSupply" class="text-3xl font-black text-gray-900">-</h3></div>
                             </div>
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
-                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><i class="fa-solid fa-sack-dollar text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg">+$45.20</span></div>
-                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total Earnings</p><h3 class="text-3xl font-black text-gray-900">$128.90</h3></div>
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><i class="fa-solid fa-percent text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg">+$45.20</span></div>
+                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Utilisation Rate</p><h3 id="statUtilisation" class="text-3xl font-black text-gray-900">-</h3></div>
                             </div>
                             <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-3xl shadow-lg border border-gray-700 flex flex-col justify-between text-white relative overflow-hidden">
                                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
                                 <div class="flex justify-between items-start mb-4 relative z-10"><div class="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center border border-white/10"><i class="fa-solid fa-wallet text-xl"></i></div><button onclick="showProviderSection('dash-earnings')" class="text-xs font-bold text-gray-300 hover:text-white hover:underline">Withdraw</button></div>
-                                <div class="relative z-10"><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Withdrawable Balance</p><h3 class="text-3xl font-black text-white">$89.50</h3></div>
+                                <div class="relative z-10"><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Withdrawable Balance</p><h3 id="statWithdrawable" class="text-3xl font-black text-white">-</h3></div>
                             </div>
                         </div>
 
@@ -779,22 +779,21 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div><label class="block text-sm font-bold text-gray-700 mb-2">API Name <span class="text-red-500">*</span></label><input type="text" id="pubName" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus" placeholder="e.g. NFT Floor Tracker"></div>
                                     <div><label class="block text-sm font-bold text-gray-700 mb-2">Category <span class="text-red-500">*</span></label><select id="pubCat" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus"><option value="">Select Category</option><option value="web3">Web3 / Blockchain</option><option value="ai">AI / Machine Learning</option><option value="data">Data Analytics</option><option value="util">Utilities</option></select></div>
-                                    <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-2">Endpoint Target URL <span class="text-red-500">*</span></label><div class="relative"><i class="fa-solid fa-link absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="url" id="pubUrl" required class="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus" placeholder="https://api.yourdomain.com/v1/..."></div><p class="text-xs text-gray-400 font-medium mt-2">The decentralized gateway will proxy authenticated requests to this URL.</p></div>
+                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Token Symbol <span class="text-red-500">*</span></label><input type="text" id="pubSymbol" maxlength="10" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus font-mono" placeholder="e.g. NFTFLR"></div>
+                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Endpoint Target URL <span class="text-red-500">*</span></label><div class="relative"><i class="fa-solid fa-link absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="url" id="pubUrl" required class="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus" placeholder="https://api.yourdomain.com/v1/..."></div><p class="text-xs text-gray-400 font-medium mt-2">The decentralized gateway will proxy authenticated requests to this URL.</p></div>
                                     <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-2">Description <span class="text-red-500">*</span></label><textarea id="pubDesc" rows="4" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus resize-none" placeholder="Describe the functionality, inputs, and output format..."></textarea></div>
                                 </div>
                                 
                                 <div class="p-8 rounded-[2rem] border border-gray-100 bg-gray-50/50">
-                                    <h4 class="font-black text-gray-900 mb-6 text-xl flex items-center gap-2"><i class="fa-solid fa-chart-line text-primary"></i> Tokenomics & Pricing</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Initial Price (USDC) *</label><input id="bondingInitialPrice" type="number" step="0.001" min="0.001" value="0.01" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Max Capacity (Calls) *</label><input id="bondingCapacity" type="number" min="100" value="100000" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Curve Algorithm *</label><select id="bondingCurveType" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-bold"><option value="linear">Linear Scale</option><option value="exponential">Exponential (Aggressive)</option><option value="logarithmic">Logarithmic (Gentle)</option></select></div>
+                                    <h4 class="font-black text-gray-900 mb-6 text-xl flex items-center gap-2"><i class="fa-solid fa-chart-line text-primary"></i> API Call Pricing</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Base Price (wei) *</label><input id="curveBasePrice" type="number" step="0.001" min="0.001" value="0.01" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Max Capacity (Calls) *</label><input id="curveMaxCapacity" type="number" min="100" value="100000" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
                                     </div>
                                     
                                     <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                                         <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-50">
                                             <span class="font-black text-gray-900">Live Curve Preview</span>
-                                            <span id="bondingCurveSummary" class="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg">Starting at $0.01, Linear</span>
                                         </div>
                                         <div class="h-64 w-full"><canvas id="bondingCurveChart"></canvas></div>
                                     </div>
@@ -821,33 +820,10 @@
                             <div class="overflow-x-auto border border-gray-100 rounded-2xl shadow-inner">
                                 <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]">
                                     <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-widest font-black">
-                                        <tr><th class="p-5 border-b border-gray-200">API Name</th><th class="p-5 border-b border-gray-200">Category</th><th class="p-5 border-b border-gray-200">Current Price</th><th class="p-5 border-b border-gray-200">Total Calls</th><th class="p-5 border-b border-gray-200">Total Earned</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200 text-right">Actions</th></tr>
+                                        <tr><th class="p-5 border-b border-gray-200">API Name</th><th class="p-5 border-b border-gray-200">Address</th><th class="p-5 border-b border-gray-200">Base Price</th><th class="p-5 border-b border-gray-200">Supply Today</th><th class="p-5 border-b border-gray-200">Capacity</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200 text-right">Endpoint</th></tr>
                                     </thead>
-                                    <tbody class="text-sm font-medium text-gray-800 divide-y divide-gray-100">
-                                        <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="p-5 font-black text-gray-900 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center"><i class="fa-solid fa-shield"></i></div> Wallet Risk Assessment</td>
-                                            <td class="p-5 text-gray-500">Web3 / Security</td><td class="p-5 font-mono text-primary font-black">0.01 USDC</td><td class="p-5 font-bold">458</td><td class="p-5 font-black">4.58 USDC</td>
-                                            <td class="p-5"><span class="px-3 py-1 text-[10px] bg-green-100 text-green-700 rounded-lg font-black uppercase tracking-wider border border-green-200">Active</span></td>
-                                            <td class="p-5 text-right"><button class="text-gray-400 hover:text-primary transition mr-4" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="text-gray-400 hover:text-red-500 transition" title="Pause Contract"><i class="fa-solid fa-pause"></i></button></td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="p-5 font-black text-gray-900 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-purple-50 text-purple-500 flex items-center justify-center"><i class="fa-solid fa-file-contract"></i></div> Smart Contract Scan</td>
-                                            <td class="p-5 text-gray-500">Web3 / Security</td><td class="p-5 font-mono text-primary font-black">0.02 USDC</td><td class="p-5 font-bold">321</td><td class="p-5 font-black">6.42 USDC</td>
-                                            <td class="p-5"><span class="px-3 py-1 text-[10px] bg-green-100 text-green-700 rounded-lg font-black uppercase tracking-wider border border-green-200">Active</span></td>
-                                            <td class="p-5 text-right"><button class="text-gray-400 hover:text-primary transition mr-4" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="text-gray-400 hover:text-red-500 transition" title="Pause Contract"><i class="fa-solid fa-pause"></i></button></td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="p-5 font-black text-gray-900 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center"><i class="fa-solid fa-image"></i></div> NFT Metadata API</td>
-                                            <td class="p-5 text-gray-500">Web3 / Utility</td><td class="p-5 font-mono text-primary font-black">0.03 USDC</td><td class="p-5 font-bold">210</td><td class="p-5 font-black">6.30 USDC</td>
-                                            <td class="p-5"><span class="px-3 py-1 text-[10px] bg-yellow-100 text-yellow-700 rounded-lg font-black uppercase tracking-wider border border-yellow-200">Under Review</span></td>
-                                            <td class="p-5 text-right"><button class="text-gray-400 hover:text-primary transition mr-4" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="text-gray-300 cursor-not-allowed transition" title="Cannot pause"><i class="fa-solid fa-pause"></i></button></td>
-                                        </tr>
-                                        <tr class="hover:bg-gray-50/50 transition-colors">
-                                            <td class="p-5 font-black text-gray-900 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center"><i class="fa-solid fa-robot"></i></div> AI Image Generator</td>
-                                            <td class="p-5 text-gray-500">AI / ML</td><td class="p-5 font-mono text-primary font-black">0.05 USDC</td><td class="p-5 font-bold">0</td><td class="p-5 font-black">0.00 USDC</td>
-                                            <td class="p-5"><span class="px-3 py-1 text-[10px] bg-gray-200 text-gray-600 rounded-lg font-black uppercase tracking-wider border border-gray-300">Draft</span></td>
-                                            <td class="p-5 text-right"><button class="text-gray-400 hover:text-primary transition mr-4" title="Edit"><i class="fa-solid fa-pen"></i></button><button class="text-gray-400 hover:text-green-500 transition" title="Publish"><i class="fa-solid fa-rocket"></i></button></td>
-                                        </tr>
+                                    <tbody id="myApisTable" class="text-sm font-medium text-gray-800 divide-y divide-gray-100">
+                                         <tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Connect your wallet to see your APIs.</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -1102,7 +1078,46 @@
     </div>
 
 
-    <script>
+    <script type="module">
+
+        // Import Ethers.js (need to use URL as html not using node.js)
+        import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
+        
+        // Connecting to solidity contracts:
+
+        // Store registry address
+        const REGISTRY_ADDRESS = "0xBeD7F16398220AbB9B6B72F7dA5E400b27A1E281"
+
+        // Manually create ABIs (as node.js hasnt been used)
+        const REGISTRY_ABI = [
+            "function createAPIListing(string name, string symbol, string endpoint, uint256 capacity, uint256 basePrice) external",
+            "function getAllListings() view returns (address[])",
+            "function getProviderListings(address provider) view returns (address[])",
+            "function getListing(address listingAddress) view returns (tuple(address provider, address listingAddress, string name, string symbol, string endpoint, uint256 createdAt))",
+            "event CreatedListing(address indexed provider, address indexed apiListing, string name, string symbol)"
+        ];
+
+        const LISTING_ABI = [
+            "function tokenName() view returns (string)",
+            "function tokenSymbol() view returns (string)",
+            "function provider() view returns (address)",
+            "function capacity() view returns (uint256)",
+            "function basePrice() view returns (uint256)",
+            "function getPurchasePrice(uint256 amount) view returns (uint256)",
+            "function getSalePrice(uint256 amount) view returns (uint256)",
+            "function getCurrentDaySupply() view returns (uint256)",
+            "function getCurrentDayBalance(address user) view returns (uint256)",
+            "function credits(address user) view returns (uint256)",
+            "function buyTokens(uint256 amount) payable returns (bool)",
+            "function sellTokens(uint256 amount) returns (bool)",
+            "function withdraw() returns (bool)",
+            "function isTerminated() view returns (bool)"
+        ];
+
+        let provider = null;
+        let signer = null;
+        let registryContract = null;
+
         /** GLOBAL STATE */
         const state = { 
             isLoggedIn: false, 
@@ -1205,15 +1220,51 @@
             switchView(state.role === 'provider' ? 'view-provider' : 'view-buyer');
         };
 
-        /** WALLET MOCK LOGIC */
-        document.querySelectorAll('.btn-open-wallet').forEach(b => b.onclick = () => openModal('walletModal'));
+        // Allow connection of Meta Mask wallet
+        document.querySelectorAll('.btn-open-wallet').forEach(b => b.onclick = () => {
+            // Ensure that cant click on wallet connect button again after connecting
+            if (state.wallet) {
+                alert('Wallet already connected');
+                return;
+            }
+            openModal('walletModal');
+        });
+        
         document.getElementById('connectMetamask').onclick = async () => {
-            // Mock connection
-            state.wallet = window.ethereum ? (await window.ethereum.request({method:'eth_requestAccounts'}))[0] : "0x89AbcDeF1234567890abcdef1234567890abcdef";
-            updateUIState(); closeModal('walletModal');
+            if (!window.ethereum) { alert('Please install MetaMask'); return; }
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                const walletAddress = await signer.getAddress();
+
+                // Attach registry contract instance to MetaMask signer
+                registryContract = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, signer);
+
+                state.wallet = walletAddress;
+                
+                console.log('Wallet Connected', { walletAddress });
+                updateUIState();
+
+                // Close walletModal to remove metasmask popup 
+                closeModal('walletModal');
+
+                // Load provider listings for MyAPIs table
+                loadProviderListings();
+
+                // Load dashboard stats
+                getDashboardStats();
+            } catch (err) {
+                console.error('Wallet connect failed', err);
+            }
         };
+
         document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () => {
-            state.wallet = null; state.isLoggedIn = false; updateUIState(); switchView('view-home');
+            provider = null;
+            signer = null;
+            registryContract = null;
+            state.wallet = null;
+            // NOTE: do NOT clear state.isLoggedIn here — wallet ≠ session
+            updateUIState();
         });
 
         /** BUYER MARKETPLACE LOGIC */
@@ -1420,50 +1471,89 @@
             });
         }
 
+        // Create bonding curve chart that reflects bonding curves in solidity
+        // Therefore, should be constant at basePrice for 90% of supply range and then 
+        // follow 4x^3 up to capacity (as integral of 4x^3 is x**4 which was convenient for solidity)
         function initBondingCurveChart() {
             const ctx = document.getElementById('bondingCurveChart')?.getContext('2d');
             if(!ctx) return;
             
-            const initP = parseFloat(document.getElementById('bondingInitialPrice').value) || 0.01;
-            const cap = parseInt(document.getElementById('bondingCapacity').value) || 100000;
-            const type = document.getElementById('bondingCurveType').value;
-            
-            const labels=[], data=[];
-            for(let i=0;i<=40;i++) {
-                const s = Math.round((cap/40)*i);
-                const r = cap===0 ? 0 : s/cap;
-                let p = initP;
-                if(type==='exponential') p = initP*(1+(Math.exp(r*4)-1)*0.8);
-                else if(type==='logarithmic') p = initP*(1+Math.log1p(r*15)*1.5);
-                else p = initP*(1+r*3); // linear
-                labels.push(s); 
-                data.push(Number(p.toFixed(4)));
+            // Get params for the curve from webpage input:
+            // basePrice => the constant price for the first 90% of the supply range
+            // capacity => the maximum supply (for a given day)
+            const basePrice = parseFloat(document.getElementById('curveBasePrice').value || 0.01);
+            const capacity = parseInt(document.getElementById('curveMaxCapacity').value) || 100000;
+            const stepPoint = Math.floor(capacity * 0.9);
+
+            // Store x-axis (supply) values
+            const labels = [];
+
+            // Store y-axis (marginal price) values
+            const data = [];
+
+            // No. points to plot on the chart (lots so it looks more conintuous)
+            let points = 1000;
+
+            // Loop from 0 to number of points
+            for (let i = 0; i <= points; i++) {
+
+                // Get current supply for this point
+                let supply = Math.round((capacity / points) * i);
+
+                // start with basePrice (for constant porttion of curve)
+                let price = basePrice;
+
+                // Only increase price if after step point
+                if (supply >= stepPoint) {
+
+                    // Work out how far supply is from step point
+                    let x = supply - stepPoint;
+                    let curveIncrease = 4 * Math.pow(x, 3);     // bonding curve follows 4s^3 for spot price
+
+                    // Add curve increase on to base price
+                    price = basePrice + curveIncrease;
+                }
+
+                // Save supply values in x-axis array
+                labels.push(supply);
+
+                // Save price values in y-axis array
+                data.push(price);
             }
-            
-            document.getElementById('bondingCurveSummary').innerText = `Start: $${initP}, Max: ${cap}, ${type}`;
-            
-            if(bondingCurveChartInstance) { 
-                bondingCurveChartInstance.data.labels=labels; 
-                bondingCurveChartInstance.data.datasets[0].data=data; 
-                bondingCurveChartInstance.update(); 
-                return; 
+
+            // If the chart already exists, update it
+            if (bondingCurveChartInstance) {
+                // Update x-axis
+                bondingCurveChartInstance.data.labels = labels;
+                // Update y-axis 
+                bondingCurveChartInstance.data.datasets[0].data = data;
+                // Rewdraw chart
+                bondingCurveChartInstance.update();
+                return;
             }
-            
+
+            // If no chart exists yet, create new Chart.js instance 
             bondingCurveChartInstance = new Chart(ctx, {
-                type: 'line', 
-                data: { 
-                    labels, 
-                    datasets: [{ 
-                        data, 
-                        borderColor: '#165DFF', 
-                        backgroundColor: 'rgba(22, 93, 255, 0.1)', 
+                type: 'line',
+                data: {
+                    // labels for x axis
+                    labels: labels,
+
+                    datasets: [{
+                        // Y-axis values
+                        data: data,
+
+                        // Style of line (as written in groupmate's previous commit)
+                        borderColor: '#165DFF',
+                        backgroundColor: 'rgba(22, 93, 255, 0.1)',
                         fill: true, 
-                        borderWidth: 3, 
-                        tension: 0.3, 
+                        borderWidth: 3,
+                        tension: 0,
                         pointRadius: 0,
                         pointHoverRadius: 5
-                    }] 
+                    }]
                 },
+                // Same options as groupmate's previous commiit
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
@@ -1477,7 +1567,7 @@
         }
 
         // Attach listeners for dynamic bonding curve update
-        ['bondingInitialPrice', 'bondingCapacity', 'bondingCurveType'].forEach(id => {
+        ['curveBasePrice', 'curveMaxCapacity',].forEach(id => {
             document.getElementById(id)?.addEventListener('input', initBondingCurveChart);
             document.getElementById(id)?.addEventListener('change', initBondingCurveChart);
         });
@@ -1545,23 +1635,71 @@
             refreshUnreadCount();
         }
 
-        /** BACKEND HOOKS FOR PROVIDER FORMS */
-        document.getElementById('publishForm')?.addEventListener('submit', (e) => {
+        // Create API listing through registry contract and ask metamask to confirm transaction
+        document.getElementById('publishForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const data = { 
-                name: document.getElementById('pubName').value, 
-                url: document.getElementById('pubUrl').value, 
-                price: document.getElementById('bondingInitialPrice').value,
-                capacity: document.getElementById('bondingCapacity').value,
-                curve: document.getElementById('bondingCurveType').value
-            };
-            console.log('BACKEND HOOK: Publish API Payload ->', data);
-            
+
             const btn = e.target.querySelector('button[type="submit"]');
             const ogText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Deploying Contract...';
-            
-            setTimeout(() => {
+
+            try {
+                // Get Solidity params from input field
+                const name = document.getElementById('pubName').value.trim(); 
+                const symbol = document.getElementById('pubSymbol').value.trim();
+                const endpoint = document.getElementById('pubUrl').value.trim();
+                const price = document.getElementById('curveBasePrice').value.trim();
+                const capacity = document.getElementById('curveMaxCapacity').value.trim();
+
+                // Validate inputs that are needed for Solidity
+                if (!name || name.length > 50) throw new Error('Name must be 1–50 characters.');
+                if (!symbol || symbol.length > 10) throw new Error('Symbol must be 1–10 characters.');
+                if (!endpoint || endpoint.length > 250) throw new Error('Endpoint must be 1–250 characters.');
+                if (!registryContract) throw new Error('Please connect your wallet first.');
+
+                // Ensure that numerial inputs are whole positive numbers (needed for discrete math in solidity)
+                let capacityNum = Number(capacity);
+                let priceNum = Number(price);
+                if (!Number.isInteger(capacityNum) || capacityNum <= 0) {
+                    throw new Error('Capacity must be a positive whole number');
+                }
+                if (!Number.isInteger(priceNum) || priceNum <= 0) {
+                    throw new Error('Price must be a positive whole number in wei');
+                }
+
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Deploying Contract...';
+
+                // Call createAPIListing in the registry contract to create a new listing with these paramgs
+                const tx = await registryContract.createAPIListing(name, symbol, endpoint, BigInt(capacity), BigInt(price));
+                const receipt = await tx.wait();
+                console.log('Transaction mined')
+
+                // get the address of the new listing
+                let listingAddress = null;
+
+                // Go through all logs in transsaction receipt to get listing address
+                for (let i = 0; i < receipt.logs.length; i++) {
+                    let currentLog = receipt.logs[i];
+
+                    try {
+                        // Parse this log using the registry contract ABI
+                        let parsed = registryContract.interface.parseLog(currentLog);
+
+                        // If the parsed log is CreatedListing event from Solidity, then extract the contract address
+                        if (parsed?.name === 'CreatedListing') {
+                            listingAddress = parsed.args.apiListing;
+                            break;
+                        }
+                    } catch { }
+                }
+                
+                // Send alert that API has been published
+                alert(
+                    `API Listing published!\n`+
+                    `Listing contract: ${listingAddress}\n`+
+                    `TX Hash: ${tx.hash}\n`
+                );
+
+                // Show success state
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Deployed Successfully'; 
                 btn.classList.replace('bg-primary', 'bg-green-600');
                 setTimeout(() => { 
@@ -1569,30 +1707,103 @@
                     btn.classList.replace('bg-green-600', 'bg-primary'); 
                     document.getElementById('publishForm').reset(); 
                     initBondingCurveChart(); // reset chart
+                    // Load the provider listings section for the new listing to be seen
+                    loadProviderListings();
+                    // Load the dashboard stats to update
+                    getDashboardStats();
                     showProviderSection('dash-myapis'); 
                 }, 2000);
-            }, 1500);
-        });
 
-        document.getElementById('withdrawForm')?.addEventListener('submit', (e) => {
+            } catch (err) {
+                alert('Publish failed' + err)
+                btn.innerHTML = ogText; 
+            }
+        });
+        
+
+        // Withdrawal IGNORES the amount to be withdrawn, and withdraws everything
+        // This matches the structure of the solidity contract (no option for how much to withdarw)
+        document.getElementById('withdrawForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             if(!state.wallet) return alert('Please connect a wallet first to withdraw.');
-            const data = { amount: document.getElementById('wdAmount').value, to: document.getElementById('wdAddress').value };
-            console.log('BACKEND HOOK: Withdraw Payload ->', data);
             
             const btn = e.target.querySelector('button[type="submit"]');
             const ogText = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Submitting Tx...';
             
-            setTimeout(() => { 
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Transfer Complete'; 
-                btn.classList.replace('bg-primary', 'bg-green-600');
+            try {
+                // Get current wallet address
+                const myWalletAdd = await signer.getAddress();
+
+                // Get all listing APIs from this provider
+                const listingAddresses = await registryContract.getProviderListings(myWalletAdd);
+
+                // Empty list to store listings that have credits
+                let listingsWithCredits = []
+
+                // Check each listing for credits:
+                for (let i = 0; i < listingAddresses.length; i++) {
+                    const addr = listingAddresses[i];
+
+                    // Create contract object for this listing
+                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+
+                    // Read current credits for this wallet address
+                    const credits = await listing.credits(myWalletAdd);
+
+                    // If credits are greater than zero then save this listing
+                    if (credits > 0n) {
+                        listingsWithCredits.push(listing);
+                    } 
+                }
+
+                // If ther are no listings with credits, then stop here
+                if (listingsWithCredits.length === 0) {
+                    alert('No credits to withdraw');
+                    // reset button
+                    btn.innerHTML = ogText;
+                    return;
+                }
+
+                // Tracker for how many listings have been withdrawn from
+                let withdrawCount = 0;
+
+                // Go through each listing and withdraw credits
+                for (let i = 0; i < listingsWithCredits.length; i++) {
+                    const listing = listingsWithCredits[i];
+
+                    // Withdraw from this listing
+                    const tx = await listing.withdraw();
+
+                    // Wait for transaction to be confirmed
+                    await tx.wait();
+
+                    // Add 1 to withdraw counter
+                    withdrawCount += 1;
+                }
+
+                alert('Withdrew from ' + withdrawCount + ' listings');
+
+                // Show button success
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Transfer Complete';
+                
+                // Reload dashboard stats
+                getDashboardStats();
+
                 setTimeout(() => { 
-                    btn.innerHTML = ogText; 
-                    btn.classList.replace('bg-green-600', 'bg-primary');
-                    document.getElementById('withdrawForm').reset(); 
-                }, 2000); 
-            }, 1500);
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Transfer Complete'; 
+                    btn.classList.replace('bg-primary', 'bg-green-600');
+                    setTimeout(() => { 
+                        btn.innerHTML = ogText; 
+                        btn.classList.replace('bg-green-600', 'bg-primary');
+                        document.getElementById('withdrawForm').reset(); 
+                    }, 2000); 
+                }, 1500);
+            } catch (err) {
+                console.error('Withdraw failed', err);
+                alert('Withdraw failed', err);
+                btn.innerHTML = ogText;
+            }
         });
 
         document.getElementById('settingsForm')?.addEventListener('submit', (e) => {
@@ -1607,6 +1818,197 @@
                 btn.classList.replace('bg-green-600', 'bg-gray-900');
             }, 2000);
         });
+
+        // Function that live-updates provider's API listing in the My APIs table
+        // Based on the number of listings associated with the connected wallet
+        // Uses the getProviderListings view function in APIBazaarRegistry.sol
+       async function loadProviderListings() {
+
+            // Get table body to add rows to
+            const tbody = document.getElementById('myApisTable');
+
+            // Stop if table doesn't exist
+            if (!tbody) {
+                return;
+            }
+
+            // Ensure metamask is connected, if not thens stop
+            if (!registryContract || !signer) {
+                return;
+            } 
+
+            try {
+                // Get current wallet address
+                const myWalletAdd = await signer.getAddress()
+
+                // Get all listing contract addresses associated with this wallet using Solidity funticon
+                const listingAddresses = await registryContract.getProviderListings(myWalletAdd)
+
+                // if no listings found, show message and stop
+                if (listingAddresses.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">No APIs published yet.</td></tr>';
+                    return;
+                }
+
+                let allRows = '';
+
+                // Go through each listing address one by one
+                for (let i = 0; i < listingAddresses.length; i++) {
+                    const addr = listingAddresses[i];
+
+                    // get metadata from this listing from solidity view function
+                    const metadata = await registryContract.getListing(addr);
+
+                    // Create contract object for this listing via APIListing.sol
+                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+
+                    // Default values if fail
+                    let priceWei = '-'
+                    let terminated = false;
+                    let dailySupply = '-'
+                    let capacity = '-'
+
+                    try {
+                        // Read base price from deployed listing contract
+                        priceWei = await listing.basePrice();
+
+                        // Read daily supply from deployed listing constract
+                        dailySupply = await listing.getCurrentDaySupply();
+
+                        // Read APIs capacity (from getActiveParams)
+                        capacity = await listing.capacity();
+
+                        // Check if listing is terminated
+                        terminated = await listing.isTerminated();
+                    } catch (err) {
+                        console.warn('Could not read listing details', addr, err);
+                    }
+                    
+                    // Create a status for html
+                    let status = '';
+
+                    // SHow termination status
+                    if (terminated) {
+                        // Show terminated in the HTML
+                        status = '<span class="px-2 py-1 rounded bg-red-100 text-red-700">Terminated</span>';
+                    } else {
+                        // Show active in the HTML
+                        status = '<span class="px-2 py-1 rounded bg-green-100 text-green-700">Active</span>';
+                    }
+
+                    // Add one table row for this listing 
+                    // Formatted same as groupmate's previous placeholder table rows from old commit 
+                    allRows += `
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-5 font-black text-gray-900">${metadata.name} <span class="text-xs text-gray-400 font-mono">(${metadata.symbol.toUpperCase()})</span></td>
+                            <td class="p-5 text-gray-500 font-mono text-xs">${addr}</td>
+                            <td class="p-5 font-mono text-primary font-black">${priceWei} Wei</td>
+                            <td class="p-5 font-bold">${dailySupply}</td>
+                            <td class="p-5 font-black">${capacity}</td>
+                            <td class="p-5">${status}</td>
+                            <td class="p-5 text-right text-gray-400 text-xs font-mono">${metadata.endpoint.slice(0, 30)}...</td>
+                        </tr>`;
+                }
+                
+                // Put all rows into table body
+                tbody.innerHTML = allRows;
+
+            } catch (err) {
+                console.error('loadProviderListings failed', err);
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-red-400 font-medium">Failed to load listings.</td></tr>';
+            }
+        }
+
+        // Function to get the live statistics to display on the provider dashboard
+        async function getDashboardStats () {
+
+            // Ensure metamask is connected, if not thens stop
+            if (!registryContract || !signer) {
+                return;
+            } 
+
+            try {
+                // Get current wallet address
+                const myWalletAdd = await signer.getAddress()
+
+                // Get all API listings from this provider
+                const listingAddresses = await registryContract.getProviderListings(myWalletAdd);
+
+                // Start totals at zero
+                let totalCapacity = 0n;     // need to be big int
+                let totalSupplyToday = 0n;     // need to be big int
+                let totalCredits = 0n;     // need to be big int
+                let activeCount = 0;
+
+                // Go through each listing one by one
+                for (let i = 0; i < listingAddresses.length; i++) {
+                    const addr = listingAddresses[i];
+
+                    // Create contract instance for listing
+                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+
+                    try {
+                        // Read current day supply from the listing
+                        const supplyToday = await listing.getCurrentDaySupply();
+
+                        // Read provider credits from the listing
+                        const credits = await listing.credits(myWalletAdd);
+
+                        // Check if this listing is terminated
+                        const terminated = await listing.isTerminated();
+
+                        // Get capacity (from get active params)
+                        const capacity = await listing.capacity();
+
+                        // Add current listing values to running totals
+                        totalSupplyToday += supplyToday;
+                        totalCredits += credits;
+                        totalCapacity += capacity;
+
+                        // Add to active count if not terminated
+                        if (!terminated) {
+                            activeCount += 1;
+                        }
+                    } catch (err) {
+                        console.warn('Could not read API listing', addr, err);
+                    }
+                }
+            
+            
+            let utilisationText = '0%';
+
+            // Calculate utilisation percentage (total supply / total capacity * 100)
+            if (totalCapacity > 0n) {
+                const utilisationPercent = Number((totalSupplyToday * 100n) / totalCapacity);
+                utilisationText = utilisationPercent.toFixed(1) + '%';
+            }
+
+            // Show active API count in dashboard
+            document.getElementById('statApiActive').innerText = activeCount;
+
+            // Show total supply for this day in dashboard
+            document.getElementById('statTotalSupply').innerText = totalSupplyToday.toString();
+
+            // SHow total withdrawable credits
+            document.getElementById('statWithdrawable').innerText = totalCredits.toString() + ' Wei';
+
+            // Show current utilisation
+            document.getElementById('statUtilisation').innerText = utilisationText;
+
+            } catch (err) {
+                console.error('getDashboardStats failed', err);
+            }
+
+        }
+
+        // Globalise functions for inline HTML (as now using type="module" to import ethers.js)
+        window.switchView = switchView;
+        window.handleProtectedRoute = handleProtectedRoute;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.showProviderSection = showProviderSection;
+        window.loadProviderListings = loadProviderListings;
+        window.getDashboardStats = getDashboardStats;
 
         // Initialize App
         window.onload = updateUIState;
