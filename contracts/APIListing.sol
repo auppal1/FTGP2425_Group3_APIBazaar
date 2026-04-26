@@ -88,16 +88,6 @@ contract APIListing {
 
     // FUNCTIONS
 
-    // View function for supply (by day)
-    function getCurrentDaySupply () public view returns (uint256) {
-        return supplyByDay[currentDay()];
-    }
-
-    // View function for the current balance of a user (by day)
-    function getCurrentDayBalance (address user) public view returns (uint256) {
-        return balanceByDay[currentDay()][user];
-    }
-
     // Fee taking logic: Is called whenever provider is credited therefore revenue is realised 
     // That is either consuming tokens, or settling expired credits during newDayProcess()
     function splitRevenues(uint256 amount) internal {
@@ -490,5 +480,77 @@ contract APIListing {
         // setting amount = 0 will cause buyTokens() function to revert
         uint256 amount = 0;
         buyTokens(amount);
+    }
+
+    // Getter functions
+
+    function name() public view returns (string memory) {
+        return tokenName;
+    }
+
+    function symbol() public view returns (string memory) {
+        return tokenSymbol;
+    }
+
+    // View function for supply (by day)
+    function getCurrentDaySupply() public view returns (uint256) {
+        return supplyByDay[currentDay()];
+    }
+
+    // View function for the current balance of a user (by day)
+    function getCurrentDayBalance(address user) public view returns (uint256) {
+        return balanceByDay[currentDay()][user];
+    }
+
+    function getCredits(address user) public view returns (uint256) {
+        return credits[user];
+    }
+
+    function getCapacity() public view returns (uint256) {
+        return capacity;
+    }
+
+    function getBasePrice() public view returns (uint256) {
+        return basePrice;
+    }
+
+    function getReserveBalance() public view returns (uint256) {
+        return reserveBalance;
+    }
+
+    function getChangeParamsDay() public view returns (uint256) {
+        return changeParamsDay;
+    }
+
+    function getPendingBasePrice() public view returns (uint256) {
+        return pendingBasePrice;
+    }
+
+    function getPendingCapacity() public view returns (uint256) {
+        return pendingCapacity;
+    }
+
+    function getLastSettledDay() public view returns (uint256) {
+        return lastSettledDay;
+    }
+
+    function getLastUsageDay() public view returns (uint256) {
+        return lastUsageDay;
+    }
+
+    function getTerminationDay() public view returns (uint256) {
+        return terminationDay;
+    }
+
+    function getTerminationStatus() public view returns (bool) {
+        return terminated;
+    }
+
+    function getProvider() public view returns (address) {
+        return provider;
+    }
+
+    function getFeeRecipient() public view returns (address) {
+        return feeRecipient;
     }
 }

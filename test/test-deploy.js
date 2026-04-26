@@ -45,7 +45,7 @@ describe("API Bazaar", function() {
         treasuryOwner = accounts[1];
         //console.log(treasuryOwner.address);
 
-        // Before testing we need to deploy the contracts
+        // BEFORE TESTING WE NEED TO DEPLOY THE CONTRACTS
 
         // DEPLOY REGISTRY CONTRACT
         // getContractFactory is ethers function which "manufactures" instances of a compiled 
@@ -105,6 +105,8 @@ describe("API Bazaar", function() {
         console.log();
     })
 
+    // TESTS
+
     // Tests for the registry contract
     describe("APIBazaarRegistry", function() {
         
@@ -132,7 +134,7 @@ describe("API Bazaar", function() {
             })
         })
 
-        // Test the setDeployer() function
+        // Test the setTreasury() function
         describe("setTreasury", function() {
             it("Should set the address of the platformTreasury contract correctly", async function () {
                 // call setTreasury() function with the address of the treasury contract
@@ -192,18 +194,18 @@ describe("API Bazaar", function() {
                     "Nothing to withdraw"
                 );
             })
+        })
 
-            describe("getBalance", function () {
-                it("Should return the current balance of the treasury", async function () {
-                    // Call getBalance() immediately after deployment - at this point 
-                    // there will be no money in the contract so we expect the balance
-                    // to be 0
-                    const treasuryBalance = await platformTreasury.getBalance();
-                    // Assert that the balance should = 0
-                    // As treasuryBalance will be bigNumber data type, convert to string
-                    // for the comparison
-                    assert.equal(treasuryBalance.toString(), "0");
-                })
+        describe("getBalance", function () {
+            it("Should return the current balance of the treasury", async function () {
+                // Call getBalance() immediately after deployment - at this point 
+                // there will be no money in the contract so we expect the balance
+                // to be 0
+                const treasuryBalance = await platformTreasury.getBalance();
+                // Assert that the balance should = 0
+                // As treasuryBalance will be bigNumber data type, convert to string
+                // for the comparison
+                assert.equal(treasuryBalance.toString(), "0");
             })
         })
     })
