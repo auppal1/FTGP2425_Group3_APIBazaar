@@ -25,7 +25,7 @@ const {ethers, network} = require("hardhat");
 // Main function
 async function main() {
   // DEPLOY REGISTRY CONTRACT
-  // Set the address of the treasury owner
+  // Set the address of the registry owner
   //const registryOwner = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
   // getContractFactory is ethers function which "manufactures" instances of a compiled 
   // contract
