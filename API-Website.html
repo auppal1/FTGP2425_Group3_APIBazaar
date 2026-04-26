@@ -779,22 +779,21 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div><label class="block text-sm font-bold text-gray-700 mb-2">API Name <span class="text-red-500">*</span></label><input type="text" id="pubName" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus" placeholder="e.g. NFT Floor Tracker"></div>
                                     <div><label class="block text-sm font-bold text-gray-700 mb-2">Category <span class="text-red-500">*</span></label><select id="pubCat" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus"><option value="">Select Category</option><option value="web3">Web3 / Blockchain</option><option value="ai">AI / Machine Learning</option><option value="data">Data Analytics</option><option value="util">Utilities</option></select></div>
-                                    <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-2">Endpoint Target URL <span class="text-red-500">*</span></label><div class="relative"><i class="fa-solid fa-link absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="url" id="pubUrl" required class="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus" placeholder="https://api.yourdomain.com/v1/..."></div><p class="text-xs text-gray-400 font-medium mt-2">The decentralized gateway will proxy authenticated requests to this URL.</p></div>
+                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Token Symbol <span class="text-red-500">*</span></label><input type="text" id="pubSymbol" maxlength="10" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus font-mono" placeholder="e.g. NFTFLR"></div>
+                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Endpoint Target URL <span class="text-red-500">*</span></label><div class="relative"><i class="fa-solid fa-link absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="url" id="pubUrl" required class="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus" placeholder="https://api.yourdomain.com/v1/..."></div><p class="text-xs text-gray-400 font-medium mt-2">The decentralized gateway will proxy authenticated requests to this URL.</p></div>
                                     <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-2">Description <span class="text-red-500">*</span></label><textarea id="pubDesc" rows="4" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus resize-none" placeholder="Describe the functionality, inputs, and output format..."></textarea></div>
                                 </div>
                                 
                                 <div class="p-8 rounded-[2rem] border border-gray-100 bg-gray-50/50">
-                                    <h4 class="font-black text-gray-900 mb-6 text-xl flex items-center gap-2"><i class="fa-solid fa-chart-line text-primary"></i> Tokenomics & Pricing</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Initial Price (USDC) *</label><input id="bondingInitialPrice" type="number" step="0.001" min="0.001" value="0.01" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Max Capacity (Calls) *</label><input id="bondingCapacity" type="number" min="100" value="100000" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Curve Algorithm *</label><select id="bondingCurveType" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-bold"><option value="linear">Linear Scale</option><option value="exponential">Exponential (Aggressive)</option><option value="logarithmic">Logarithmic (Gentle)</option></select></div>
+                                    <h4 class="font-black text-gray-900 mb-6 text-xl flex items-center gap-2"><i class="fa-solid fa-chart-line text-primary"></i> API Call Pricing</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Base Price (wei) *</label><input id="curveBasePrice" type="number" step="0.001" min="0.001" value="0.01" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Max Capacity (Calls) *</label><input id="curveMaxCapacity" type="number" min="100" value="100000" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
                                     </div>
                                     
                                     <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                                         <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-50">
                                             <span class="font-black text-gray-900">Live Curve Preview</span>
-                                            <span id="bondingCurveSummary" class="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg">Starting at $0.01, Linear</span>
                                         </div>
                                         <div class="h-64 w-full"><canvas id="bondingCurveChart"></canvas></div>
                                     </div>
@@ -1489,50 +1488,89 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
             });
         }
 
+        // Create bonding curve chart that reflects bonding curves in solidity
+        // Therefore, should be constant at basePrice for 90% of supply range and then 
+        // follow 4x^3 up to capacity (as integral of 4x^3 is x**4 which was convenient for solidity)
         function initBondingCurveChart() {
             const ctx = document.getElementById('bondingCurveChart')?.getContext('2d');
             if(!ctx) return;
             
-            const initP = parseFloat(document.getElementById('bondingInitialPrice').value) || 0.01;
-            const cap = parseInt(document.getElementById('bondingCapacity').value) || 100000;
-            const type = document.getElementById('bondingCurveType').value;
-            
-            const labels=[], data=[];
-            for(let i=0;i<=40;i++) {
-                const s = Math.round((cap/40)*i);
-                const r = cap===0 ? 0 : s/cap;
-                let p = initP;
-                if(type==='exponential') p = initP*(1+(Math.exp(r*4)-1)*0.8);
-                else if(type==='logarithmic') p = initP*(1+Math.log1p(r*15)*1.5);
-                else p = initP*(1+r*3); // linear
-                labels.push(s); 
-                data.push(Number(p.toFixed(4)));
+            // Get params for the curve from webpage input:
+            // basePrice => the constant price for the first 90% of the supply range
+            // capacity => the maximum supply (for a given day)
+            const basePrice = parseFloat(document.getElementById('curveBasePrice').value || 0.01);
+            const capacity = parseInt(document.getElementById('curveMaxCapacity').value) || 100000;
+            const stepPoint = Math.floor(capacity * 0.9);
+
+            // Store x-axis (supply) values
+            const labels = [];
+
+            // Store y-axis (marginal price) values
+            const data = [];
+
+            // No. points to plot on the chart (lots so it looks more conintuous)
+            let points = 1000;
+
+            // Loop from 0 to number of points
+            for (let i = 0; i <= points; i++) {
+
+                // Get current supply for this point
+                let supply = Math.round((capacity / points) * i);
+
+                // start with basePrice (for constant porttion of curve)
+                let price = basePrice;
+
+                // Only increase price if after step point
+                if (supply >= stepPoint) {
+
+                    // Work out how far supply is from step point
+                    let x = supply - stepPoint;
+                    let curveIncrease = 4 * Math.pow(x, 3);     // bonding curve follows 4s^3 for spot price
+
+                    // Add curve increase on to base price
+                    price = basePrice + curveIncrease;
+                }
+
+                // Save supply values in x-axis array
+                labels.push(supply);
+
+                // Save price values in y-axis array
+                data.push(price);
             }
-            
-            document.getElementById('bondingCurveSummary').innerText = `Start: $${initP}, Max: ${cap}, ${type}`;
-            
-            if(bondingCurveChartInstance) { 
-                bondingCurveChartInstance.data.labels=labels; 
-                bondingCurveChartInstance.data.datasets[0].data=data; 
-                bondingCurveChartInstance.update(); 
-                return; 
+
+            // If the chart already exists, update it
+            if (bondingCurveChartInstance) {
+                // Update x-axis
+                bondingCurveChartInstance.data.labels = labels;
+                // Update y-axis 
+                bondingCurveChartInstance.data.datasets[0].data = data;
+                // Rewdraw chart
+                bondingCurveChartInstance.update();
+                return;
             }
-            
+
+            // If no chart exists yet, create new Chart.js instance 
             bondingCurveChartInstance = new Chart(ctx, {
-                type: 'line', 
-                data: { 
-                    labels, 
-                    datasets: [{ 
-                        data, 
-                        borderColor: '#165DFF', 
-                        backgroundColor: 'rgba(22, 93, 255, 0.1)', 
+                type: 'line',
+                data: {
+                    // labels for x axis
+                    labels: labels,
+
+                    datasets: [{
+                        // Y-axis values
+                        data: data,
+
+                        // Style of line (as written in groupmate's previous commit)
+                        borderColor: '#165DFF',
+                        backgroundColor: 'rgba(22, 93, 255, 0.1)',
                         fill: true, 
-                        borderWidth: 3, 
-                        tension: 0.3, 
+                        borderWidth: 3,
+                        tension: 0,
                         pointRadius: 0,
                         pointHoverRadius: 5
-                    }] 
+                    }]
                 },
+                // Same options as groupmate's previous commiit
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
@@ -1546,7 +1584,7 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
         }
 
         // Attach listeners for dynamic bonding curve update
-        ['bondingInitialPrice', 'bondingCapacity', 'bondingCurveType'].forEach(id => {
+        ['curveBasePrice', 'curveMaxCapacity',].forEach(id => {
             document.getElementById(id)?.addEventListener('input', initBondingCurveChart);
             document.getElementById(id)?.addEventListener('change', initBondingCurveChart);
         });
