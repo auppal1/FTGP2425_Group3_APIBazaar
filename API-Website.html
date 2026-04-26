@@ -718,20 +718,20 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
                                 <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-code text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-arrow-up mr-1"></i>2</span></div>
-                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total APIs Active</p><h3 class="text-3xl font-black text-gray-900">5</h3></div>
+                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total APIs Active</p><h3 id="statApiActive" class="text-3xl font-black text-gray-900">-</h3></div>
                             </div>
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
-                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-bolt text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-arrow-up mr-1"></i>15%</span></div>
-                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total Calls (30d)</p><h3 class="text-3xl font-black text-gray-900">1,289</h3></div>
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-warehouse text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-arrow-up mr-1"></i>15%</span></div>
+                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total Supply (today)</p><h3 id="statTotalSupply" class="text-3xl font-black text-gray-900">-</h3></div>
                             </div>
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
-                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><i class="fa-solid fa-sack-dollar text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg">+$45.20</span></div>
-                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total Earnings</p><h3 class="text-3xl font-black text-gray-900">$128.90</h3></div>
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><i class="fa-solid fa-percent text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg">+$45.20</span></div>
+                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Utilisation Rate</p><h3 id="statUtilisation" class="text-3xl font-black text-gray-900">-</h3></div>
                             </div>
                             <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-3xl shadow-lg border border-gray-700 flex flex-col justify-between text-white relative overflow-hidden">
                                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
                                 <div class="flex justify-between items-start mb-4 relative z-10"><div class="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center border border-white/10"><i class="fa-solid fa-wallet text-xl"></i></div><button onclick="showProviderSection('dash-earnings')" class="text-xs font-bold text-gray-300 hover:text-white hover:underline">Withdraw</button></div>
-                                <div class="relative z-10"><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Withdrawable Balance</p><h3 class="text-3xl font-black text-white">$89.50</h3></div>
+                                <div class="relative z-10"><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Withdrawable Balance</p><h3 id="statWithdrawable" class="text-3xl font-black text-white">-</h3></div>
                             </div>
                         </div>
 
@@ -1250,19 +1250,22 @@
 
                 // Load provider listings for MyAPIs table
                 loadProviderListings();
+
+                // Load dashboard stats
+                getDashboardStats();
             } catch (err) {
                 console.error('Wallet connect failed', err);
             }
         };
 
-document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () => {
-    provider = null;
-    signer = null;
-    registryContract = null;
-    state.wallet = null;
-    // NOTE: do NOT clear state.isLoggedIn here — wallet ≠ session
-    updateUIState();
-});
+        document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () => {
+            provider = null;
+            signer = null;
+            registryContract = null;
+            state.wallet = null;
+            // NOTE: do NOT clear state.isLoggedIn here — wallet ≠ session
+            updateUIState();
+        });
 
         /** BUYER MARKETPLACE LOGIC */
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1706,6 +1709,8 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
                     initBondingCurveChart(); // reset chart
                     // Load the provider listings section for the new listing to be seen
                     loadProviderListings();
+                    // Load the dashboard stats to update
+                    getDashboardStats();
                     showProviderSection('dash-myapis'); 
                 }, 2000);
 
@@ -1803,10 +1808,10 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
                         priceWei = await listing.basePrice();
 
                         // Read daily supply from deployed listing constract
-                        dailySupply = await listing.getCurrentDaySupply()
+                        dailySupply = await listing.getCurrentDaySupply();
 
-                        // Read APIs capacity
-                        capacity = await listing.capacity()
+                        // Read APIs capacity (from getActiveParams)
+                        capacity = await listing.capacity();
 
                         // Check if listing is terminated
                         terminated = await listing.isTerminated();
@@ -1849,7 +1854,87 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
             }
         }
 
+        // Function to get the live statistics to display on the provider dashboard
+        async function getDashboardStats () {
 
+            // Ensure metamask is connected, if not thens stop
+            if (!registryContract || !signer) {
+                return;
+            } 
+
+            try {
+                // Get current wallet address
+                const myWalletAdd = await signer.getAddress()
+
+                // Get all API listings from this provider
+                const listingAddresses = await registryContract.getProviderListings(myWalletAdd);
+
+                // Start totals at zero
+                let totalCapacity = 0n;     // need to be big int
+                let totalSupplyToday = 0n;     // need to be big int
+                let totalCredits = 0n;     // need to be big int
+                let activeCount = 0;
+
+                // Go through each listing one by one
+                for (let i = 0; i < listingAddresses.length; i++) {
+                    const addr = listingAddresses[i];
+
+                    // Create contract instance for listing
+                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+
+                    try {
+                        // Read current day supply from the listing
+                        const supplyToday = await listing.getCurrentDaySupply();
+
+                        // Read provider credits from the listing
+                        const credits = await listing.credits(myWalletAdd);
+
+                        // Check if this listing is terminated
+                        const terminated = await listing.isTerminated();
+
+                        // Get capacity (from get active params)
+                        const capacity = await listing.capacity();
+
+                        // Add current listing values to running totals
+                        totalSupplyToday += supplyToday;
+                        totalCredits += credits;
+                        totalCapacity += capacity;
+
+                        // Add to active count if not terminated
+                        if (!terminated) {
+                            activeCount += 1;
+                        }
+                    } catch (err) {
+                        console.warn('Could not read API listing', addr, err);
+                    }
+                }
+            
+            
+            let utilisationText = '0%';
+
+            // Calculate utilisation percentage (total supply / total capacity * 100)
+            if (totalCapacity > 0n) {
+                const utilisationPercent = Number((totalSupplyToday * 100n) / totalCapacity);
+                utilisationText = utilisationPercent.toFixed(1) + '%';
+            }
+
+            // Show active API count in dashboard
+            document.getElementById('statApiActive').innerText = activeCount;
+
+            // Show total supply for this day in dashboard
+            document.getElementById('statTotalSupply').innerText = totalSupplyToday.toString();
+
+            // SHow total withdrawable credits
+            document.getElementById('statWithdrawable').innerText = totalCredits.toString() + ' Wei';
+
+            // Show current utilisation
+            document.getElementById('statUtilisation').innerText = utilisationText;
+
+            } catch (err) {
+                console.error('getDashboardStats failed', err);
+            }
+
+        }
 
         // Globalise functions for inline HTML (as now using type="module" to import ethers.js)
         window.switchView = switchView;
@@ -1858,6 +1943,7 @@ document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () 
         window.closeModal = closeModal;
         window.showProviderSection = showProviderSection;
         window.loadProviderListings = loadProviderListings;
+        window.getDashboardStats = getDashboardStats;
 
         // Initialize App
         window.onload = updateUIState;
