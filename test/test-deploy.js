@@ -171,5 +171,27 @@ describe("API Bazaar", function() {
                 assert.equal(contractOwner, treasuryOwner.address);
             })
         })
+
+        describe("withdraw", function() {
+            it("Should fail if anyone other than treasury owner tries to withdrwaw", async function () {
+                // By default on hardhat network all trasactions are sent from accounts[0]
+                // ie. registry owner account, not accounts[1] of treasury owner
+                // So if we try to withdraw while connected to the registry owner account,
+                // rather than treasury owner account, it should fail and revert
+                await expect(platformTreasury.withdraw()).to.be.revertedWith("Only owner");
+            })
+
+            it("Should fail if there is no money to withdraw", async function() {
+                // Call the withdraw function immediately after deployment - 
+                // at this point there will be no money in the contract
+                // First connent the treasuryOwner account to the platformTreasury contract
+                // so that the "Only owner" error won't be triggered
+                const treasuryConnection = await platformTreasury.connect(treasuryOwner);
+                // Then use the connection to call withdraw()
+                await expect(treasuryConnection.withdraw()).to.be.revertedWith(
+                    "Nothing to withdraw"
+                );
+            })
+        })
     })
 })
