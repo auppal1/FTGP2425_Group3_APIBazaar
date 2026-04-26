@@ -1244,16 +1244,46 @@
             switchView(state.role === 'provider' ? 'view-provider' : 'view-buyer');
         };
 
-        /** WALLET MOCK LOGIC */
-        document.querySelectorAll('.btn-open-wallet').forEach(b => b.onclick = () => openModal('walletModal'));
-        document.getElementById('connectMetamask').onclick = async () => {
-            // Mock connection
-            state.wallet = window.ethereum ? (await window.ethereum.request({method:'eth_requestAccounts'}))[0] : "0x89AbcDeF1234567890abcdef1234567890abcdef";
-            updateUIState(); closeModal('walletModal');
-        };
-        document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () => {
-            state.wallet = null; state.isLoggedIn = false; updateUIState(); switchView('view-home');
+        // Allow connection of Meta Mask wallet
+        document.querySelectorAll('.btn-open-wallet').forEach(b => b.onclick = () => {
+            // Ensure that cant click on wallet connect button again after connecting
+            if (state.wallet) {
+                alert('Wallet already connected');
+                return;
+            }
+            openModal('walletModal');
         });
+        
+        document.getElementById('connectMetamask').onclick = async () => {
+            if (!window.ethereum) { alert('Please install MetaMask'); return; }
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                const walletAddress = await signer.getAddress();
+
+                // Attach registry contract instance to MetaMask signer
+                registryContract = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, signer);
+
+                state.wallet = walletAddress;
+                
+                console.log('Wallet Connected', { walletAddress });
+                updateUIState();
+
+                // Close walletModal to remove metasmask popup 
+                closeModal('walletModal');
+            } catch (err) {
+                console.error('Wallet connect failed', err);
+            }
+        };
+
+document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () => {
+    provider = null;
+    signer = null;
+    registryContract = null;
+    state.wallet = null;
+    // NOTE: do NOT clear state.isLoggedIn here — wallet ≠ session
+    updateUIState();
+});
 
         /** BUYER MARKETPLACE LOGIC */
         document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -1646,6 +1676,13 @@
                 btn.classList.replace('bg-green-600', 'bg-gray-900');
             }, 2000);
         });
+
+        // Globalise functions for inline HTML (as now using type="module" to import ethers.js)
+        window.switchView = switchView;
+        window.handleProtectedRoute = handleProtectedRoute;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.showProviderSection = showProviderSection;
 
         // Initialize App
         window.onload = updateUIState;
