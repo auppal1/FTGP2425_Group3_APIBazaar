@@ -1341,82 +1341,190 @@
             };
         });
         
-           // CONFIG: deployed listings + gateway routes 
-            const LISTING_ADDRESSES = {
-                1: "0xREPLACE_ME_LISTING_1", // Wallet Risk Scorer
-                2: "0xREPLACE_ME_LISTING_2", // Deepfake Detector
-                3: "0xREPLACE_ME_LISTING_3", // DEX Vol Aggregator
-                4: "0xREPLACE_ME_LISTING_4", // Universal NFT Metadata
-                5: "0xREPLACE_ME_LISTING_5", // L2 Gas Oracle
-                6: "0xREPLACE_ME_LISTING_6"  // Crypto Social Sentiment
-            };
+    // CONFIG: deployed listings + gateway routes 
+        const LISTING_ADDRESSES = {
+            1: "0xREPLACE_ME_LISTING_1", // Wallet Risk Scorer
+            2: "0xREPLACE_ME_LISTING_2", // Deepfake Detector
+            3: "0xREPLACE_ME_LISTING_3", // DEX Vol Aggregator
+            4: "0xREPLACE_ME_LISTING_4", // Universal NFT Metadata
+            5: "0xREPLACE_ME_LISTING_5", // L2 Gas Oracle
+            6: "0xREPLACE_ME_LISTING_6"  // Crypto Social Sentiment
+        };
 
-            
-            const PROVIDER_ROUTES = {
-                1: { provider: "provider1", path: "/risk-score" },
-                2: { provider: "provider1", path: "/deepfake"   },
-                3: { provider: "provider2", path: "/dex-vol"    },
-                4: { provider: "provider2", path: "/nft-meta"   },
-                5: { provider: "provider1", path: "/gas-oracle" },
-                6: { provider: "provider2", path: "/sentiment"  }
-            };
+        
+        const PROVIDER_ROUTES = {
+            1: { provider: "provider1", path: "/risk-score" },
+            2: { provider: "provider1", path: "/deepfake"   },
+            3: { provider: "provider2", path: "/dex-vol"    },
+            4: { provider: "provider2", path: "/nft-meta"   },
+            5: { provider: "provider1", path: "/gas-oracle" },
+            6: { provider: "provider2", path: "/sentiment"  }
+        };
 
-            const GATEWAY_URL = "http://localhost:3000";
-
-
-            function hydrateListingAddresses() {
-                document.querySelectorAll('.buy-api-btn').forEach(btn => {
-                    const id   = btn.getAttribute('data-id');
-                    const addr = LISTING_ADDRESSES[id];
-                    if (addr && !addr.startsWith("0xREPLACE")) {
-                        btn.setAttribute('data-listing-addr', addr);
-                    }
-                });
-            }
-            window.addEventListener('DOMContentLoaded', hydrateListingAddresses);
+        const GATEWAY_URL = "http://localhost:3000";
 
 
-            // Live on-chain price quote
-            let _quoteTimer = null;
-            async function refreshPriceQuote() {
-                const status    = document.getElementById('buyPriceStatus');
-                const totalEl   = document.getElementById('buyTotalCost');
-                const balanceEl = document.getElementById('buyCurrentBalance');
-                const addr      = document.getElementById('confirmPurchaseBtn').getAttribute('data-listing-addr');
-                const amount    = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
-
-                if (!addr || addr.startsWith("__LISTING_") || addr.startsWith("0xREPLACE")) {
-                    status.innerText  = "Listing address not configured";
-                    totalEl.innerText = "-";
-                    return;
+        function hydrateListingAddresses() {
+            document.querySelectorAll('.buy-api-btn').forEach(btn => {
+                const id   = btn.getAttribute('data-id');
+                const addr = LISTING_ADDRESSES[id];
+                if (addr && !addr.startsWith("0xREPLACE")) {
+                    btn.setAttribute('data-listing-addr', addr);
                 }
-                if (!signer) {
-                    status.innerText  = "Connect wallet to see live price";
-                    totalEl.innerText = "-";
-                    return;
-                }
-                if (amount <= 0) { totalEl.innerText = "0"; return; }
-
-                try {
-                    status.innerText = "Fetching live price…";
-                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
-                    const [price, balance] = await Promise.all([
-                        listing.getPurchasePrice(amount),
-                        listing.getCurrentDayBalance(state.wallet)
-                    ]);
-                    totalEl.innerText   = ethers.formatEther(price);
-                    balanceEl.innerText = balance.toString();
-                    status.innerText    = `Quote @ ${new Date().toLocaleTimeString()}`;
-                } catch (err) {
-                    console.error('Quote failed', err);
-                    status.innerText = "Quote failed: " + (err.shortMessage || err.message);
-                }
-            }
-
-            document.getElementById('buyAmountInput').addEventListener('input', () => {
-                clearTimeout(_quoteTimer);
-                _quoteTimer = setTimeout(refreshPriceQuote, 250);
             });
+        }
+        window.addEventListener('DOMContentLoaded', hydrateListingAddresses);
+
+
+        // Live on-chain price quote
+        let _quoteTimer = null;
+        async function refreshPriceQuote() {
+            const status    = document.getElementById('buyPriceStatus');
+            const totalEl   = document.getElementById('buyTotalCost');
+            const balanceEl = document.getElementById('buyCurrentBalance');
+            const addr      = document.getElementById('confirmPurchaseBtn').getAttribute('data-listing-addr');
+            const amount    = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
+
+            if (!addr || addr.startsWith("__LISTING_") || addr.startsWith("0xREPLACE")) {
+                status.innerText  = "Listing address not configured";
+                totalEl.innerText = "-";
+                return;
+            }
+            if (!signer) {
+                status.innerText  = "Connect wallet to see live price";
+                totalEl.innerText = "-";
+                return;
+            }
+            if (amount <= 0) { totalEl.innerText = "0"; return; }
+
+            try {
+                status.innerText = "Fetching live price…";
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const [price, balance] = await Promise.all([
+                    listing.getPurchasePrice(amount),
+                    listing.getCurrentDayBalance(state.wallet)
+                ]);
+                totalEl.innerText   = ethers.formatEther(price);
+                balanceEl.innerText = balance.toString();
+                status.innerText    = `Quote @ ${new Date().toLocaleTimeString()}`;
+            } catch (err) {
+                console.error('Quote failed', err);
+                status.innerText = "Quote failed: " + (err.shortMessage || err.message);
+            }
+        }
+
+        document.getElementById('buyAmountInput').addEventListener('input', () => {
+            clearTimeout(_quoteTimer);
+            _quoteTimer = setTimeout(refreshPriceQuote, 250);
+        });
+
+
+        //  Card click -> open modal 
+        document.querySelectorAll('.buy-api-btn').forEach(btn => {
+            btn.onclick = () => {
+                const confirmBtn = document.getElementById('confirmPurchaseBtn');
+                document.getElementById('buyApiName').innerText     = btn.getAttribute('data-name');
+                document.getElementById('buyApiProvider').innerText = btn.getAttribute('data-provider');
+                document.getElementById('buyApiPrice').innerText    = btn.getAttribute('data-price') + " USDC";
+                confirmBtn.setAttribute('data-target-id',   btn.getAttribute('data-id'));
+                confirmBtn.setAttribute('data-listing-addr', btn.getAttribute('data-listing-addr') || "");
+                document.getElementById('sellBackBtn').classList.add('hidden');
+                document.getElementById('testCallBtn')?.remove();
+                document.getElementById('buyAmountInput').value = 1;
+                openModal('purchaseModal');
+                refreshPriceQuote();
+            };
+        });
+        
+        
+        // Authorize on-chain buyTokens 
+        document.getElementById('confirmPurchaseBtn').onclick = async (e) => {
+            const btn    = e.currentTarget;
+            const status = document.getElementById('buyPriceStatus');
+            const addr   = btn.getAttribute('data-listing-addr');
+            const amount = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
+        
+            if (!signer)  { alert('Please connect MetaMask first.'); return; }
+            if (!addr || addr.startsWith("__LISTING_") || addr.startsWith("0xREPLACE")) {
+                alert('Listing address not configured for this card.'); return;
+            }
+            if (amount <= 0) { alert('Enter a positive number of calls.'); return; }
+        
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.replace('bg-primary', 'bg-gray-500');
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Quoting price…';
+        
+            try {
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const value   = await listing.getPurchasePrice(amount);
+        
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Awaiting signature…';
+                const tx = await listing.buyTokens(amount, { value });
+        
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Mining tx…';
+                const receipt = await tx.wait();
+        
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Tokens minted!';
+                btn.classList.replace('bg-gray-500', 'bg-green-500');
+                status.innerHTML =
+                    `Tx: <a class="underline" target="_blank" ` +
+                    `href="https://sepolia.etherscan.io/tx/${receipt.hash}">` +
+                    `${receipt.hash.slice(0,10)}…</a>`;
+        
+                document.getElementById('sellBackBtn').classList.remove('hidden');
+                showTestCallButton(btn.getAttribute('data-target-id'));
+                refreshPriceQuote();
+            } catch (err) {
+                console.error('buyTokens failed', err);
+                btn.classList.replace('bg-gray-500', 'bg-red-500');
+                btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' +
+                                (err.shortMessage || 'Failed');
+            } finally {
+                setTimeout(() => {
+                    btn.disabled  = false;
+                    btn.innerHTML = original;
+                    btn.classList.remove('bg-green-500','bg-red-500','bg-gray-500');
+                    btn.classList.add('bg-primary');
+                }, 4000);
+            }
+        };
+            
+            
+        // Sell-back tokens 
+        document.getElementById('sellBackBtn').onclick = async () => {
+            const sellBtn = document.getElementById('sellBackBtn');
+            const addr    = document.getElementById('confirmPurchaseBtn').getAttribute('data-listing-addr');
+            const amount  = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
+            const status  = document.getElementById('buyPriceStatus');
+        
+            if (!signer)         { alert('Connect wallet first.'); return; }
+            if (!addr)           { alert('Listing address not configured.'); return; }
+            if (amount <= 0)     { alert('Enter how many tokens to sell.'); return; }
+        
+            sellBtn.disabled = true;
+            sellBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Selling…';
+            try {
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const tx      = await listing.sellTokens(amount);
+                const receipt = await tx.wait();
+                sellBtn.innerHTML = '<i class="fa-solid fa-check"></i> Sold';
+                status.innerHTML  =
+                    `Sell tx: <a class="underline" target="_blank" ` +
+                    `href="https://sepolia.etherscan.io/tx/${receipt.hash}">` +
+                    `${receipt.hash.slice(0,10)}…</a>`;
+                refreshPriceQuote();
+            } catch (err) {
+                console.error('sellTokens failed', err);
+                sellBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' +
+                                    (err.shortMessage || 'Failed');
+            } finally {
+                setTimeout(() => {
+                    sellBtn.disabled  = false;
+                    sellBtn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Sell Back Tokens';
+                }, 3000);
+            }
+        };
 
 
         /** PROVIDER DASHBOARD LOGIC */
