@@ -3,8 +3,32 @@ const router = express.Router();
 const verifyToken = require('../middleware/verifyToken');
 const axios = require('axios');
 const contract = require('../config/contracts');
-const rateLimit = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
 const { runDailySettle } = require('../jobs/dailySettle');
+
+const fs = require('fs');
+const pathLib = require('path');
+const METADATA_FILE = pathLib.join(__dirname, '../data/listings.json');
+
+function loadMetadata() {
+    try { return JSON.parse(fs.readFileSync(METADATA_FILE, 'utf8')); }
+    catch { return {}; }
+}
+function saveMetadata(data) {
+    fs.mkdirSync(pathLib.dirname(METADATA_FILE), { recursive: true });
+    fs.writeFileSync(METADATA_FILE, JSON.stringify(data, null, 2));
+}
+
+// Save (or update) a single listing's metadata after it's been deployed
+router.post('/metadata', (req, res) => {
+    const { listingAddress, ...meta } = req.body;
+    if (!listingAddress) return res.status(400).json({ error: 'listingAddress required' });
+    const all = loadMetadata();
+    all[listingAddress.toLowerCase()] = { ...meta, listingAddress };
+    saveMetadata(all);
+    res.json({ ok: true, listingAddress });
+});
+
 
 // Protected route test
 router.get('/protected', verifyToken, (req, res) => {
@@ -55,7 +79,7 @@ const requestLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 60,
   message: { error: 'Too many requests to this provider, please try again later.' },
-  keyGenerator: (req) => req.body.walletAddress || req.ip,
+  keyGenerator: (req, res) => req.body.walletAddress || ipKeyGenerator(req, res),
   standardHeaders: true,
   legacyHeaders: false
 });
@@ -123,6 +147,13 @@ router.get('/balance/:walletAddress', async (req, res) => {
 router.get('/admin/settle', async (req, res) => {
     await runDailySettle();
     res.json({ message: 'Settle job ran' });
+
 });
+
+// Read every listing's off-chain metadata at once
+router.get('/metadata', (req, res) => {
+    res.json(loadMetadata());
+});
+
 
 module.exports = router;
