@@ -1,26 +1,29 @@
 const { ethers } = require('ethers');
 const { provider: web3provider } = require('./web3');
+const { PRIVATE_KEY, CONTRACT_ADDRESS } = require('./env');
 const abi = require('./contractABI.json');
 
-const contractAddress = process.env.CONTRACT_ADDRESS;
-if (!contractAddress) console.warn('⚠️  CONTRACT_ADDRESS not set in .env');
+if (!CONTRACT_ADDRESS) console.warn('⚠️  CONTRACT_ADDRESS not set in .env');
 
-const listingContract = contractAddress
-  ? new ethers.Contract(contractAddress, abi, web3provider)
-  : null;
+// Read-only contract instance (used for view calls like getCurrentDayBalance)
+const readContract = CONTRACT_ADDRESS
+    ? new ethers.Contract(CONTRACT_ADDRESS, abi, web3provider)
+    : null;
 
-module.exports = {
-  async getCurrentDayBalance(address) {
-    if (!listingContract) throw new Error('Contract address not configured');
-    const balance = await listingContract.getCurrentDayBalance(address);
-    return balance;
-  },
+// Signer-attached instance (used for state-changing calls like consumeTokens)
+const signer        = PRIVATE_KEY ? new ethers.Wallet(PRIVATE_KEY, web3provider) : null;
+const writeContract = (readContract && signer) ? readContract.connect(signer) : null;
 
-  async consumeTokens(address, amount) {
-    if (!listingContract) throw new Error('Contract address not configured');
-    const { PRIVATE_KEY } = require('./env');
-    const signer = new ethers.Wallet(PRIVATE_KEY, web3provider);
-    const contractWithSigner = listingContract.connect(signer);
-    return contractWithSigner.consumeTokens(address, amount);
-  }
+// Combined export — exposes both read and write methods on one object
+const contract = {
+    getCurrentDayBalance(address) {
+        if (!readContract) throw new Error('Contract not configured');
+        return readContract.getCurrentDayBalance(address);
+    },
+    consumeTokens(address, amount) {
+        if (!writeContract) throw new Error('Signer or contract not configured');
+        return writeContract.consumeTokens(address, amount);
+    }
 };
+
+module.exports = { contract };
