@@ -123,66 +123,6 @@ describe("API Listing", function() {
         })
     })
 
-    describe("buyTokens", function() {
-        // For these tests we do need a clean deployment each time, so that the 
-        // starting supply and balances are always 0
-
-        // Initialise variables for re-use in all the buyTokens tests
-        let userConnection;
-        let supply;
-        let userBalance;
-        let reserveBalance;
-
-        // Let's say the user buys 5 tokens
-        const amount = 5;
-
-        // Some money needs to be sent to buy the tokens - for base price of 1
-        // value to be sent will be 1*amount as we are in the constant protion 
-        // of the bonding curve
-        const sendValue = ethers.parseUnits(amount.toString(), "wei");
-
-        // To test what happens if the user sends too much Wei
-        const excessValue = ethers.parseUnits((amount+1).toString(), "wei");
-        let excess;
-
-        beforeEach(async function() {
-            // connect the user account to the contract
-            userConnection = await APIListing.connect(user);
-            // buy the tokens
-            await userConnection.buyTokens(amount, {value: sendValue});
-            // get the new token supply, user balance and reserve balance
-            supply = await APIListing.getCurrentDaySupply();
-            userBalance = await APIListing.getCurrentDayBalance(userAddress);
-            reserveBalance = await APIListing.getReserveBalance();
-        })
-
-        // TODO: test the requires
-
-        it("Should update the token supply correctly", async function () {
-            // as we started with a supply of 0, current supply should = amount
-            assert.equal(supply, amount);
-        })
-
-        it("Should update the API user's balance correctly", async function () {
-            // current user balance should = amount
-            assert.equal(userBalance, amount);
-        })
-
-        it("Should update the contract's reserve balance correctly", async function () {
-            // current reserve balance should = amount
-            assert.equal(reserveBalance, amount);
-        })
-
-        it("Should update the user's credits if they send too much WEI", async function () {
-            // Send 1 too many WEI
-            await userConnection.buyTokens(amount, {value: excessValue});
-            // Get the excess amount credited to the user
-            excess = await APIListing.getCredits(userAddress);
-            // As the user sent 1 too many WEI, the excess should = 1
-            assert.equal(excess.toString(), "1");
-        })
-    })
-
     describe("getPurchasePrice", function() {
         it("Should should fail if requested amount is not greater than 0", async function () {
             const amount = 0;
@@ -240,6 +180,124 @@ describe("API Listing", function() {
             // await expect(APIListing.getPurchasePrice(amount)).to.be.revertedWith(
             //     "Invalid Amount"
             // );
+        })
+    })
+
+    describe("buyTokens", function() {
+        // For these tests we do need a clean deployment each time, so that the 
+        // starting supply and balances are always 0
+
+        // Initialise variables for re-use in all the buyTokens tests
+        let userConnection;
+        let supply;
+        let userBalance;
+        let reserveBalance;
+        let credits;
+
+        // Let's say the user buys 5 tokens
+        const amount = 5;
+
+        // Some money needs to be sent to buy the tokens - for base price of 1
+        // value to be sent will be 1*amount as we are in the constant protion 
+        // of the bonding curve
+        const sendValue = ethers.parseUnits(amount.toString(), "wei");
+
+        // To test what happens if the user sends too much Wei
+        const excess = amount + 1;
+        const excessValue = ethers.parseUnits(excess.toString(), "wei");
+
+        beforeEach(async function() {
+            // connect the user account to the contract
+            userConnection = await APIListing.connect(user);
+            // buy the tokens
+            await userConnection.buyTokens(amount, {value: sendValue});
+            // get the new token supply, user balance and reserve balance
+            supply = await APIListing.getCurrentDaySupply();
+            userBalance = await APIListing.getCurrentDayBalance(userAddress);
+            reserveBalance = await APIListing.getReserveBalance();
+        })
+
+        // TODO: test the requires
+
+        it("Should update the token supply correctly", async function () {
+            // as we started with a supply of 0, current supply should = amount
+            assert.equal(supply, amount);
+        })
+
+        it("Should update the API user's balance correctly", async function () {
+            // current user balance should = amount
+            assert.equal(userBalance, amount);
+        })
+
+        it("Should update the contract's reserve balance correctly", async function () {
+            // as we started with a supply of 0, 
+            // current reserve balance should = amount*basePrice
+            assert.equal(reserveBalance, amount);
+        })
+
+        it("Should update the user's credits if they send too much WEI", async function () {
+            // Send 1 too many WEI
+            await userConnection.buyTokens(amount, {value: excessValue});
+            // Get the amount credited to the user
+            credits = await APIListing.getCredits(userAddress);
+            // Assert that the credits should = excess - amount
+            assert.equal(credits.toString(), (excess - amount).toString());
+        })
+    })
+
+    describe("sellTokens", function() {
+        // Initialise variables for re-use in all the sellTokens tests
+        let userConnection;
+        let supply;
+        let userBalance;
+        let reserveBalance;
+        let credits;
+
+        // Let's say the user buys 7 tokens
+        const buyAmount = 7;
+        // then they sell 5 tokens back to the contract
+        const saleAmount = 5;
+
+        // Some money needs to be sent to buy the tokens - for base price of 1
+        // value to be sent will be 1*amount as we are in the constant protion 
+        // of the bonding curve
+        const sendValue = ethers.parseUnits(buyAmount.toString(), "wei");
+
+        beforeEach(async function() {
+            // connect the user account to the contract
+            userConnection = await APIListing.connect(user);
+            // user needs to buy the tokens before they can sell them
+            await userConnection.buyTokens(buyAmount, {value: sendValue});
+            await userConnection.sellTokens(saleAmount);
+            // get new token supply, user balance, reserve balance, user credits
+            supply = await APIListing.getCurrentDaySupply();
+            userBalance = await APIListing.getCurrentDayBalance(userAddress);
+            reserveBalance = await APIListing.getReserveBalance();
+            credits = await APIListing.getCredits(userAddress);
+        })
+
+        // TODO: test the requires
+
+        it("Should update the token supply correctly", async function () {
+            // For base price of 1, in the constnat portion of the curve, 
+            // supply should = amount bought - amount sold
+            assert.equal(supply, (buyAmount - saleAmount));
+        })
+
+        it("Should update the API user's balance correctly", async function () {
+            // current user balance should = amount bought - amount sold
+            assert.equal(userBalance, (buyAmount - saleAmount));
+        })
+
+        it("Should update the contract's reserve balance correctly", async function () {
+            // current reserve balance should = amount bought - amount sold
+            assert.equal(reserveBalance, (buyAmount - saleAmount));
+        })
+
+        it("Should update the user's credits correctly", async function () {
+            // User should be credited with the sale price - for base price of 1, 
+            // in the constant portion of the curve, sale price = saleAmount
+            assert.equal(credits, saleAmount);
         })
     })
 })
