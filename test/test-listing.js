@@ -18,7 +18,12 @@ describe("API Listing", function() {
     let treasuryOwner;
     let treasuryOwnerAddress; // address of treasury owner account
     let APIProvider;
-    let providerAdress;
+    let providerAdress; // address of API provider
+    let user;
+    let userAddress; // address of API user
+
+    // Money to send to the contract for payable functions that require it
+    let sendValue;
 
     // Initialise token/contract properties for constructor
     let tokenName;
@@ -27,20 +32,26 @@ describe("API Listing", function() {
     let basePrice;
 
     // Stuff to do before testing
-    before(async function() {
+    // Strictly speaking we don't need to do all this setup before every single test
+    // but some tests do require a "clean" copy of the contract to be deployed
+    beforeEach(async function() {
+
         // Before testing we need to set up some test accounts
         const accounts = await ethers.getSigners();
-        // Set up treasury and API provider accounts
+
+        // Set up treasury, provider and user accounts and addresses
         treasuryOwner = accounts[1];
         treasuryOwnerAddress = treasuryOwner.address;
         APIProvider = accounts[2];
         providerAdress = APIProvider.address;
+        user = accounts[3];
+        userAddress = user.address;
 
         // Set up token/contract properties for constructor
         tokenName = "RandomToken";
         tokenSymbol = "RNT";
-        capacity = 10;
-        basePrice = 100;
+        capacity = 12;
+        basePrice = 1;
 
         // DEPLOY API LISTING CONTRACT
         listingFactory = await ethers.getContractFactory("APIListing");
@@ -59,10 +70,10 @@ describe("API Listing", function() {
         listingContractAddress = APIListing.target;
         // Console logs to check that this is all doing what we want it to
         // Whitespace before first console log
-        console.log();
-        console.log(`Deployed APIListing contract to: ${listingContractAddress}`);
-        // Whitespace before next console log
-        console.log();
+        // console.log();
+        // console.log(`Deployed APIListing contract to: ${listingContractAddress}`);
+        // // Whitespace before next console log
+        // console.log();
     })
 
     // Test the constructor
@@ -109,6 +120,66 @@ describe("API Listing", function() {
             const contractBasePrice = await APIListing.getBasePrice();
             // Assert that the returned value should = basePrice
             assert.equal(contractBasePrice.toString(), basePrice.toString());
+        })
+    })
+
+    describe("buyTokens", function() {
+        // For these tests we do need a clean deployment each time, so that the 
+        // starting supply and balances are always 0
+
+        // Initialise variables for re-use in all the buyTokens tests
+        let userConnection;
+        let supply;
+        let userBalance;
+        let reserveBalance;
+
+        // Let's say the user buys 5 tokens
+        const amount = 5;
+
+        // Some money needs to be sent to buy the tokens - for base price of 1
+        // value to be sent will be 1*amount as we are in the constant protion 
+        // of the bonding curve
+        const sendValue = ethers.parseUnits(amount.toString(), "wei");
+
+        // To test what happens if the user sends too much Wei
+        const excessValue = ethers.parseUnits((amount+1).toString(), "wei");
+        let excess;
+
+        beforeEach(async function() {
+            // connect the user account to the contract
+            userConnection = await APIListing.connect(user);
+            // buy the tokens
+            await userConnection.buyTokens(amount, {value: sendValue});
+            // get the new token supply, user balance and reserve balance
+            supply = await APIListing.getCurrentDaySupply();
+            userBalance = await APIListing.getCurrentDayBalance(userAddress);
+            reserveBalance = await APIListing.getReserveBalance();
+        })
+
+        // TODO: test the requires
+
+        it("Should update the token supply correctly", async function () {
+            // as we started with a supply of 0, current supply should = amount
+            assert.equal(supply, amount);
+        })
+
+        it("Should update the API user's balance correctly", async function () {
+            // current user balance should = amount
+            assert.equal(userBalance, amount);
+        })
+
+        it("Should update the contract's reserve balance correctly", async function () {
+            // current reserve balance should = amount
+            assert.equal(reserveBalance, amount);
+        })
+
+        it("Should update the user's credits if they send too much WEI", async function () {
+            // Send 1 too many WEI
+            await userConnection.buyTokens(amount, {value: excessValue});
+            // Get the excess amount credited to the user
+            excess = await APIListing.getCredits(userAddress);
+            // As the user sent 1 too many WEI, the excess should = 1
+            assert.equal(excess.toString(), "1");
         })
     })
 

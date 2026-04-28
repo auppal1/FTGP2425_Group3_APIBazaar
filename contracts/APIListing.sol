@@ -227,13 +227,15 @@ contract APIListing {
         uint256 day = currentDay();
         uint256 S = supplyByDay[day];
 
+        // Initialise purchase price variable
+        uint256 purchasePrice;
+
         // Get active parameters, to accomodate for parameter changes that have just come into effect
         (uint256 activeCapacity, uint256 activeBasePrice) = getActiveParameters();
 
         // Validate inputs
         require(amount > 0 && amount <= activeCapacity, "Invalid Amount");
         require(S + amount < activeCapacity, "Amount breaches capacity");
-        uint256 purchasePrice;
 
         // Calculate price for requested number of tokens
 
@@ -280,6 +282,8 @@ contract APIListing {
         // Initialise current day and supply variables 
         uint256 day = currentDay();
         uint256 S = supplyByDay[day];
+
+        // Initialise sale price variable
         uint256 salePrice;
 
         // Get active parameters, to accomodate for parameter changes that have just come into effect

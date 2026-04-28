@@ -176,7 +176,7 @@ describe("API Bazaar", function() {
 
         describe("withdraw", function() {
             it("Should fail if anyone other than treasury owner tries to withdrwaw", async function () {
-                // By default on hardhat network all trasactions are sent from accounts[0]
+                // By default on hardhat network all transactions are sent from accounts[0]
                 // ie. registry owner account, not accounts[1] of treasury owner
                 // So if we try to withdraw while connected to the registry owner account,
                 // rather than treasury owner account, it should fail and revert
