@@ -54,7 +54,7 @@ router.get('/providers/:provider/health', async (req, res) => {
   }
 try{
   // Assumption providers expose a /health or /status endpoint
-  const url = '${baseUrl}/health';
+   const url = `${baseUrl}/health`;
   const response = await axios.get(url);
 
   return res.status(200).json({
@@ -86,7 +86,7 @@ const requestLimiter = rateLimit({
 
 
 // Request forwarding route
-router.post('/request', verifyToken, async (req, res) => {
+router.post('/request', requestLimiter, verifyToken, async (req, res) => {
   const { provider, path, method = 'GET', query = {}, body = {}, walletAddress } = req.body;
 
   const baseUrl = providerUrls[provider];
