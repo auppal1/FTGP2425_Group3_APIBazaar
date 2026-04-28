@@ -1175,6 +1175,11 @@
             "function isTerminated() view returns (bool)"
         ];
 
+        /* Read-only provider — used to load listings before the user connects */
+        const READ_ONLY_RPC = "https://ethereum-sepolia.publicnode.com";
+        const readProvider  = new ethers.JsonRpcProvider(READ_ONLY_RPC);
+        const readRegistry  = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, readProvider);
+
         let provider = null;
         let signer = null;
         let registryContract = null;
@@ -1343,7 +1348,7 @@
         
     // CONFIG: deployed listings + gateway routes 
         const LISTING_ADDRESSES = {
-            1: "0xREPLACE_ME_LISTING_1", // Wallet Risk Scorer
+            1: "0x7206E4253985dbC053D2A4684f729543ec10a19e", // Wallet Risk Scorer
             2: "0xREPLACE_ME_LISTING_2", // Deepfake Detector
             3: "0xREPLACE_ME_LISTING_3", // DEX Vol Aggregator
             4: "0xREPLACE_ME_LISTING_4", // Universal NFT Metadata
@@ -1525,6 +1530,65 @@
                 }, 3000);
             }
         };
+        /* ---------- 7.  "Try a Test Call" — hits the off-chain gateway ---------- */
+        // Injected once a purchase succeeds. POSTs to /api/request which:
+        //   (a) re-verifies on-chain balance via verifyToken middleware,
+        //   (b) forwards to the upstream provider,
+        //   (c) burns 1 token via consumeTokens.
+        function showTestCallButton(targetId) {
+            if (document.getElementById('testCallBtn')) return;
+            const sellBack = document.getElementById('sellBackBtn');
+            if (!sellBack) return;
+        
+            const btn = document.createElement('button');
+            btn.id = 'testCallBtn';
+            btn.className =
+                'mt-3 w-full py-3 bg-secondary text-white rounded-xl font-bold ' +
+                'text-sm hover:bg-secondary/90 transition-all flex items-center ' +
+                'justify-center gap-2';
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Try a Test Call';
+        
+            btn.onclick = async () => {
+                const route = PROVIDER_ROUTES[targetId];
+                if (!route)        { alert('No gateway route mapped for this listing'); return; }
+                if (!state.wallet) { alert('Connect wallet first'); return; }
+        
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Calling gateway…';
+                try {
+                    const res = await fetch(`${GATEWAY_URL}/api/request`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            provider:      route.provider,
+                            path:          route.path,
+                            method:        'GET',
+                            walletAddress: state.wallet
+                        })
+                    });
+                    const data   = await res.json();
+                    const status = document.getElementById('buyPriceStatus');
+                    console.log('Gateway response', data);
+                    status.innerHTML = res.ok
+                        ? `<span class="text-green-600">✓ Call OK — 1 token burned. HTTP ${data.status}</span>`
+                        : `<span class="text-red-600">✗ ${data.error || 'Gateway error'}</span>`;
+                    btn.innerHTML = res.ok
+                        ? '<i class="fa-solid fa-check"></i> Done'
+                        : '<i class="fa-solid fa-circle-xmark"></i> Failed';
+                    refreshPriceQuote();      // balance went down by 1
+                } catch (err) {
+                    console.error('Gateway call failed', err);
+                    btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' + err.message;
+                } finally {
+                    setTimeout(() => {
+                        btn.disabled  = false;
+                        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Try a Test Call';
+                    }, 3000);
+                }
+            };
+        
+            sellBack.insertAdjacentElement('afterend', btn);
+        }
 
 
         /** PROVIDER DASHBOARD LOGIC */
