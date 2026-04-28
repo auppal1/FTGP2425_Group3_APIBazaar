@@ -105,7 +105,7 @@
         </div>
     </div>
 
-    <div id="walletModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
+    <div id="walletModal" class="fixed inset-0 z-[120] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
         <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden relative modal-content transform scale-95 transition-all duration-300">
             <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
                 <h3 class="font-black text-xl text-gray-900">Connect Wallet</h3>
@@ -158,13 +158,40 @@
                             <span id="buyApiPrice" class="font-black text-primary text-lg block">-</span>
                         </div>
                     </div>
+
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <label for="buyAmountInput" class="text-gray-500 font-bold text-sm">No. of Calls</label>
+                        <input id="buyAmountInput" type="number" min="1" value="1"
+                            class="w-24 text-right font-mono font-black text-gray-900 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition">
+                    </div>
+
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-gray-500 font-bold text-sm">Total Cost (on-chain)</span>
+                        <div class="text-right">
+                            <span id="buyTotalCost" class="font-black text-gray-900 text-sm font-mono">-</span>
+                            <span class="text-xs font-bold text-gray-400 block">ETH</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-gray-500 font-bold text-sm">Your Balance (today)</span>
+                        <span id="buyCurrentBalance" class="font-bold text-gray-600 text-sm font-mono">-</span>
+                    </div>
+
                     <div class="flex justify-between items-center">
                         <span class="text-gray-500 font-bold text-sm">Network Gas</span>
                         <span class="font-mono text-gray-900 text-sm font-bold bg-gray-100 px-2 py-0.5 rounded">~0.0005 ETH</span>
                     </div>
                 </div>
-                <button id="confirmPurchaseBtn" class="w-full py-4 bg-primary text-white rounded-xl font-black text-lg hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]">
+
+                <p id="buyPriceStatus" class="text-xs text-center text-gray-400 font-medium mb-4 min-h-[1rem]"></p>
+
+                <button id="confirmPurchaseBtn" class="w-full py-4 bg-primary text-white rounded-xl font-black text-lg hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98] mb-3">
                     <i class="fa-solid fa-fingerprint"></i> Authorize Transaction
+                </button>
+
+                <button id="sellBackBtn" class="w-full py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:border-red-300 hover:text-red-600 hover:bg-red-50 transition-all items-center justify-center gap-2 hidden">
+                    <i class="fa-solid fa-rotate-left"></i> Sell Back Tokens
                 </button>
             </div>
         </div>
@@ -529,121 +556,9 @@
                 <button class="filter-btn px-6 py-3 bg-white border border-gray-200 text-gray-600 rounded-full text-sm font-bold hover:border-gray-900 hover:text-gray-900 whitespace-nowrap transition-all hover:-translate-y-0.5" data-category="utilities">🛠️ Utilities</button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-yellow-400 text-black text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider shadow-sm">Hot</div>
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform"><i class="fa-solid fa-shield-halved text-3xl"></i></div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">Web3 Security</span>
-                    </div>
-                    <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">Wallet Risk Scorer</h3>
-                    <div class="flex items-center gap-2 mb-4 text-xs font-bold text-gray-400">
-                        <span>By DataSec Labs</span> <span class="text-gray-300">•</span> <span class="text-green-500 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> 12k calls/24h</span>
-                    </div>
-                    <p class="text-gray-500 text-sm mb-8 flex-grow leading-relaxed font-medium">Assigns a dynamic risk score (0-100) to EVM wallets based on historical on-chain behavior, tornado cash interactions, and malicious contract approvals.</p>
-                    <div class="flex justify-between items-center pt-6 border-t border-gray-100">
-                        <div>
-                            <span class="text-primary text-2xl font-black block leading-none">0.01</span>
-                            <span class="text-xs font-bold text-gray-400">USDC / Call</span>
-                        </div>
-                        <button class="buy-api-btn bg-gray-900 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-primary hover:shadow-lg transition-all active:scale-95" data-id="1" data-name="Wallet Risk Scorer" data-provider="DataSec Labs" data-price="0.01">Buy Access</button>
-                    </div>
-                </div>
-
-                <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform"><i class="fa-solid fa-robot text-3xl"></i></div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">AI / Vision</span>
-                    </div>
-                    <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">Deepfake Detector</h3>
-                    <div class="flex items-center gap-2 mb-4 text-xs font-bold text-gray-400">
-                        <span>By VisionAI</span> <span class="text-gray-300">•</span> <span class="text-green-500 flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up"></i> 8.5k calls/24h</span>
-                    </div>
-                    <p class="text-gray-500 text-sm mb-8 flex-grow leading-relaxed font-medium">Analyze video frames or images to detect facial manipulation, deepfakes, and generative AI artifacts with 98.7% tested accuracy.</p>
-                    <div class="flex justify-between items-center pt-6 border-t border-gray-100">
-                        <div>
-                            <span class="text-primary text-2xl font-black block leading-none">0.05</span>
-                            <span class="text-xs font-bold text-gray-400">USDC / Call</span>
-                        </div>
-                        <button class="buy-api-btn bg-gray-900 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-primary hover:shadow-lg transition-all active:scale-95" data-id="2" data-name="Deepfake Detector" data-provider="VisionAI" data-price="0.05">Buy Access</button>
-                    </div>
-                </div>
-
-                <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform"><i class="fa-solid fa-chart-pie text-3xl"></i></div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">Data Analytics</span>
-                    </div>
-                    <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">DEX Vol Aggregator</h3>
-                    <div class="flex items-center gap-2 mb-4 text-xs font-bold text-gray-400">
-                        <span>By ChainMetrics</span> <span class="text-gray-300">•</span> <span>2.1k calls/24h</span>
-                    </div>
-                    <p class="text-gray-500 text-sm mb-8 flex-grow leading-relaxed font-medium">Get real-time trading volumes, slippage estimates, and liquidity depth across Uniswap V3, SushiSwap, Curve, and Balancer.</p>
-                    <div class="flex justify-between items-center pt-6 border-t border-gray-100">
-                        <div>
-                            <span class="text-primary text-2xl font-black block leading-none">0.02</span>
-                            <span class="text-xs font-bold text-gray-400">USDC / Call</span>
-                        </div>
-                        <button class="buy-api-btn bg-gray-900 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-primary hover:shadow-lg transition-all active:scale-95" data-id="3" data-name="DEX Vol Aggregator" data-provider="ChainMetrics" data-price="0.02">Buy Access</button>
-                    </div>
-                </div>
-
-                <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform"><i class="fa-solid fa-image text-3xl"></i></div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">NFT Utilities</span>
-                    </div>
-                    <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">Universal NFT Metadata</h3>
-                    <div class="flex items-center gap-2 mb-4 text-xs font-bold text-gray-400">
-                        <span>By PixelDev</span> <span class="text-gray-300">•</span> <span>5.4k calls/24h</span>
-                    </div>
-                    <p class="text-gray-500 text-sm mb-8 flex-grow leading-relaxed font-medium">Instantly resolve, cache, and normalize NFT metadata formats from IPFS, Arweave, and custom centralized URIs across multi-chains.</p>
-                    <div class="flex justify-between items-center pt-6 border-t border-gray-100">
-                        <div>
-                            <span class="text-primary text-2xl font-black block leading-none">0.005</span>
-                            <span class="text-xs font-bold text-gray-400">USDC / Call</span>
-                        </div>
-                        <button class="buy-api-btn bg-gray-900 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-primary hover:shadow-lg transition-all active:scale-95" data-id="4" data-name="Universal NFT Metadata" data-provider="PixelDev" data-price="0.005">Buy Access</button>
-                    </div>
-                </div>
-
-                <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group overflow-hidden">
-                    <div class="absolute top-0 right-0 bg-primary/10 text-primary text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">New</div>
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 group-hover:scale-110 transition-transform"><i class="fa-solid fa-gas-pump text-3xl"></i></div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">Web3 Data</span>
-                    </div>
-                    <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">L2 Gas Oracle</h3>
-                    <div class="flex items-center gap-2 mb-4 text-xs font-bold text-gray-400">
-                        <span>By NodeRunners</span> <span class="text-gray-300">•</span> <span>900 calls/24h</span>
-                    </div>
-                    <p class="text-gray-500 text-sm mb-8 flex-grow leading-relaxed font-medium">Predictive gas fee estimation for Layer 2 networks (Arbitrum, Optimism, Base, ZK-Sync) utilizing mempool analysis algorithms.</p>
-                    <div class="flex justify-between items-center pt-6 border-t border-gray-100">
-                        <div>
-                            <span class="text-primary text-2xl font-black block leading-none">0.01</span>
-                            <span class="text-xs font-bold text-gray-400">USDC / Call</span>
-                        </div>
-                        <button class="buy-api-btn bg-gray-900 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-primary hover:shadow-lg transition-all active:scale-95" data-id="5" data-name="L2 Gas Oracle" data-provider="NodeRunners" data-price="0.01">Buy Access</button>
-                    </div>
-                </div>
-
-                <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center text-rose-600 group-hover:scale-110 transition-transform"><i class="fa-solid fa-comments text-3xl"></i></div>
-                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">AI / NLP</span>
-                    </div>
-                    <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">Crypto Social Sentiment</h3>
-                    <div class="flex items-center gap-2 mb-4 text-xs font-bold text-gray-400">
-                        <span>By AlphaSeek</span> <span class="text-gray-300">•</span> <span>3.2k calls/24h</span>
-                    </div>
-                    <p class="text-gray-500 text-sm mb-8 flex-grow leading-relaxed font-medium">Real-time NLP sentiment analysis of crypto-twitter and reddit. Provides a consolidated 0-100 Bullish/Bearish index score per ticker.</p>
-                    <div class="flex justify-between items-center pt-6 border-t border-gray-100">
-                        <div>
-                            <span class="text-primary text-2xl font-black block leading-none">0.03</span>
-                            <span class="text-xs font-bold text-gray-400">USDC / Call</span>
-                        </div>
-                        <button class="buy-api-btn bg-gray-900 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-primary hover:shadow-lg transition-all active:scale-95" data-id="6" data-name="Crypto Social Sentiment" data-provider="AlphaSeek" data-price="0.03">Buy Access</button>
-                    </div>
+            <div id="apiCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div id="apiCardsEmpty" class="col-span-full text-center py-16 text-gray-400 font-bold">
+                    <i class="fa-solid fa-spinner animate-spin mr-2"></i>Loading listings from registry…
                 </div>
             </div>
         </main>
@@ -1114,6 +1029,11 @@
             "function isTerminated() view returns (bool)"
         ];
 
+        /* Read-only provider — used to load listings before the user connects */
+        const READ_ONLY_RPC = "https://ethereum-sepolia.publicnode.com";
+        const readProvider  = new ethers.JsonRpcProvider(READ_ONLY_RPC);
+        const readRegistry  = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, readProvider);
+
         let provider = null;
         let signer = null;
         let registryContract = null;
@@ -1280,36 +1200,335 @@
             };
         });
         
-        document.querySelectorAll('.buy-api-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.getElementById('buyApiName').innerText = btn.getAttribute('data-name');
-                document.getElementById('buyApiProvider').innerText = btn.getAttribute('data-provider');
-                document.getElementById('buyApiPrice').innerText = btn.getAttribute('data-price') + " USDC";
-                document.getElementById('confirmPurchaseBtn').setAttribute('data-target-id', btn.getAttribute('data-id'));
-                openModal('purchaseModal');
-            };
+    // CONFIG: deployed listings + gateway routes 
+// ============= MARKETPLACE DYNAMIC RENDERING =============
+
+        // Off-chain visual fallbacks. Used only if the gateway has no metadata for a listing.
+        const METADATA = {
+            "wallet risk scorer":      { icon: "fa-shield-halved", iconBg: "bg-blue-50 text-blue-600",   category: "Web3 Security",  description: "Assigns a dynamic risk score (0-100) to EVM wallets based on historical on-chain behavior.", badge: "Hot", badgeStyle: "bg-yellow-400 text-black" },
+            "deepfake detector":       { icon: "fa-robot",         iconBg: "bg-purple-50 text-purple-600", category: "AI / Vision",    description: "Detect facial manipulation, deepfakes, and generative AI artifacts." },
+            "dex vol aggregator":      { icon: "fa-chart-pie",     iconBg: "bg-green-50 text-green-600",   category: "Data Analytics", description: "Real-time trading volumes and liquidity depth across major DEXes." },
+            "universal nft metadata":  { icon: "fa-image",         iconBg: "bg-orange-50 text-orange-600", category: "NFT Utilities",  description: "Resolve and normalize NFT metadata across IPFS, Arweave, and HTTP." },
+            "l2 gas oracle":           { icon: "fa-gas-pump",      iconBg: "bg-teal-50 text-teal-600",     category: "Web3 Data",      description: "Predictive gas estimation across Arbitrum, Optimism, Base, ZK-Sync.", badge: "New", badgeStyle: "bg-primary/10 text-primary" },
+            "crypto social sentiment": { icon: "fa-comments",      iconBg: "bg-rose-50 text-rose-600",     category: "AI / NLP",       description: "NLP sentiment analysis of crypto-twitter and reddit." }
+        };
+        const DEFAULT_META = { icon: "fa-cube", iconBg: "bg-gray-100 text-gray-600", category: "Misc", description: "On-chain API listing." };
+
+        // Off-chain gateway routes for the "Try a Test Call" button. Keyed by lowercased tokenName.
+        const PROVIDER_ROUTES = {
+            "wallet risk scorer":      { provider: "provider1", path: "/risk-score" },
+            "deepfake detector":       { provider: "provider1", path: "/deepfake"   },
+            "dex vol aggregator":      { provider: "provider2", path: "/dex-vol"    },
+            "universal nft metadata":  { provider: "provider2", path: "/nft-meta"   },
+            "l2 gas oracle":           { provider: "provider1", path: "/gas-oracle" },
+            "crypto social sentiment": { provider: "provider2", path: "/sentiment"  }
+        };
+
+        const GATEWAY_URL = "http://localhost:5000";
+
+        // Build one card's HTML from on-chain data + metadata
+        function buildCardHTML({ address, name, providerAddr, basePriceWei }, meta) {
+            const priceEth  = ethers.formatEther(basePriceWei);
+            const badgeHTML = meta.badge
+                ? `<div class="absolute top-0 right-0 ${meta.badgeStyle || 'bg-primary/10 text-primary'} text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">${meta.badge}</div>`
+                : "";
+            return `
+                <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group overflow-hidden">
+                    ${badgeHTML}
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-16 h-16 ${meta.iconBg || 'bg-gray-100 text-gray-600'} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fa-solid ${meta.icon || 'fa-cube'} text-3xl"></i>
+                        </div>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">${meta.category || 'Misc'}</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">${name}</h3>
+                    <div class="flex items-center gap-2 mb-4 text-xs font-bold text-gray-400">
+                        <span>By ${providerAddr.slice(0,6)}…${providerAddr.slice(-4)}</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-8 flex-grow leading-relaxed font-medium">${meta.description || 'On-chain API listing.'}</p>
+                    <div class="flex justify-between items-center pt-6 border-t border-gray-100">
+                        <div>
+                            <span class="text-primary text-2xl font-black block leading-none">${priceEth}</span>
+                            <span class="text-xs font-bold text-gray-400">ETH / Call</span>
+                        </div>
+                        <button class="buy-api-btn bg-gray-900 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-primary hover:shadow-lg transition-all active:scale-95"
+                            data-name="${name}"
+                            data-provider="${providerAddr.slice(0,6)}…${providerAddr.slice(-4)}"
+                            data-price="${priceEth}"
+                            data-listing-addr="${address}">Buy Access</button>
+                    </div>
+                </div>`;
+        }
+
+        // Pull every listing from registry + metadata from gateway, render the grid
+        async function renderListings() {
+            const grid = document.getElementById('apiCardsGrid');
+            if (!grid) return;
+            grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 font-bold">
+                <i class="fa-solid fa-spinner animate-spin mr-2"></i>Loading listings from registry…
+            </div>`;
+
+            // Pull off-chain metadata from the gateway (best-effort)
+            let offchain = {};
+            try {
+                const metaRes = await fetch(`${GATEWAY_URL}/api/metadata`);
+                if (metaRes.ok) offchain = await metaRes.json();
+            } catch (err) {
+                console.warn('Could not load gateway metadata, using fallbacks', err);
+            }
+
+            try {
+                const registry = registryContract || readRegistry;
+                const reader   = signer || readProvider;
+                const addrs    = await registry.getAllListings();
+                if (addrs.length === 0) {
+                    grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 font-bold">
+                        No listings deployed yet. Use Publish API to create one.
+                    </div>`;
+                    return;
+                }
+                const cards = await Promise.all(addrs.map(async (address) => {
+                    try {
+                        const c = new ethers.Contract(address, LISTING_ABI, reader);
+                        const [name, providerAddr, basePriceWei] = await Promise.all([
+                            c.tokenName(), c.provider(), c.basePrice()
+                        ]);
+                        return { address, name, providerAddr, basePriceWei };
+                    } catch (err) {
+                        console.warn("Skipping unreadable listing", address, err.message);
+                        return null;
+                    }
+                }));
+                grid.innerHTML = cards
+                    .filter(Boolean)
+                    .map(card => {
+                        const meta = offchain[card.address.toLowerCase()]      // gateway wins
+                                  || METADATA[card.name.toLowerCase().trim()]   // hardcoded fallback
+                                  || DEFAULT_META;                              // last resort
+                        return buildCardHTML(card, meta);
+                    })
+                    .join("");
+            } catch (err) {
+                console.error("renderListings failed", err);
+                grid.innerHTML = `<div class="col-span-full text-center py-16 text-red-500 font-bold">
+                    Failed to load listings: ${err.shortMessage || err.message}
+                </div>`;
+            }
+        }
+
+        // Render on page load — no wallet required
+        window.addEventListener('DOMContentLoaded', renderListings);
+
+
+        // Live on-chain price quote
+        let _quoteTimer = null;
+        async function refreshPriceQuote() {
+            const status    = document.getElementById('buyPriceStatus');
+            const totalEl   = document.getElementById('buyTotalCost');
+            const balanceEl = document.getElementById('buyCurrentBalance');
+            const addr      = document.getElementById('confirmPurchaseBtn').getAttribute('data-listing-addr');
+            const amount    = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
+
+            if (!addr) {
+                status.innerText  = "Listing address not configured";
+                totalEl.innerText = "-";
+                return;
+            }
+            if (amount <= 0) { totalEl.innerText = "0"; return; }
+
+            const runner = signer || readProvider;   // wallet if connected, else read-only
+
+            try {
+                status.innerText = "Fetching live price…";
+                const listing = new ethers.Contract(addr, LISTING_ABI, runner);
+                const price   = await listing.getPurchasePrice(amount);
+                totalEl.innerText = ethers.formatEther(price);
+
+                if (signer && state.wallet) {
+                    const balance = await listing.getCurrentDayBalance(state.wallet);
+                    balanceEl.innerText = balance.toString();
+                } else {
+                    balanceEl.innerText = "Connect wallet";
+                }
+                status.innerText = `Quote @ ${new Date().toLocaleTimeString()}`;
+            } catch (err) {
+                console.error('Quote failed', err);
+                status.innerText = "Quote failed: " + (err.shortMessage || err.message);
+            }
+        }
+
+        document.getElementById('buyAmountInput').addEventListener('input', () => {
+            clearTimeout(_quoteTimer);
+            _quoteTimer = setTimeout(refreshPriceQuote, 250);
         });
 
-        document.getElementById('confirmPurchaseBtn').onclick = (e) => {
-            const btn = e.currentTarget;
-            console.log("BACKEND HOOK: Contract Interaction for API ID ->", btn.getAttribute('data-target-id'));
-            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Processing Tx...';
-            btn.classList.replace('bg-primary', 'bg-gray-500');
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> Success!';
-                btn.classList.replace('bg-gray-500', 'bg-green-500');
-                setTimeout(() => { 
-                    closeModal('purchaseModal'); 
-                    btn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> Authorize Transaction'; 
-                    btn.classList.replace('bg-green-500', 'bg-primary'); 
-                }, 1500);
-            }, 1500);
-        };
 
-        document.getElementById('buyerSearchForm').onsubmit = (e) => {
-            e.preventDefault();
-            console.log("BACKEND HOOK: Search Query ->", document.getElementById('buyerSearchInput').value);
+        //  Card click -> open modal 
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.buy-api-btn');
+            if (!btn) return;
+            const confirmBtn = document.getElementById('confirmPurchaseBtn');
+            document.getElementById('buyApiName').innerText     = btn.getAttribute('data-name');
+            document.getElementById('buyApiProvider').innerText = btn.getAttribute('data-provider');
+            document.getElementById('buyApiPrice').innerText    = btn.getAttribute('data-price') + " ETH";
+            confirmBtn.setAttribute('data-target-id',    btn.getAttribute('data-name'));   // tokenName, used by PROVIDER_ROUTES
+            confirmBtn.setAttribute('data-listing-addr', btn.getAttribute('data-listing-addr') || "");
+            document.getElementById('sellBackBtn').classList.add('hidden');
+            document.getElementById('testCallBtn')?.remove();
+            document.getElementById('buyAmountInput').value = 1;
+            openModal('purchaseModal');
+            refreshPriceQuote();
+        });
+        
+        
+        // Authorize on-chain buyTokens 
+        document.getElementById('confirmPurchaseBtn').onclick = async (e) => {
+            const btn    = e.currentTarget;
+            const status = document.getElementById('buyPriceStatus');
+            const addr   = btn.getAttribute('data-listing-addr');
+            const amount = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
+        
+            if (!signer)  { openModal('walletModal'); return; }
+            if (!addr || addr.startsWith("__LISTING_") || addr.startsWith("0xREPLACE")) {
+                alert('Listing address not configured for this card.'); return;
+            }
+            if (amount <= 0) { alert('Enter a positive number of calls.'); return; }
+        
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.replace('bg-primary', 'bg-gray-500');
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Quoting price…';
+        
+            try {
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const value   = await listing.getPurchasePrice(amount);
+        
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Awaiting signature…';
+                const tx = await listing.buyTokens(amount, { value });
+        
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Mining tx…';
+                const receipt = await tx.wait();
+        
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Tokens minted!';
+                btn.classList.replace('bg-gray-500', 'bg-green-500');
+                status.innerHTML =
+                    `Tx: <a class="underline" target="_blank" ` +
+                    `href="https://sepolia.etherscan.io/tx/${receipt.hash}">` +
+                    `${receipt.hash.slice(0,10)}…</a>`;
+        
+                document.getElementById('sellBackBtn').classList.remove('hidden');
+                showTestCallButton(btn.getAttribute('data-target-id'));
+                refreshPriceQuote();
+            } catch (err) {
+                console.error('buyTokens failed', err);
+                btn.classList.replace('bg-gray-500', 'bg-red-500');
+                btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' +
+                                (err.shortMessage || 'Failed');
+            } finally {
+                setTimeout(() => {
+                    btn.disabled  = false;
+                    btn.innerHTML = original;
+                    btn.classList.remove('bg-green-500','bg-red-500','bg-gray-500');
+                    btn.classList.add('bg-primary');
+                }, 4000);
+            }
         };
+            
+            
+        // Sell-back tokens 
+        document.getElementById('sellBackBtn').onclick = async () => {
+            const sellBtn = document.getElementById('sellBackBtn');
+            const addr    = document.getElementById('confirmPurchaseBtn').getAttribute('data-listing-addr');
+            const amount  = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
+            const status  = document.getElementById('buyPriceStatus');
+        
+            if (!signer)         { alert('Connect wallet first.'); return; }
+            if (!addr)           { alert('Listing address not configured.'); return; }
+            if (amount <= 0)     { alert('Enter how many tokens to sell.'); return; }
+        
+            sellBtn.disabled = true;
+            sellBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Selling…';
+            try {
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const tx      = await listing.sellTokens(amount);
+                const receipt = await tx.wait();
+                sellBtn.innerHTML = '<i class="fa-solid fa-check"></i> Sold';
+                status.innerHTML  =
+                    `Sell tx: <a class="underline" target="_blank" ` +
+                    `href="https://sepolia.etherscan.io/tx/${receipt.hash}">` +
+                    `${receipt.hash.slice(0,10)}…</a>`;
+                refreshPriceQuote();
+            } catch (err) {
+                console.error('sellTokens failed', err);
+                sellBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' +
+                                    (err.shortMessage || 'Failed');
+            } finally {
+                setTimeout(() => {
+                    sellBtn.disabled  = false;
+                    sellBtn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Sell Back Tokens';
+                }, 3000);
+            }
+        };
+        /* ---------- 7.  "Try a Test Call" — hits the off-chain gateway ---------- */
+        // Injected once a purchase succeeds. POSTs to /api/request which:
+        //   (a) re-verifies on-chain balance via verifyToken middleware,
+        //   (b) forwards to the upstream provider,
+        //   (c) burns 1 token via consumeTokens.
+        function showTestCallButton(targetId) {
+            if (document.getElementById('testCallBtn')) return;
+            const sellBack = document.getElementById('sellBackBtn');
+            if (!sellBack) return;
+        
+            const btn = document.createElement('button');
+            btn.id = 'testCallBtn';
+            btn.className =
+                'mt-3 w-full py-3 bg-secondary text-white rounded-xl font-bold ' +
+                'text-sm hover:bg-secondary/90 transition-all flex items-center ' +
+                'justify-center gap-2';
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Try a Test Call';
+        
+            btn.onclick = async () => {
+                const route = PROVIDER_ROUTES[(targetId || "").toLowerCase().trim()];
+                if (!route)        { alert('No gateway route mapped for this listing'); return; }
+                if (!state.wallet) { alert('Connect wallet first'); return; }
+        
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Calling gateway…';
+                try {
+                    const res = await fetch(`${GATEWAY_URL}/api/request`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            provider:      route.provider,
+                            path:          route.path,
+                            method:        'GET',
+                            walletAddress: state.wallet
+                        })
+                    });
+                    const data   = await res.json();
+                    const status = document.getElementById('buyPriceStatus');
+                    console.log('Gateway response', data);
+                    status.innerHTML = res.ok
+                        ? `<span class="text-green-600">✓ Call OK — 1 token burned. HTTP ${data.status}</span>`
+                        : `<span class="text-red-600">✗ ${data.error || 'Gateway error'}</span>`;
+                    btn.innerHTML = res.ok
+                        ? '<i class="fa-solid fa-check"></i> Done'
+                        : '<i class="fa-solid fa-circle-xmark"></i> Failed';
+                    refreshPriceQuote();      // balance went down by 1
+                } catch (err) {
+                    console.error('Gateway call failed', err);
+                    btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' + err.message;
+                } finally {
+                    setTimeout(() => {
+                        btn.disabled  = false;
+                        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Try a Test Call';
+                    }, 3000);
+                }
+            };
+        
+            sellBack.insertAdjacentElement('afterend', btn);
+        }
+
 
         /** PROVIDER DASHBOARD LOGIC */
         const providerNavLinks = document.querySelectorAll('#providerNav a');
@@ -1698,6 +1917,35 @@
                     `Listing contract: ${listingAddress}\n`+
                     `TX Hash: ${tx.hash}\n`
                 );
+                
+                // Save off-chain metadata (description, category, icon, etc.) to the gateway
+                try {
+                    const description = document.getElementById('pubDesc').value.trim();
+                    const categoryKey = document.getElementById('pubCat').value;
+                    const CATEGORY_VISUALS = {
+                        web3: { category: "Web3 / Blockchain", icon: "fa-cubes",                iconBg: "bg-blue-50 text-blue-600" },
+                        ai:   { category: "AI / ML",           icon: "fa-robot",                iconBg: "bg-purple-50 text-purple-600" },
+                        data: { category: "Data Analytics",    icon: "fa-chart-pie",            iconBg: "bg-green-50 text-green-600" },
+                        util: { category: "Utilities",         icon: "fa-screwdriver-wrench",   iconBg: "bg-gray-100 text-gray-600" }
+                    };
+                    const visual = CATEGORY_VISUALS[categoryKey] || CATEGORY_VISUALS.util;
+
+                    const metaRes = await fetch(`${GATEWAY_URL}/api/metadata`, {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            listingAddress,
+                            name,
+                            description,
+                            ...visual,
+                            badge:      "New",
+                            badgeStyle: "bg-primary/10 text-primary"
+                        })
+                    });
+                    console.log('Metadata POST →', metaRes.status, await metaRes.json());
+                } catch (metaErr) {
+                    console.warn('Failed to save metadata (listing still on-chain):', metaErr);
+                }
 
                 // Show success state
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Deployed Successfully'; 
