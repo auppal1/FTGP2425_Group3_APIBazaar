@@ -1,18 +1,28 @@
 const fs = require('fs');
 const path = require('path');
 
-// Creating logs directory
+// Create the logs directory if missing
 const logDir = path.join(__dirname, '../logs');
-if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir);
+if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 
-module.exports = function logger(req, res, next){
+const logFile = path.join(logDir, 'access.log');
+
+module.exports = function logger(req, res, next) {
     const start = Date.now();
 
     res.on('finish', () => {
-        const duration = Date.now()- start;
-        const logEntry = {
-            timestamp: new Date().toISOString(),
-            ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-        }
-    })
-}
+        const entry = {
+            timestamp:  new Date().toISOString(),
+            ip:         req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+            method:     req.method,
+            url:        req.originalUrl,
+            status:     res.statusCode,
+            durationMs: Date.now() - start
+        };
+        fs.appendFile(logFile, JSON.stringify(entry) + '\n', err => {
+            if (err) console.error('logger write failed:', err.message);
+        });
+    });
+
+    next();   // critical — without this every request hangs
+};
