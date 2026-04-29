@@ -22,8 +22,8 @@ describe("API Listing", function() {
     let user;
     let userAddress; // address of API user
 
-    // Money to send to the contract for payable functions that require it
-    let sendValue;
+    // // Money to send to the contract for payable functions that require it
+    // let sendValue;
 
     // Initialise token/contract properties for constructor
     let tokenName;
@@ -115,8 +115,44 @@ describe("API Listing", function() {
             // total price of minting is the price over the step + price under the step 
             purchasePrice = overPrice + underPrice;
         }
-
         return purchasePrice;
+    }
+
+    function getTestSalePrice (amount, supply) {
+        // Initialisations
+        let salePrice;
+        // round stepPoint down to nearest whole number
+        let stepPoint = parseInt(capacity * 90/100);
+
+        if (supply <= stepPoint) {
+            // sale entirely follows constant portion of curve
+            salePrice = basePrice * amount;
+        }
+        else if (supply - amount >= stepPoint) {
+            // sale entirely follows cubic portion of curve
+            // cumulative cubic contribution before sale
+            let curveValueBefore = (supply - stepPoint)**4;
+            // cumulative cubic contribution after sale
+            let curveValueAfter = (supply - amount - stepPoint)**4;
+            let nonLinearContribution = curveValueBefore - curveValueAfter;
+            // total sale price = non-linear contribution + constant contribution
+            salePrice = nonLinearContribution + (basePrice * amount);
+        }
+        else {
+            // if amount crosses stepPoint, find out how much is over and under stepPoint
+            let overAmount = supply - stepPoint;
+            let underAmount = amount - overAmount;
+            // calculate payout for cubic portion of sale
+            // cumulative cubic portion before crossing stepPoint
+            let curveValueBefore = overAmount**4;
+            // total overPrice = cubic price contribution + constant price contribution
+            let overPrice = curveValueBefore + (basePrice * overAmount);
+            // calculate payout for constant portion of sale
+            let underPrice = basePrice * underAmount;
+            // total sale payout = price above the step + price below the step
+            salePrice = overPrice + underPrice;
+        }
+        return salePrice;
     }
 
     // Test the constructor
@@ -305,9 +341,8 @@ describe("API Listing", function() {
 
         it("Should should calculate correct purchase price", async function () {
             
-            // Set initial values of supply and amount
+            // Set initial value of supply
             let supply = 0;
-            let amount = 1;
 
             // For every possible value of supply and amount up to cpacity:
             while (supply < capacity) {
@@ -356,7 +391,38 @@ describe("API Listing", function() {
         })
 
         it("Should should calculate correct sale price", async function () {
-            // TODO
+            // Initially the supply of tokens in the contract is 0
+            // We need to buy some tokens in order to have tokens to sell to test
+            // getSalePrice()
+            let initialSupply = 0;
+            // To test all posible values of supply and amount we buy all the tokens up to
+            // capacity - first get the value we need to send
+            let sendValue = getTestPurchasePrice(capacity, initialSupply);
+            // buy the tokens
+            await APIListing.buyTokens(capacity, {value: sendValue});
+            // get supply from the contract
+            let supply = parseInt(await APIListing.getCurrentDaySupply());
+
+            // For every possible value of supply and amount up to cpacity:
+            while (supply > 0) {
+                for (amount = 1; amount <= supply; amount++) {
+                    // Get the testing purchase pice
+                    expectedPrice = getTestSalePrice(amount, supply);
+                    // Get sale price calculated by the contract
+                    salePrice = await APIListing.getSalePrice(amount);
+                    // Assert that the two should be equal
+                    assert.equal(expectedPrice.toString(), salePrice.toString());
+                }
+                // To decrement token supply of the contract by 1:
+                // reset amount to 1 so that we can sell 1 token
+                amount = 1;
+                // sell the token
+                // we have already tested the sellTokens() function and found that it works 
+                // correctly, passing all its tests, so we can safely use it in this test
+                await APIListing.sellTokens(amount);
+                // get the new supply from the contract
+                supply = parseInt(await APIListing.getCurrentDaySupply());
+            }
         })
     })
 })
