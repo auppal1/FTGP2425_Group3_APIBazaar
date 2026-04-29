@@ -169,7 +169,7 @@
                         <span class="text-gray-500 font-bold text-sm">Total Cost (on-chain)</span>
                         <div class="text-right">
                             <span id="buyTotalCost" class="font-black text-gray-900 text-sm font-mono">-</span>
-                            <span class="text-xs font-bold text-gray-400 block">ETH</span>
+                            <span class="text-xs font-bold text-gray-400 block">Wei</span>
                         </div>
                     </div>
 
@@ -1252,7 +1252,7 @@
 
         // Build one card's HTML from on-chain data + metadata
         function buildCardHTML({ address, name, providerAddr, basePriceWei }, meta) {
-            const priceEth  = ethers.formatEther(basePriceWei);
+            const priceEth  = basePriceWei.toString();
             const badgeHTML = meta.badge
                 ? `<div class="absolute top-0 right-0 ${meta.badgeStyle || 'bg-primary/10 text-primary'} text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">${meta.badge}</div>`
                 : "";
@@ -1273,7 +1273,7 @@
                     <div class="flex justify-between items-center pt-6 border-t border-gray-100">
                         <div>
                             <span class="text-primary text-2xl font-black block leading-none">${priceEth}</span>
-                            <span class="text-xs font-bold text-gray-400">ETH / Call</span>
+                            <span class="text-xs font-bold text-gray-400">Wei / Call</span>
                         </div>
                         <button class="buy-api-btn bg-gray-900 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-primary hover:shadow-lg transition-all active:scale-95"
                             data-name="${name}"
@@ -1402,7 +1402,7 @@
 
                 body.innerHTML = owned.map(r => {
                     const meta     = offchain[r.address.toLowerCase()] || METADATA[r.name.toLowerCase().trim()] || DEFAULT_META;
-                    const priceEth = ethers.formatEther(r.basePriceWei);
+                    const priceEth = r.basePriceWei.toString();
                     return `
                         <div class="bg-white rounded-2xl border border-gray-100 p-5 mb-3 flex items-center justify-between gap-4 shadow-sm">
                             <div class="flex items-center gap-4 min-w-0">
@@ -1442,7 +1442,7 @@
             const confirmBtn = document.getElementById('confirmPurchaseBtn');
             document.getElementById('buyApiName').innerText     = btn.getAttribute('data-name');
             document.getElementById('buyApiProvider').innerText = btn.getAttribute('data-provider');
-            document.getElementById('buyApiPrice').innerText    = btn.getAttribute('data-price') + " ETH";
+            document.getElementById('buyApiPrice').innerText    = btn.getAttribute('data-price') + " Wei";
             confirmBtn.setAttribute('data-target-id',    btn.getAttribute('data-name'));
             confirmBtn.setAttribute('data-listing-addr', btn.getAttribute('data-listing-addr') || "");
             document.getElementById('sellBackBtn').classList.remove('hidden');
@@ -1482,7 +1482,7 @@
                 status.innerText = "Fetching live price…";
                 const listing = new ethers.Contract(addr, LISTING_ABI, runner);
                 const price   = await listing.getPurchasePrice(amount);
-                totalEl.innerText = ethers.formatEther(price);
+                totalEl.innerText = price.toString();
 
                 if (signer && state.wallet) {
                     const balance = await listing.getCurrentDayBalance(state.wallet);
@@ -1510,7 +1510,7 @@
             const confirmBtn = document.getElementById('confirmPurchaseBtn');
             document.getElementById('buyApiName').innerText     = btn.getAttribute('data-name');
             document.getElementById('buyApiProvider').innerText = btn.getAttribute('data-provider');
-            document.getElementById('buyApiPrice').innerText    = btn.getAttribute('data-price') + " ETH";
+            document.getElementById('buyApiPrice').innerText    = btn.getAttribute('data-price') + " Wei";
             confirmBtn.setAttribute('data-target-id',    btn.getAttribute('data-name'));   // tokenName, used by PROVIDER_ROUTES
             confirmBtn.setAttribute('data-listing-addr', btn.getAttribute('data-listing-addr') || "");
             document.getElementById('sellBackBtn').classList.add('hidden');
