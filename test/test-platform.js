@@ -30,6 +30,7 @@ describe("API Bazaar", function() {
     let newAPIListing;
     let APIListingAddress; // address of 1 deployed listing
     let listingAddresses; // array of addresses of deployed lsitings
+    let listingData; // data structure for lisitngs created on deployment
 
     // Initialise accounts and associated addresses to use for testing
     let registryOwner;
@@ -181,6 +182,7 @@ describe("API Bazaar", function() {
 
             // Initialise variables for use in tests
             let providerConnection;
+            let createdTime;
 
             it("Should create a new API listing and update listings array", async function () {
                 // API provider should cerate the new listing, so first connect the 
@@ -194,21 +196,34 @@ describe("API Bazaar", function() {
                     capacity,
                     basePrice
                 );
-                // If the new listing has been created succsessfully there will be 1 lisitng 
+                // If the new listing has been created succsessfully there will be 1 listing 
                 // in the allListingAddresses array - its length will be 1
                 // So first get the array
                 listingAddresses = await APIBazaarRegistry.getAllListings();
                 assert.equal(listingAddresses.length.toString(), "1");
-                // Get the address of the new listing for subsequent tests
+                // Get the address and listing data of the new listing for subsequent tests
                 APIListingAddress = listingAddresses[0];
+                listingData = await APIBazaarRegistry.getListing(APIListingAddress);
+                // Get the time at which the lisitng was created
+                createdTime = listingData.createdAt
             })
 
             it("Should update the provider lisitngs mapping", async function() {
                 // There is only 1 provider listing and its address should be the same
                 // as the one stored in the allListingAddresses array
-                const providerLisitngs = await APIBazaarRegistry.getProviderListings(providerAdress);
-                // assert that treasuryAddress should = treasuryContractAddress
-                assert.equal(providerLisitngs, APIListingAddress);
+                const providerListings = await APIBazaarRegistry.getProviderListings(providerAdress);
+                // Assert that treasuryAddress should = treasuryContractAddress
+                assert.equal(providerListings, APIListingAddress);
+            })
+
+            it("Should update the lisitngs data structure", async function() {
+                // Assert that the listing data properties are what we expect them to be
+                assert.equal(listingData.provider, providerAdress);
+                assert.equal(listingData.listingAddress, APIListingAddress);
+                assert.equal(listingData.name, tokenName);
+                assert.equal(listingData.symbol, tokenSymbol);
+                assert.equal(listingData.endpoint, endpoint);
+                assert.equal(listingData.createdAt, createdTime);
             })
         })
     })
