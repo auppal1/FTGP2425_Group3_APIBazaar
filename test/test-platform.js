@@ -28,6 +28,8 @@ describe("API Bazaar", function() {
 
     // For API listing, once one has been deployed
     let newAPIListing;
+    let APIListingAddress; // address of 1 deployed listing
+    let listingAddresses; // array of addresses of deployed lsitings
 
     // Initialise accounts and associated addresses to use for testing
     let registryOwner;
@@ -180,7 +182,7 @@ describe("API Bazaar", function() {
             // Initialise variables for use in tests
             let providerConnection;
 
-            it("Should create a new API listing and update listing arrays and mappings", async function () {
+            it("Should create a new API listing and update listings array", async function () {
                 // API provider should cerate the new listing, so first connect the 
                 // provider account to the contract
                 providerConnection = await APIBazaarRegistry.connect(APIProvider);
@@ -197,6 +199,16 @@ describe("API Bazaar", function() {
                 // So first get the array
                 listingAddresses = await APIBazaarRegistry.getAllListings();
                 assert.equal(listingAddresses.length.toString(), "1");
+                // Get the address of the new listing for subsequent tests
+                APIListingAddress = listingAddresses[0];
+            })
+
+            it("Should update the provider lisitngs mapping", async function() {
+                // There is only 1 provider listing and its address should be the same
+                // as the one stored in the allListingAddresses array
+                const providerLisitngs = await APIBazaarRegistry.getProviderListings(providerAdress);
+                // assert that treasuryAddress should = treasuryContractAddress
+                assert.equal(providerLisitngs, APIListingAddress);
             })
         })
     })
