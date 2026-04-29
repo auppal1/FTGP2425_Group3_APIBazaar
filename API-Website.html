@@ -242,6 +242,85 @@
         </div>
     </div>
 
+    <!--Details modal => shows when buyer clicks view and purchase and shows information about the listing i.e, -->
+    <!--parmas, terminations, description etc. etc. -->
+    <!--Uses the similar formatting as the 'myTokensModal' above ^^^ -->
+    <div id="detailsModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] w-full max-w-xl shadow-2xl relative overflow-hidden modal-content transform scale-95 transition-all duration-300 max-h-[90vh] flex flex-col">
+    
+            <!-- Header -->
+            <div class="bg-gray-900 p-6 text-white relative overflow-hidden flex justify-between items-start gap-3">
+                <div class="flex items-start gap-4 min-w-0">
+                    <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner backdrop-blur-sm border border-white/10 flex-shrink-0"><i class="fa-solid fa-circle-info"></i></div>
+                    <div>
+                        <h3 id="detailsName" class="font-black text-xl tracking-tight truncate">API Details</h3>
+                        <p id="detailsCategory" class="text-gray-400 text-xs font-medium truncate">-</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('detailsModal')" class="text-gray-400 hover:text-white transition w-8 h-8 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 bg-gray-50 overflow-y-auto flex-1 space-y-4">
+                <!-- Description (taken from off-chain metadata) -->
+                <div class="bg-white rounded-2xl border border-gray-100 p-5">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Description</p>
+                    <p id="detailsDescription" class="text-sm font-medium text-gray-700 leading-relaxed">-</p>
+                </div>
+                <!-- Provider address -->
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Provider</p>
+                        <p id="detailsProviderAddr" class="text-xs font-mono text-gray-700 break-all">-</p>
+                    </div>
+                </div>
+                <!-- Active parameters -->
+                <div class="bg-white rounded-2xl border border-gray-100 p-5">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Active Parameters</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Base Price</p>
+                            <p id="detailsBasePrice" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                            <p class="text-[10px] font-bold text-gray-400">Wei</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Capacity</p>
+                            <p id="detailsCapacity" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                            <p class="text-[10px] font-bold text-gray-400">Calls / day</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Supply Today</p>
+                            <p id="detailsSupply" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                            <p class="text-[10px] font-bold text-gray-400">Minted today</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pending parameter changes (only shown when actually pending) -->
+                <div id="detailsPendingParamsBox" class="bg-yellow-50 rounded-2xl border border-yellow-200 p-5 hidden">
+                    <p class="text-[10px] font-black text-yellow-700 uppercase tracking-widest mb-3"><i class="fa-solid fa-clock mr-1"></i> Pending Parameter Change</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <p class="text-[10px] font-bold text-yellow-700 uppercase">New Base Price</p>
+                            <p id="detailsPendingBasePrice" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-yellow-700 uppercase">New Capacity</p>
+                            <p id="detailsPendingCapacity" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                        </div>
+                    </div>
+                    <p id="detailsPendingParamsWhen" class="text-[11px] font-medium text-yellow-700 mt-3">-</p>
+                </div>
+                <!-- Termination box (only shown if terminated or termination queued) -->
+                <div id="detailsTerminationBox" class="bg-red-50 rounded-2xl border border-red-200 p-5 hidden">
+                    <p class="text-[10px] font-black text-red-700 uppercase tracking-widest mb-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Termination Status</p>
+                    <p id="detailsTerminationText" class="text-sm font-bold text-red-700">-</p>
+                </div>
+            </div>
+            <div class="p-4 bg-white border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="closeModal('detailsModal')" class="px-5 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition">Close</button>
+                <button id="detailsPurchaseBtn" class="px-6 py-3 bg-primary text-white rounded-xl font-black hover:bg-primary/90 hover:shadow-lg transition-all flex items-center gap-2 active:scale-[0.98]"><i class="fa-solid fa-cart-shopping"></i> Purchase Tokens</button>
+            </div>
+        </div>
+    </div>
+
 
     <div id="view-home" class="view-section view-active bg-white">
         <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 py-5 bg-white/80 backdrop-blur-md">
@@ -1050,7 +1129,13 @@
             "function buyTokens(uint256 amount) payable returns (bool)",
             "function sellTokens(uint256 amount) returns (bool)",
             "function withdraw() returns (bool)",
-            "function isTerminated() view returns (bool)"
+            "function isTerminated() view returns (bool)",
+            "function pendingBasePrice() view returns (uint256)",
+            "function pendingCapacity() view returns (uint256)",
+            "function terminationDay() view returns (uint256)",
+            "function changeParamsDay() view returns (uint256)",
+            "function currentDay() view returns (uint256)",
+            "function getActiveParameters() view returns (uint256 activeCapacity, uint256 activeBasePrice)"
         ];
 
         /* Read-only provider — used to load listings before the user connects */
@@ -1279,7 +1364,7 @@
                             data-name="${name}"
                             data-provider="${providerAddr.slice(0,6)}…${providerAddr.slice(-4)}"
                             data-price="${priceEth}"
-                            data-listing-addr="${address}">Buy Access</button>
+                            data-listing-addr="${address}">View / Buy</button>
                     </div>
                 </div>`;
         }
@@ -1329,6 +1414,10 @@
                         const meta = offchain[card.address.toLowerCase()]      // gateway wins
                                   || METADATA[card.name.toLowerCase().trim()]   // hardcoded fallback
                                   || DEFAULT_META;                              // last resort
+                        
+                        // Save into listing metadata so details modal can look this up
+                        LISTING_META_DATA[card.address.toLowerCase()] = meta;
+                        
                         return buildCardHTML(card, meta);
                     })
                     .join("");
@@ -1497,29 +1586,198 @@
             }
         }
 
+
         document.getElementById('buyAmountInput').addEventListener('input', () => {
             clearTimeout(_quoteTimer);
             _quoteTimer = setTimeout(refreshPriceQuote, 250);
         });
 
+        // Need to store listing meta data to display in the buuyer page
+        // I.e., description, category etc.
+        const LISTING_META_DATA = {}
 
-        //  Card click -> open modal 
+        // Listing details modal. Gets all the fields in the lissting contract 
+        // i.e., active params, pending params, supply, pending termination etc.
+        // adn then fills the modal with this infromation.
+        async function openDetailsModal(listingData) {
+
+            // Get params passed in 
+            const name = listingData.name;
+            const providerLabel = listingData.provider;
+            const price = listingData.price;
+            const listingAddr = listingData.listingAddr;
+
+            // Get references to HTML to pass later
+            const purchaseBtn = document.getElementById('detailsPurchaseBtn');
+            const nameElement = document.getElementById('detailsName');
+            const categoryElement = document.getElementById('detailsCategory');
+            const descriptionElement = document.getElementById('detailsDescription');
+            const providerAddrElement = document.getElementById('detailsProviderAddr');
+            const basePriceElement = document.getElementById('detailsBasePrice');
+            const capacityElement = document.getElementById('detailsCapacity');
+            const supplyElement = document.getElementById('detailsSupply');
+            const pendingBoxElement = document.getElementById('detailsPendingParamsBox');
+            const pendingBasePriceElement = document.getElementById('detailsPendingBasePrice');
+            const pendingCapacityElement = document.getElementById('detailsPendingCapacity');
+            const pendingWhenElement = document.getElementById('detailsPendingParamsWhen');
+            const terminationBoxElement = document.getElementById('detailsTerminationBox');
+            const terminationTextElement = document.getElementById('detailsTerminationText');
+
+            // Store the button attributes to use lateer
+            purchaseBtn.setAttribute('data-name', name || '');
+            purchaseBtn.setAttribute('data-provider', providerLabel || '');
+            purchaseBtn.setAttribute('data-price', price || '0');
+            purchaseBtn.setAttribute('data-listing-addr', listingAddr || '');
+
+            // Show already known details
+            nameElement.innerText = name || 'API Details';
+
+            // Look up off-chain meta date (description, category) by listing address 
+            const key = (listingAddr || '').toLowerCase();
+            const meta = LISTING_META_DATA[key] || {};
+
+            // show them, or if not found then say misc and no description provided
+            categoryElement.innerText = meta.category || 'Misc';
+            descriptionElement.innerText = meta.description || 'No description provided.';
+
+            // Reset fields that we need to get from blockchain
+            providerAddrElement.innerText = '-';
+            basePriceElement.innerText = '-';
+            capacityElement.innerText = '-';
+            supplyElement.innerText = '-';
+
+            // Hide optional boxes at the start
+            pendingBoxElement.classList.add('hidden');
+            terminationBoxElement.classList.add('hidden');
+
+            // Open the modal
+            openModal('detailsModal');
+
+            // Load details of modal
+            try {
+                // Use wallet signer if connected, or if not use the read-only provider
+                const signerOrReader = signer || readProvider;
+
+                // Create contract object so can call view functions
+                const listing = new ethers.Contract(listingAddr, LISTING_ABI, signerOrReader);
+
+                // Get all from the chain values in parallel using promise
+                const [
+                    // these are variables to fill with off-chain daata
+                    providerAddr,
+                    activeParams,
+                    daySupply,
+                    pendingBasePrice,
+                    pendingCapacity,
+                    terminationDay,
+                    changeParamsDay,
+                    currentDay,
+                    terminated
+                ] = await Promise.all([
+                    // All values to get from the listing contract 
+                    listing.provider(),
+                    listing.getActiveParameters(),   // returns both capacity, basePrice
+                    listing.getCurrentDaySupply(),
+                    listing.pendingBasePrice(),
+                    listing.pendingCapacity(),
+                    listing.terminationDay(),
+                    listing.changeParamsDay(),
+                    listing.currentDay(),
+                    listing.isTerminated()                    
+                ]);
+
+                // Get the base price and capacity (in that order) as
+                // getActiveParameters() returns two values in Solidity Contract 
+                const activeCapacity = activeParams[0];
+                const activeBasePrice = activeParams[1];
+
+                // Fill the active parameters section
+                providerAddrElement.innerText = providerAddr;
+                basePriceElement.innerText = activeBasePrice.toString();
+                capacityElement.innerText = activeCapacity.toString();
+                supplyElement.innerText = daySupply.toString();
+
+                let whenText = ''
+
+                // Show the pending parameter changes if there are any
+                // changeParamsDay == 0 if no termination has been queued 
+                if (changeParamsDay > 0n) {
+                    pendingBasePriceElement.innerText = pendingBasePrice.toString() + ' Wei';
+                    pendingCapacityElement.innerText = pendingCapacity.toString() + ' Calls';
+
+                    // Calcualte number of days until parameeter change
+                    const daysFromNow = changeParamsDay - currentDay;
+                    let whenText = '';
+
+                    // if it is pending, then will either activate on next interaction (meaning its currently the change day)
+                    // or it is not the new day yet
+                    if (daysFromNow <= 0n) {
+                        whenText = 'Will activate on next on-chain ineteraction.';
+                    } else {
+                        whenText = `Activates in ${daysFromNow.toString()} days.`;
+                    }
+
+                    pendingWhenElement.innerText = whenText;
+                    pendingBoxElement.classList.remove('hidden');
+                }
+
+                // show the termination information (only if relevant)
+                if (terminated) {
+                    terminationTextElement.innerText = 'This listing has been terminated. New purchases are blocked.';
+                    terminationBoxElement.classList.remove('hidden');
+                } else if (terminationDay > 0n) { 
+                    // termination has been queued but not yet activated
+                    const daysFromNow = terminationDay - currentDay;
+                    
+                    if (daysFromNow <= 0n) {
+                        whenText = 'Termination queued and will be activated on next interaction.';
+                    } else {
+                        // termination day not been reached yet 
+                        whenText = `Activates in ${daysFromNow.toString()} days.`;
+                    }
+                    
+                    // show the text in html and unhide the box
+                    terminationTextElement.innerText = whenText;
+                    terminationBoxElement.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Failed to load listing details', error);
+                descriptionElement.innerText = 'Failed to load on-chain detials' + error
+            }
+        }
+
+        // Buy Access button on marketplace cards 
         document.addEventListener('click', (e) => {
             const btn = e.target.closest('.buy-api-btn');
             if (!btn) return;
-            const confirmBtn = document.getElementById('confirmPurchaseBtn');
-            document.getElementById('buyApiName').innerText     = btn.getAttribute('data-name');
+            openDetailsModal({
+                name: btn.getAttribute('data-name'),
+                provider: btn.getAttribute('data-provider'),
+                price: btn.getAttribute('data-price'),
+                listingAddr: btn.getAttribute('data-listing-addr')
+            });
+        });
+
+        // Card click to open the description modal and purchase modal 
+        document.getElementById('detailsPurchaseBtn').addEventListener('click', (e) => {
+            const btn = document.getElementById('detailsPurchaseBtn')
+            const confirmBtn = document.getElementById('confirmPurchaseBtn')
+
+            document.getElementById('buyApiName').innerText = btn.getAttribute('data-name');
             document.getElementById('buyApiProvider').innerText = btn.getAttribute('data-provider');
-            document.getElementById('buyApiPrice').innerText    = btn.getAttribute('data-price') + " Wei";
-            confirmBtn.setAttribute('data-target-id',    btn.getAttribute('data-name'));   // tokenName, used by PROVIDER_ROUTES
-            confirmBtn.setAttribute('data-listing-addr', btn.getAttribute('data-listing-addr') || "");
+            document.getElementById('buyApiPrice').innerText = btn.getAttribute('data-price') + ' Wei';
+
+            confirmBtn.setAttribute('data-target-id', btn.getAttribute('data-name'));
+            confirmBtn.setAttribute('data-listing-addr', btn.getAttribute('data-listing-addr') || '');
+
             document.getElementById('sellBackBtn').classList.add('hidden');
             document.getElementById('testCallBtn')?.remove();
             document.getElementById('buyAmountInput').value = 1;
-            openModal('purchaseModal');
-            refreshPriceQuote();
-        });
-        
+
+            closeModal('detailsModal')
+            openModal('purchaseModal')
+            refreshPriceQuote()
+        });        
         
         // Authorize on-chain buyTokens 
         document.getElementById('confirmPurchaseBtn').onclick = async (e) => {
@@ -2336,6 +2594,7 @@
         window.showProviderSection = showProviderSection;
         window.loadProviderListings = loadProviderListings;
         window.getDashboardStats = getDashboardStats;
+        window.openDetailsModal = openDetailsModal;
 
         // Initialize App
         window.onload = updateUIState;
