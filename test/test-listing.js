@@ -228,27 +228,33 @@ describe("API Listing", function() {
         beforeEach(async function() {
             // connect the user account to the contract
             userConnection = await APIListing.connect(user);
-            // buy the tokens
-            await userConnection.buyTokens(amount, {value: sendValue});
-            // get the new token supply, user balance and reserve balance
-            supply = await APIListing.getCurrentDaySupply();
-            userBalance = await APIListing.getCurrentDayBalance(userAddress);
-            reserveBalance = await APIListing.getReserveBalance();
         })
 
         // TODO: test the requires
 
         it("Should update the token supply correctly", async function () {
+            // first, user buys the tokens
+            await userConnection.buyTokens(amount, {value: sendValue});
+            // get the new token supply
+            supply = await APIListing.getCurrentDaySupply();
             // as we started with a supply of 0, current supply should = amount
             assert.equal(supply, amount);
         })
 
         it("Should update the API user's balance correctly", async function () {
+            // first, user buys the tokens
+            await userConnection.buyTokens(amount, {value: sendValue});
+            // get the new user balance
+            userBalance = await APIListing.getCurrentDayBalance(userAddress);
             // current user balance should = amount
             assert.equal(userBalance, amount);
         })
 
         it("Should update the contract's reserve balance correctly", async function () {
+            // first, user buys the tokens
+            await userConnection.buyTokens(amount, {value: sendValue});
+            // get the new reserve balance
+            reserveBalance = await APIListing.getReserveBalance();
             // as we started with a supply of 0, 
             // current reserve balance should = amount*basePrice
             assert.equal(reserveBalance, amount);
@@ -291,32 +297,35 @@ describe("API Listing", function() {
             await userConnection.buyTokens(buyAmount, {value: sendValue});
             // user sells their tokens
             await userConnection.sellTokens(saleAmount);
-            // get new token supply, user balance, reserve balance, user credits
-            supply = await APIListing.getCurrentDaySupply();
-            userBalance = await APIListing.getCurrentDayBalance(userAddress);
-            reserveBalance = await APIListing.getReserveBalance();
-            credits = await APIListing.getCredits(userAddress);
         })
 
         // TODO: test the requires
 
         it("Should update the token supply correctly", async function () {
+            // get new token supply
+            supply = await APIListing.getCurrentDaySupply();
             // For base price of 1, in the constnat portion of the curve, 
             // supply should = amount bought - amount sold
             assert.equal(supply, (buyAmount - saleAmount));
         })
 
         it("Should update the API user's balance correctly", async function () {
+            // get new user balance
+            userBalance = await APIListing.getCurrentDayBalance(userAddress);
             // current user balance should = amount bought - amount sold
             assert.equal(userBalance, (buyAmount - saleAmount));
         })
 
         it("Should update the contract's reserve balance correctly", async function () {
+            // get new reserve balance
+            reserveBalance = await APIListing.getReserveBalance();
             // current reserve balance should = amount bought - amount sold
             assert.equal(reserveBalance, (buyAmount - saleAmount));
         })
 
         it("Should update the user's credits correctly", async function () {
+            // get new user credits
+            credits = await APIListing.getCredits(userAddress);
             // User should be credited with the sale price - for base price of 1, 
             // in the constant portion of the curve, sale price = saleAmount
             assert.equal(credits, saleAmount);
@@ -458,26 +467,27 @@ describe("API Listing", function() {
             providerConnection = await APIListing.connect(APIProvider);
             // consume the tokens associated with the user's address
             await providerConnection.consumeTokens(userAddress, amount);
-
-            // get new token supply, user balance, reserve balance
-            reserveBalance = await APIListing.getReserveBalance();
-            supply = await APIListing.getCurrentDaySupply();
-            userBalance = await APIListing.getCurrentDayBalance(userAddress);
         })
 
         // TODO: test the requires
 
         it("Should update the contract's reserve balance correctly", async function () {
+            // get new reserve balance
+            reserveBalance = await APIListing.getReserveBalance();
             // all tokens have been consumed, reserve balance should = 0
             assert.equal(reserveBalance.toString(), "0");
         })
 
         it("Should update the token supply correctly", async function () {
+            // get new token supply
+            supply = await APIListing.getCurrentDaySupply();
             // all tokens have been consumed, token supply should = 0
             assert.equal(supply.toString(), "0");
         })
 
         it("Should update the API user's balance correctly", async function () {
+            // get new user balance
+            userBalance = await APIListing.getCurrentDayBalance(userAddress);
             // all user's tokens have been consumed, user balance should = 0
             assert.equal(userBalance.toString(), "0");
         })
@@ -502,11 +512,8 @@ describe("API Listing", function() {
         // have some credits to withdraw - so first connect user account and buy, and
         // then sell, some tokens
 
-        // Initialise variables for re-use in all the sellTokens tests
+        // Initialise variables
         let userConnection;
-        let supply;
-        let userBalance;
-        let reserveBalance;
         let credits;
 
         // Let's say the user buys and sells 5 tokens
