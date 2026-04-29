@@ -1,34 +1,35 @@
 const { ethers } = require('ethers');
 const { provider: web3provider } = require('./web3');
-const { PRIVATE_KEY, CONTRACT_ADDRESS } = require('./env');
+const { PRIVATE_KEY } = require('./env');
 const abi = require('./contractABI.json');
 
-if (!CONTRACT_ADDRESS) console.warn('⚠️  CONTRACT_ADDRESS not set in .env');
-if (!PRIVATE_KEY)      console.warn('⚠️  PRIVATE_KEY not set in .env');
+if (!PRIVATE_KEY) console.warn('⚠️  PRIVATE_KEY not set in .env');
 
-const readContract = CONTRACT_ADDRESS
-    ? new ethers.Contract(CONTRACT_ADDRESS, abi, web3provider)
-    : null;
+// Lazy signer — only constructed when a write is actually needed
+let _signer = null;
+function getSigner() {
+    if (_signer) return _signer;
+    if (!PRIVATE_KEY) throw new Error('PRIVATE_KEY not set in .env');
+    _signer = new ethers.Wallet(PRIVATE_KEY, web3provider);
+    return _signer;
+}
 
-// Build the signer-attached contract LAZILY so an invalid PRIVATE_KEY
-// only fails calls that actually need to write, not the whole gateway boot.
-let _writeContract = null;
-function getWriteContract() {
-    if (_writeContract) return _writeContract;
-    if (!readContract) throw new Error('Contract not configured');
-    if (!PRIVATE_KEY)  throw new Error('PRIVATE_KEY not set in .env');
-    const signer = new ethers.Wallet(PRIVATE_KEY, web3provider);
-    _writeContract = readContract.connect(signer);
-    return _writeContract;
+function getReadContract(listingAddress) {
+    if (!listingAddress) throw new Error('listingAddress required');
+    return new ethers.Contract(listingAddress, abi, web3provider);
+}
+
+function getWriteContract(listingAddress) {
+    if (!listingAddress) throw new Error('listingAddress required');
+    return new ethers.Contract(listingAddress, abi, getSigner());
 }
 
 const contract = {
-    getCurrentDayBalance(address) {
-        if (!readContract) throw new Error('Contract not configured');
-        return readContract.getCurrentDayBalance(address);
+    getCurrentDayBalance(listingAddress, userAddress) {
+        return getReadContract(listingAddress).getCurrentDayBalance(userAddress);
     },
-    consumeTokens(address, amount) {
-        return getWriteContract().consumeTokens(address, amount);
+    consumeTokens(listingAddress, userAddress, amount) {
+        return getWriteContract(listingAddress).consumeTokens(userAddress, amount);
     }
 };
 
