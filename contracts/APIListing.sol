@@ -410,7 +410,8 @@ contract APIListing {
     }
 
     // Function for consuming tokens when API call has been accepted
-    // Should only be called by the owner of contract (or API gateway), to prevent users consuming other users' tokens
+    // Should only be called by the owner of contract (or API gateway),
+    // to prevent users consuming other users' tokens
     function consumeTokens (address user, uint256 amount) external returns (bool) {
 
         // Ensure contract has not been terminated:
@@ -456,6 +457,8 @@ contract APIListing {
         return true;
     }
 
+    // Function to enable a user to withdraw, eg. after they have sold their tokens
+    // and received the credits
     function withdraw() external returns (bool) {
 
         // Process day rollover logic before continuing

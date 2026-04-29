@@ -496,4 +496,50 @@ describe("API Listing", function() {
             // TODO
         })
     })
+
+    describe("withdraw", function() {
+        // First the user needs to have bought, and sold, some tokens, so that they
+        // have some credits to withdraw - so first connect user account and buy, and
+        // then sell, some tokens
+
+        // Initialise variables for re-use in all the sellTokens tests
+        let userConnection;
+        let supply;
+        let userBalance;
+        let reserveBalance;
+        let credits;
+
+        // Let's say the user buys and sells 5 tokens
+        const amount = 5;
+
+        // Some money needs to be sent to buy the tokens - for base price of 1
+        // value to be sent will be 1*amount as we are in the constant protion 
+        // of the bonding curve
+        const sendValue = ethers.parseUnits(amount.toString(), "wei");
+
+        beforeEach(async function() {
+            // connect the user account to the contract
+            userConnection = await APIListing.connect(user);
+            // user needs to buy then sell the tokens 
+            await userConnection.buyTokens(amount, {value: sendValue});
+            await userConnection.sellTokens(amount);
+        })
+
+        it("Should reset the user's credits to 0", async function () {
+            // user withdraws their money
+            await userConnection.withdraw();
+            // get new value of user credits
+            credits = await APIListing.getCredits(userAddress);
+            // credits should be reset to 0
+            assert.equal(credits.toString(), "0");
+        })
+
+        it("Should send the withdrawn money to the user's address", async function () {
+            // If the withdrawal was successful and the user's money was sent to them
+            // we excpect the function not to revert with the error "Withdraw failed"
+            await expect(APIListing.withdraw()).to.not.be.revertedWith(
+                "Withdraw failed"
+            );
+        })
+    })
 })
