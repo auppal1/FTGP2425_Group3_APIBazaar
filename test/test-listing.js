@@ -286,7 +286,10 @@ describe("API Listing", function() {
             // connect the user account to the contract
             userConnection = await APIListing.connect(user);
             // user needs to buy the tokens before they can sell them
+            // we have already tested the buyTokens() function and found that it works 
+            // correctly, passing all its tests, so we can safely use it in this test
             await userConnection.buyTokens(buyAmount, {value: sendValue});
+            // user sells their tokens
             await userConnection.sellTokens(saleAmount);
             // get new token supply, user balance, reserve balance, user credits
             supply = await APIListing.getCurrentDaySupply();
@@ -360,8 +363,6 @@ describe("API Listing", function() {
                 // get amount of WEI to send to the contract to buy the token
                 let sendValue = getTestPurchasePrice(amount, supply);
                 // buy the token
-                // we have already tested the buyTokens() function and found that it works 
-                // correctly, passing all its tests, so we can safely use it in this test
                 await APIListing.buyTokens(amount, {value: sendValue});
                 // get the new supply from the contract
                 // use parseInt to convert the returned supply from bigInt to Int for use 
@@ -423,6 +424,76 @@ describe("API Listing", function() {
                 // get the new supply from the contract
                 supply = parseInt(await APIListing.getCurrentDaySupply());
             }
+        })
+    })
+
+    describe("consumeTokens", function() {
+        // User must have some tokens to consume, so first connect user account and
+        // buy some tokens
+        // Only provider can call consumeTokens(), so connect provider account to
+        // call/test consumeTokens() function
+
+        // Initialise variables for use in consumeTokens() tests
+        let userConnection;
+        let providerConnection;
+        let reserveBalance;
+        let supply;
+        let userBalance;
+
+        // Let's say the user buys 5 tokens and consumes them all
+        const amount = 5;
+
+        // Some money needs to be sent to buy the tokens - for base price of 1
+        // value to be sent will be 1*amount as we are in the constant protion 
+        // of the bonding curve
+        const sendValue = ethers.parseUnits(amount.toString(), "wei");
+
+        beforeEach(async function() {
+            // connect the user account to the contract
+            userConnection = await APIListing.connect(user);
+            // user needs to buy the tokens before they can consume them
+            await userConnection.buyTokens(amount, {value: sendValue});
+
+            // connect the provider account to the contract
+            providerConnection = await APIListing.connect(APIProvider);
+            // consume the tokens associated with the user's address
+            await providerConnection.consumeTokens(userAddress, amount);
+
+            // get new token supply, user balance, reserve balance
+            reserveBalance = await APIListing.getReserveBalance();
+            supply = await APIListing.getCurrentDaySupply();
+            userBalance = await APIListing.getCurrentDayBalance(userAddress);
+        })
+
+        // TODO: test the requires
+
+        it("Should update the contract's reserve balance correctly", async function () {
+            // all tokens have been consumed, reserve balance should = 0
+            assert.equal(reserveBalance.toString(), "0");
+        })
+
+        it("Should update the token supply correctly", async function () {
+            // all tokens have been consumed, token supply should = 0
+            assert.equal(supply.toString(), "0");
+        })
+
+        it("Should update the API user's balance correctly", async function () {
+            // all user's tokens have been consumed, user balance should = 0
+            assert.equal(userBalance.toString(), "0");
+        })
+
+        it("Should update the last usage day correctly", async function () {
+            // We need to test that the last usage day has been set = current day
+            // So first call APIListing's currentDay function
+            currentDay = await APIListing.currentDay();
+            // Then we need to get the last usage day
+            lastUsageDay = await APIListing.getLastUsageDay();
+            // Assert that the two should be equal
+            assert.equal(currentDay, lastUsageDay);
+        })
+
+        it("Should split revenues, sending 5% to treasury, 95% to provider", async function () {
+            // TODO
         })
     })
 })
