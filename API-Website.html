@@ -271,6 +271,10 @@
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Provider</p>
                         <p id="detailsProviderAddr" class="text-xs font-mono text-gray-700 break-all">-</p>
                     </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Contract Address</p>
+                        <p id="detailsContractAddr" class="text-xs font-mono text-gray-700 break-all">-</p>
+                    </div>                    
                 </div>
                 <!-- Active parameters -->
                 <div class="bg-white rounded-2xl border border-gray-100 p-5">
@@ -1572,6 +1576,7 @@
             const pendingWhenElement = document.getElementById('detailsPendingParamsWhen');
             const terminationBoxElement = document.getElementById('detailsTerminationBox');
             const terminationTextElement = document.getElementById('detailsTerminationText');
+            const contrAddrElement = document.getElementById('detailsContractAddr')
 
             // Store the button attributes to use lateer
             purchaseBtn.setAttribute('data-name', name || '');
@@ -1581,6 +1586,7 @@
 
             // Show already known details
             nameElement.innerText = name || 'API Details';
+            contrAddrElement.innerText = listingAddr || '-';
 
             // Look up off-chain meta date (description, category) by listing address 
             const key = (listingAddr || '').toLowerCase();
