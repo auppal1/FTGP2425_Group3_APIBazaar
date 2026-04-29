@@ -235,7 +235,7 @@ contract APIListing {
 
         // Validate inputs
         require(amount > 0 && amount <= activeCapacity, "Invalid Amount");
-        require(S + amount < activeCapacity, "Amount breaches capacity");
+        require(S + amount <= activeCapacity, "Amount breaches capacity");
 
         // Calculate price for requested number of tokens
 
@@ -304,7 +304,7 @@ contract APIListing {
             salePrice = activeBasePrice * amount;
         }
         else if (S - amount >= stepPoint) {
-            // sale entire follows cubic portion of curve
+            // sale entirely follows cubic portion of curve
             uint256 curveValueBefore = (S - stepPoint)**4;  // cumulative cubic portion before sale
             uint256 curveValueAfter = (S - amount - stepPoint)**4;  // cumulative cubic portion after sale
             uint256 nonLinearContribution = curveValueBefore - curveValueAfter;
@@ -368,8 +368,7 @@ contract APIListing {
         }
         return true;     
     }
-    
-    // TODO: Decide whether to burn at constant rate to stop people speculative trading the token
+
     // Function to burn/enable selling of tokens
     function sellTokens(uint256 amount) public returns (bool) {
 
