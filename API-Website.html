@@ -1557,7 +1557,6 @@
                     `${receipt.hash.slice(0,10)}…</a>`;
         
                 document.getElementById('sellBackBtn').classList.remove('hidden');
-                showTestCallButton(btn.getAttribute('data-target-id'));
                 refreshPriceQuote();
             } catch (err) {
                 console.error('buyTokens failed', err);
