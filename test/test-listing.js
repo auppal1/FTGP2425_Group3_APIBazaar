@@ -348,7 +348,25 @@ describe("API Listing", function() {
         })
 
         it("Should should fail if supply + amount is greater than capacity", async function () {
-            // TODO
+            // In order to test this we need to buy some tokens so that supply > 0
+            // If we leave supply = 0 and simply set amount > capacity it will trigger the 
+            // previous require and this test will fail
+            
+            // Freshly deployed contract, current supply is 0
+            let supply = 0;
+            // First buy some tokens, let's say 5
+            const buyAmount = 5;
+            // get amount of WEI to send to the contract to buy the tokens
+            let sendValue = getTestPurchasePrice(buyAmount, supply);
+            // buy the tokens
+            await APIListing.buyTokens(buyAmount, {value: sendValue});
+
+            // Now let's say we want to know the price to buy some more tokens
+            // - eg. amount = total API capacity
+            const amount = capacity
+            await expect(APIListing.getPurchasePrice(amount)).to.be.revertedWith(
+                "Amount breaches capacity"
+            );
         })
 
         it("Should should calculate correct purchase price", async function () {
@@ -397,7 +415,13 @@ describe("API Listing", function() {
         })
 
         it("Should should fail if amount is greater than supply", async function () {
-            // TODO
+            // Arbitrary amount between 0 and capacity
+            // We use parseInt() to ensure the amount is an integer
+            const amount = parseInt(capacity/2);
+            // Freshly deployed contract so supply = 0, so amount > supply
+            await expect(APIListing.getSalePrice(amount)).to.be.revertedWith(
+                "Total token supply insufficient."
+            );
         })
 
         it("Should should calculate correct sale price", async function () {
