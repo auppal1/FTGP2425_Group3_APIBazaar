@@ -22,9 +22,6 @@ describe("API Listing", function() {
     let user;
     let userAddress; // address of API user
 
-    // // Money to send to the contract for payable functions that require it
-    // let sendValue;
-
     // Initialise token/contract properties for constructor
     let tokenName;
     let tokenSymbol;
@@ -350,7 +347,7 @@ describe("API Listing", function() {
         it("Should should fail if supply + amount is greater than capacity", async function () {
             // In order to test this we need to buy some tokens so that supply > 0
             // If we leave supply = 0 and simply set amount > capacity it will trigger the 
-            // previous require and this test will fail
+            // previous require/revert and this test will fail
             
             // Freshly deployed contract, current supply is 0
             let supply = 0;

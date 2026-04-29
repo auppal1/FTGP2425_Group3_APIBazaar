@@ -26,9 +26,25 @@ describe("API Bazaar", function() {
     let platformTreasury;
     let treasuryContractAddress;
 
-    // Initialise accounts to use for testing
+    // For API listing, once one has been deployed
+    let newAPIListing;
+
+    // Initialise accounts and associated addresses to use for testing
     let registryOwner;
+    let registryOwnerAddress; // address of registry owner account
     let treasuryOwner;
+    let treasuryOwnerAddress; // address of treasury owner account
+    let APIProvider;
+    let providerAdress; // address of API provider
+    let user;
+    let userAddress; // address of API user
+
+    // Initialise token/contract properties for listing deployment
+    let tokenName;
+    let tokenSymbol;
+    let endpoint;
+    let capacity;
+    let basePrice;
 
     // Stuff to do before testing
     before(async function() {
@@ -42,8 +58,13 @@ describe("API Bazaar", function() {
 
         // Set up registry and treasury accounts
         registryOwner = accounts[0];
+        registryOwnerAddress = registryOwner.address;
         treasuryOwner = accounts[1];
-        //console.log(treasuryOwner.address);
+        treasuryOwnerAddress = treasuryOwner.address;
+        APIProvider = accounts[2];
+        providerAdress = APIProvider.address;
+        user = accounts[3];
+        userAddress = user.address;
 
         // BEFORE TESTING WE NEED TO DEPLOY THE CONTRACTS
 
@@ -118,7 +139,7 @@ describe("API Bazaar", function() {
                 const contractOwner = await APIBazaarRegistry.getAdmin();
                 // We need to extract the address from the registryOwner object
                 // The object itself includes loads of other data
-                assert.equal(contractOwner, registryOwner.address);
+                assert.equal(contractOwner, registryOwnerAddress);
             })
         })
 
@@ -143,6 +164,39 @@ describe("API Bazaar", function() {
                 const treasuryAddress = await APIBazaarRegistry.getTreasury()
                 // assert that treasuryAddress should = treasuryContractAddress
                 assert.equal(treasuryAddress, treasuryContractAddress);
+            })
+        })
+
+        // Test the listing function
+        describe("createAPIListing", function () {
+
+            // Set up token/contract properties for new API lisitng
+            tokenName = "RandomToken";
+            tokenSymbol = "RNT";
+            endpoint = "https://API-gateway.etc";
+            capacity = 12;
+            basePrice = 1;
+
+            // Initialise variables for use in tests
+            let providerConnection;
+
+            it("Should create a new API listing and update listing arrays and mappings", async function () {
+                // API provider should cerate the new listing, so first connect the 
+                // provider account to the contract
+                providerConnection = await APIBazaarRegistry.connect(APIProvider);
+                // create the new listing
+                newAPIListing = await providerConnection.createAPIListing(
+                    tokenName,
+                    tokenSymbol,
+                    endpoint,
+                    capacity,
+                    basePrice
+                );
+                // If the new listing has been created succsessfully there will be 1 lisitng 
+                // in the allListingAddresses array - its length will be 1
+                // So first get the array
+                listingAddresses = await APIBazaarRegistry.getAllListings();
+                assert.equal(listingAddresses.length.toString(), "1");
             })
         })
     })
@@ -170,7 +224,7 @@ describe("API Bazaar", function() {
                 // call platformTreasury contract's getOwner() function
                 const contractOwner = await platformTreasury.getOwner();
                 // Extract address from treasuryOwner object
-                assert.equal(contractOwner, treasuryOwner.address);
+                assert.equal(contractOwner, treasuryOwnerAddress);
             })
         })
 
