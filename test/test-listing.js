@@ -18,7 +18,7 @@ describe("API Listing", function() {
     let treasuryOwner;
     let treasuryOwnerAddress; // address of treasury owner account
     let APIProvider;
-    let providerAdress; // address of API provider
+    let providerAddress; // address of API provider
     let user;
     let userAddress; // address of API user
 
@@ -40,7 +40,7 @@ describe("API Listing", function() {
         treasuryOwner = accounts[1];
         treasuryOwnerAddress = treasuryOwner.address;
         APIProvider = accounts[2];
-        providerAdress = APIProvider.address;
+        providerAddress = APIProvider.address;
         user = accounts[3];
         userAddress = user.address;
 
@@ -48,13 +48,13 @@ describe("API Listing", function() {
         tokenName = "RandomToken";
         tokenSymbol = "RNT";
         capacity = 12;
-        basePrice = 1;
+        basePrice = 10;
 
         // DEPLOY API LISTING CONTRACT
         listingFactory = await ethers.getContractFactory("APIListing");
         // Deploy the contract with name "APIBazaarRegistry"
         APIListing = await listingFactory.deploy(
-            providerAdress,
+            providerAddress,
             treasuryOwnerAddress,
             tokenName,
             tokenSymbol,
@@ -80,34 +80,33 @@ describe("API Listing", function() {
         let purchasePrice;
         // Convert stepPoint to integer so that it will have the same value as
         // in solidity
-        // parseInt() rounds down to nearest whole number - the type-cast to uint256
-        // in solidity code of the contract does the same
+        // parseInt() rounds down to nearest whole number
         let stepPoint = parseInt(capacity * 90/100);
 
         if (supply + amount <= stepPoint) {
-            // pricing entirely follows constant portion of curve
+            // prices are entirely within constant portion of bonding curve
             purchasePrice = basePrice * amount;
         }
         else if (supply >= stepPoint) {
-            // pricing enirely follows cubic portion of curve
-            // x**4 is integral of 4*x**3
-            // cumulative cubic contribution after supply
-            let curveValueAfter = (supply + amount - stepPoint)**4;
-            // cumulatve cubic contribution before supply
-            let curveValueBefore = (supply - stepPoint)**4;
-            let nonLinearContribution = curveValueAfter - curveValueBefore;
-            // total purchase price = non-linear contribution + constant contribution
-            purchasePrice = nonLinearContribution + (basePrice * amount);
+            // pricing is enirely within cubic portion of curve
+            // cumulative cubic contribution above current supply
+            let overCubicValue = (supply + amount - stepPoint)**4;
+            // cumulative cubic contribution between stepPoint and current supply
+            let underCubicValue = (supply - stepPoint)**4;
+            // total cubic contribution
+            let cubicContribution = overCubicValue - underCubicValue;
+            // total purchase price = cubic contribution + constant contribution
+            purchasePrice = cubicContribution + (basePrice * amount);
         }
         else {
             // if amount crosses stepPoint, find how much amount is over and under stepPoint
             let overAmount = supply + amount - stepPoint;
             let underAmount = amount - overAmount;
             // cumulative cubic contribution toward overPrice
-            let curveValueAfter = overAmount**4;
+            let overCubicValue = overAmount**4;
             // total overPrice = cubic price contribution + constant price
-            let overPrice = curveValueAfter + (basePrice * overAmount);
-            // calculate price for constant portion of mint/purchase
+            let overPrice = overCubicValue + (basePrice * overAmount);
+            // calculate price for constant portion of curve
             let underPrice = basePrice * underAmount;  // price of amount under stepPoint
             // total price of minting is the price over the step + price under the step 
             purchasePrice = overPrice + underPrice;
@@ -122,31 +121,32 @@ describe("API Listing", function() {
         let stepPoint = parseInt(capacity * 90/100);
 
         if (supply <= stepPoint) {
-            // sale entirely follows constant portion of curve
+            // sale prices are entirely within constant portion of curve
             salePrice = basePrice * amount;
         }
         else if (supply - amount >= stepPoint) {
-            // sale entirely follows cubic portion of curve
+            // sale prices are entirely within cubic portion of curve
             // cumulative cubic contribution before sale
-            let curveValueBefore = (supply - stepPoint)**4;
+            let beforeCubicValue = (supply - stepPoint)**4;
             // cumulative cubic contribution after sale
-            let curveValueAfter = (supply - amount - stepPoint)**4;
-            let nonLinearContribution = curveValueBefore - curveValueAfter;
-            // total sale price = non-linear contribution + constant contribution
-            salePrice = nonLinearContribution + (basePrice * amount);
+            let afterCubicValue = (supply - amount - stepPoint)**4;
+            // total cubic contribution
+            let cubicContribution = beforeCubicValue - afterCubicValue;
+            // total sale price = cubic contribution + constant contribution
+            salePrice = cubicContribution + (basePrice * amount);
         }
         else {
             // if amount crosses stepPoint, find out how much is over and under stepPoint
             let overAmount = supply - stepPoint;
             let underAmount = amount - overAmount;
-            // calculate payout for cubic portion of sale
+            // calculate sale price for cubic portion of sale
             // cumulative cubic portion before crossing stepPoint
-            let curveValueBefore = overAmount**4;
+            let beforeCubicValue = overAmount**4;
             // total overPrice = cubic price contribution + constant price contribution
-            let overPrice = curveValueBefore + (basePrice * overAmount);
-            // calculate payout for constant portion of sale
+            let overPrice = beforeCubicValue + (basePrice * overAmount);
+            // calculate sale price for constant portion of sale
             let underPrice = basePrice * underAmount;
-            // total sale payout = price above the step + price below the step
+            // total sale price = price above the step + price below the step
             salePrice = overPrice + underPrice;
         }
         return salePrice;
@@ -158,7 +158,7 @@ describe("API Listing", function() {
             // call APIListing contract's getProvider() function
             const contractProvider = await APIListing.getProvider();
             // Assert that the returned address should = provider address
-            assert.equal(contractProvider, providerAdress);
+            assert.equal(contractProvider, providerAddress);
         })
 
         it("Should set the treasury (fee recipient) address correctly", async function () {
@@ -210,19 +210,25 @@ describe("API Listing", function() {
         let reserveBalance;
         let credits;
 
+        // For buying tokens
+        let price;
+        let sendValue;
+        let excess;
+        let excessValue;
+
         // Let's say the user buys 5 tokens
         const amount = 5;
 
-        // Some money needs to be sent to buy the tokens - for base price of 1
-        // value to be sent will be 1*amount as we are in the constant protion 
-        // of the bonding curve
-        const sendValue = ethers.parseUnits(amount.toString(), "wei");
-
-        // To test what happens if the user sends too much Wei
-        const excess = amount + 1;
-        const excessValue = ethers.parseUnits(excess.toString(), "wei");
-
         beforeEach(async function() {
+            // Work out how much money to send to buy the desired amount of tokens
+            // with current supply = 0 (second argument)
+            price = getTestPurchasePrice(amount, 0);
+            sendValue = ethers.parseUnits(price.toString(), "wei");
+
+            // To test what happens if the user sends too much Wei
+            excess = price + 1;
+            excessValue = ethers.parseUnits(excess.toString(), "wei");
+
             // connect the user account to the contract
             userConnection = await APIListing.connect(user);
         })
@@ -253,8 +259,8 @@ describe("API Listing", function() {
             // get the new reserve balance
             reserveBalance = await APIListing.getReserveBalance();
             // as we started with a supply of 0, 
-            // current reserve balance should = amount*basePrice
-            assert.equal(reserveBalance, amount);
+            // current reserve balance should = price paid
+            assert.equal(reserveBalance, price);
         })
 
         it("Should update the user's credits if they send too much WEI", async function () {
@@ -262,8 +268,8 @@ describe("API Listing", function() {
             await userConnection.buyTokens(amount, {value: excessValue});
             // Get the amount credited to the user
             credits = await APIListing.getCredits(userAddress);
-            // Assert that the credits should = excess - amount
-            assert.equal(credits.toString(), (excess - amount).toString());
+            // Assert that the credits should = excess - price
+            assert.equal(credits.toString(), (excess - price).toString());
         })
     })
 
@@ -275,17 +281,24 @@ describe("API Listing", function() {
         let reserveBalance;
         let credits;
 
+        // For buying/selling tokens
+        let buyPrice;
+        let sendValue;
+        let salePrice;
+
         // Let's say the user buys 7 tokens
         const buyAmount = 7;
         // then they sell 5 tokens back to the contract
         const saleAmount = 5;
 
-        // Some money needs to be sent to buy the tokens - for base price of 1
-        // value to be sent will be 1*amount as we are in the constant protion 
-        // of the bonding curve
-        const sendValue = ethers.parseUnits(buyAmount.toString(), "wei");
-
         beforeEach(async function() {
+            // Work out how much money to send to buy the desired amount of tokens
+            // with current supply = 0 (second argument)
+            buyPrice = getTestPurchasePrice(buyAmount, 0);
+            sendValue = ethers.parseUnits(buyPrice.toString(), "wei");
+            // calculate the expected sale price for saleAmount when supply = buyAmount
+            salePrice = getTestSalePrice(saleAmount, buyAmount);
+
             // connect the user account to the contract
             userConnection = await APIListing.connect(user);
             // user needs to buy the tokens before they can sell them
@@ -317,15 +330,14 @@ describe("API Listing", function() {
             // get new reserve balance
             reserveBalance = await APIListing.getReserveBalance();
             // current reserve balance should = amount bought - amount sold
-            assert.equal(reserveBalance, (buyAmount - saleAmount));
+            assert.equal(reserveBalance, (buyPrice - salePrice));
         })
 
         it("Should update the user's credits correctly", async function () {
             // get new user credits
             credits = await APIListing.getCredits(userAddress);
-            // User should be credited with the sale price - for base price of 1, 
-            // in the constant portion of the curve, sale price = saleAmount
-            assert.equal(credits, saleAmount);
+            // User should be credited with the sale price
+            assert.equal(credits, salePrice);
         })
     })
 
@@ -469,16 +481,22 @@ describe("API Listing", function() {
         let reserveBalance;
         let supply;
         let userBalance;
+        let providerPercentage;
+        let credits;
+        
+        // For buying tokens
+        let price;
+        let sendValue;
 
         // Let's say the user buys 5 tokens and consumes them all
         const amount = 5;
 
-        // Some money needs to be sent to buy the tokens - for base price of 1
-        // value to be sent will be 1*amount as we are in the constant protion 
-        // of the bonding curve
-        const sendValue = ethers.parseUnits(amount.toString(), "wei");
-
         beforeEach(async function() {
+            // Work out how much money to send to buy the desired amount of tokens
+            // with current supply = 0 (second argument)
+            price = getTestPurchasePrice(amount, 0);
+            sendValue = ethers.parseUnits(price.toString(), "wei");
+
             // connect the user account to the contract
             userConnection = await APIListing.connect(user);
             // user needs to buy the tokens before they can consume them
@@ -523,8 +541,26 @@ describe("API Listing", function() {
             assert.equal(currentDay, lastUsageDay);
         })
 
-        it("Should split revenues, sending 5% to treasury, 95% to provider", async function () {
-            // TODO
+        it("Should split revenues, crediting 95% to provider", async function () {
+            // consumeTokens() calls splitRevenues() which credits 95% of the value
+            // of the consumed tokens to the API provider
+            // splitRevenues() calculates the 5% fee to send to the platform treasury 
+            // first, then calculates the provider percentage as: value - fee
+            // When solidity calculations return a decimal value solidity ignores 
+            // everything after the decimal point, meaning it effectively always rounds 
+            // down
+            // If the fee is rounded down, provider percentage is effectively rounded up,
+            // therefore we need Math.ceil() in the below line order to calculate the 
+            // same percentage as solidity
+            providerPercentage = Math.ceil(parseInt(sendValue) * (95/100));
+            // get new value of provider credits
+            credits = await APIListing.getCredits(providerAddress);
+            // console logs to check outputs
+            //console.log(parseInt(sendValue));
+            //console.log(`Provider percentage: ${providerPercentage}`);
+            //console.log(`Provider credits: ${credits}`);
+            // Assert that provider percentage should = provider credits
+            assert.equal(providerPercentage.toString(), credits.toString());
         })
     })
 
@@ -540,12 +576,12 @@ describe("API Listing", function() {
         // Let's say the user buys and sells 5 tokens
         const amount = 5;
 
-        // Some money needs to be sent to buy the tokens - for base price of 1
-        // value to be sent will be 1*amount as we are in the constant protion 
-        // of the bonding curve
-        const sendValue = ethers.parseUnits(amount.toString(), "wei");
-
         beforeEach(async function() {
+            // Work out how much money to send to buy the desired amount of tokens
+            // with current supply = 0 (second argument)
+            let price = getTestPurchasePrice(amount, 0);
+            let sendValue = ethers.parseUnits(price.toString(), "wei");
+
             // connect the user account to the contract
             userConnection = await APIListing.connect(user);
             // user needs to buy then sell the tokens 
