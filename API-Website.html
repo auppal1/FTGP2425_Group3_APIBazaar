@@ -219,6 +219,29 @@
             </form>
         </div>
     </div>
+
+    <!--Edit params modal => shows when buyer clicks edit paarams in my apis page -->
+    <div id="editParamsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 opacity-0 invisible pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-[2rem] w-full max-w-md p-8 relative modal-content">
+            <button onclick="closeModal('editParamsModal')" class="absolute top-3 right-3 text-gray-500">X</button>
+            <h2 class="text-xl font-black mb-2">Edit Listing Parameters</h2>
+            <p class="text-xs text-gray-500 mb-4">Changes take effect at the start of the next day.</p>
+            <p id="editParamsAddr" class="text-[10px] font-mono text-gray-400 break-all mb-4">-</p>
+            <div class="mb-4">
+                <label class="block text-sm font-bold mb-1">New Base Price (Wei)</label>
+                <input id="editParamsPrice" type="number" min="1" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-xl"/>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-bold mb-1">New Capacity (Calls / day)</label>
+                <input id="editParamsCapacity" type="number" min="1" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-xl"/>
+            </div>
+            <div class="flex justify-end gap-3 mt-4">
+                <button onclick="closeModal('editParamsModal')" class="px-4 py-2 border border-gray-300 rounded-xl">Cancel</button>
+                <button id="confirmEditParamsBtn" class="px-4 py-2 bg-green-100 border border-gray-300 text-gray-900 rounded-xl">Save</button>
+            </div>
+        </div>
+    </div>
+
     <div id="myTokensModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
         <div class="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl relative overflow-hidden modal-content transform scale-95 transition-all duration-300 max-h-[85vh] flex flex-col">
             <div class="bg-gray-900 p-6 text-white relative overflow-hidden flex justify-between items-center">
@@ -752,10 +775,10 @@
                             <div class="overflow-x-auto border border-gray-100 rounded-2xl shadow-inner">
                                 <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]">
                                     <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-widest font-black">
-                                        <tr><th class="p-5 border-b border-gray-200">API Name</th><th class="p-5 border-b border-gray-200">Address</th><th class="p-5 border-b border-gray-200">Base Price</th><th class="p-5 border-b border-gray-200">Supply Today</th><th class="p-5 border-b border-gray-200">Capacity</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200 text-right">Endpoint</th></tr>
+                                        <tr><th class="p-5 border-b border-gray-200">API Name</th><th class="p-5 border-b border-gray-200">Address</th><th class="p-5 border-b border-gray-200">Base Price</th><th class="p-5 border-b border-gray-200">Supply Today</th><th class="p-5 border-b border-gray-200">Capacity</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200">Actions</th><th class="p-5 border-b border-gray-200 text-right">Endpoint</th></tr>
                                     </thead>
                                     <tbody id="myApisTable" class="text-sm font-medium text-gray-800 divide-y divide-gray-100">
-                                         <tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Connect your wallet to see your APIs.</td></tr>
+                                         <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Connect your wallet to see your APIs.</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -887,7 +910,9 @@
             "function terminationDay() view returns (uint256)",
             "function changeParamsDay() view returns (uint256)",
             "function currentDay() view returns (uint256)",
-            "function getActiveParameters() view returns (uint256 activeCapacity, uint256 activeBasePrice)"
+            "function getActiveParameters() view returns (uint256 activeCapacity, uint256 activeBasePrice)",
+            "function queueParameterChange(uint256 newCapacity, uint256 newBasePrice) external",
+            "function queueTermination () external"
         ];
 
         /* Read-only provider — used to load listings before the user connects */
@@ -1532,7 +1557,115 @@
             openModal('purchaseModal')
             refreshPriceQuote()
         });        
-        
+
+        // Listener for terminating a contract 
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.terminate-listing-btn');
+            if (!btn) return;
+            
+            // Ensure wallet is connected, if not then open wallet connect
+            if (!signer) {
+                openModal('walletModal');
+                return;
+            }
+
+            // Find out which contract to terminate
+            const addr = btn.getAttribute('data-listing-addr');
+            const name = btn.getAttribute('data-listing-name');
+
+            // important: explain termination to user with confirm window
+            const ok = window.confirm(`Terminate "${name}"?\n\nIf the listing has been used today, termination will be queued for tomorrow. Otherwise it terminates immediately. New purchases will be blocked.`);
+            if (!ok) return;
+
+            btn.disabled = true;
+
+            try {
+                // Create a contract instance and call queue termination
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const tx = await listing.queueTermination();
+                await tx.wait();
+                alert('Termination transaction sent:\n' + tx.hash);
+
+                // Refresh other pages to show this
+                loadProviderListings();
+                getDashboardStats();
+            } catch (err) {
+                console.error('Terminate failed', err);
+                alert('Terminate failed: ' + err);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Listener for edit parameters modal
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.edit-listing-btn');
+            if (!btn) return;
+            
+            // Get the current information about the listing
+            const addr = btn.getAttribute('data-listing-addr');
+            const currentCapacity = btn.getAttribute('data-current-capacity');
+            const currentPrice = btn.getAttribute('data-current-price');
+
+            // Fill edit params modal 
+            document.getElementById('editParamsAddr').innerText = addr;
+            document.getElementById('editParamsPrice').value = currentPrice || '';
+            document.getElementById('editParamsCapacity').value = currentCapacity || '';
+
+            // Store the address on the confirm button
+            document.getElementById('confirmEditParamsBtn').setAttribute('data-listing-addr', addr);
+            openModal('editParamsModal');
+        });
+
+        // Confirm parameter change
+        document.getElementById('confirmEditParamsBtn').onclick = async (e) => {
+            const btn = e.currentTarget;
+            const addr = btn.getAttribute('data-listing-addr');
+            
+            // Ensure wallet is connected, if not then open wallet connect
+            if (!signer) {
+                openModal('walletModal');
+                return;
+            }
+
+            // Get the inputs for new price and new capacity
+            const newBasePrice = document.getElementById('editParamsPrice').value.trim();
+            const newCapacity = document.getElementById('editParamsCapacity').value.trim();
+
+            const basePriceNum = Number(newBasePrice);
+            const capacityNum = Number(newCapacity);
+
+            // Validate inputs
+            if (!Number.isInteger(basePriceNum) || basePriceNum <= 0) {
+                alert('Price must be a positive whole number.');
+                return;
+            }
+            if (!Number.isInteger(capacityNum) || capacityNum <= 0) {
+                alert('Capacity must be a positive whole number.');
+                return;
+            }
+
+            btn.disabled = true;
+
+            try {
+                // Create new contract instance to change params
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                // queueParameterChange() takes capacity first, and then basePrice
+                const tx = await listing.queueParameterChange(BigInt(capacityNum), BigInt(basePriceNum));
+                await tx.wait();
+
+                alert('Parameter change queued:\n' + tx.hash);
+                closeModal('editParamsModal');
+                loadProviderListings();
+                getDashboardStats();
+            } catch (err) {
+                console.error('Param change failed', err);
+                alert('Parameter change failed: ' + err);
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
         // Authorize on-chain buyTokens 
         document.getElementById('confirmPurchaseBtn').onclick = async (e) => {
             const btn    = e.currentTarget;
@@ -2106,9 +2239,28 @@
                         // Show active in the HTML
                         status = '<span class="px-2 py-1 rounded bg-green-100 text-green-700">Active</span>';
                     }
+                    
+                    // BUTTONS TERMINATION AND PARAMETER CHANGE IN CONTRACT 
+                    let actionsCell;
+                    
+                    // If the listing has already been terminated, then no action to be made (as termination is permanetnt)
+                    if (terminated) {
+                    actionsCell = '<span class="text-xs text-gray-400">No actions</span>';
+                    } else {
+                        // If it has not been terminated, the make button to allow param change and termination
+                        actionsCell = `
+                            <button
+                                class="edit-listing-btn px-3 py-1 bg-gray-900 text-white rounded-xl text-xs font-black mr-2" data-listing-addr="${addr}" data-current-capacity="${capacity}" data-current-price="${priceWei}"> Edit Params
+                            </button>
+                            <button
+                                class="terminate-listing-btn px-3 py-1 bg-red-600 text-white rounded-xl font-black text-xs mr-2" data-listing-addr="${addr}" data-listing-name="${metadata.name}"> Terminate
+                            </button>
+                        `;
+                    }
 
                     // Add one table row for this listing 
                     // Formatted same as groupmate's previous placeholder table rows from old commit 
+                    // Includes button to terminate lsting and change parameters (actionsCell) 
                     allRows += `
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="p-5 font-black text-gray-900">${metadata.name} <span class="text-xs text-gray-400 font-mono">(${metadata.symbol.toUpperCase()})</span></td>
@@ -2117,6 +2269,7 @@
                             <td class="p-5 font-bold">${dailySupply}</td>
                             <td class="p-5 font-black">${capacity}</td>
                             <td class="p-5">${status}</td>
+                            <td class="p-5">${actionsCell}</td>
                             <td class="p-5 text-right text-gray-400 text-xs font-mono">${metadata.endpoint.slice(0, 30)}...</td>
                         </tr>`;
                 }
