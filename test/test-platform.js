@@ -290,4 +290,39 @@ describe("API Bazaar", function() {
             })
         })
     })
+
+    describe("Contract interactions", function() {
+        it("consumeTokens() in API listing should split revenues, \
+            updating treasury balance and crediting the API provider", async function () {
+                // Initialise variables
+                let userConnection;
+                let providerConnection;
+                let price;
+
+                // Let's say the user buys 5 tokens and consumes them all
+                const amount = capacity;                
+
+                beforeEach(async function() {
+                    // connect the user account to the contract
+                    userConnection = await newAPIListing.connect(user);
+                    price = await userConnection.getPurchasePrice(amount);
+                    const sendValue = ethers.parseUnits(price.toString(), "wei");
+                    // user needs to buy the tokens before they can consume them
+                    await userConnection.buyTokens(amount, {value: sendValue});
+
+                    // connect the provider account to the contract
+                    providerConnection = await newAPIListing.connect(APIProvider);
+                    // consume the tokens associated with the user's address
+                    await providerConnection.consumeTokens(userAddress, amount);
+                })
+
+                it("Should update the treasury balance", async function() {
+                    treasuryPercentage = parseInt(price * (5/100));
+                    // Call getBalance()
+                    const treasuryBalance = await platformTreasury.getBalance();
+                    // Assert that the balance should = 0
+                    assert.equal(treasuryBalance.toString(), treasuryPercentage.toString());
+                })
+            })
+    })
 })
