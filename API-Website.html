@@ -643,7 +643,6 @@
                         
                         <li class="pt-6 mt-4 border-t border-gray-100"><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Account</p></li>
                         <li><a href="#dash-profile" class="profile-nav-link flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-user w-5 text-center text-lg"></i>My Profile</a></li>
-                        <li><a href="#dash-settings" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-gear w-5 text-center text-lg"></i>Settings</a></li>
                     </ul>
                 </nav>
                 
@@ -843,64 +842,6 @@
                             </div>
                         </div>
                     </section>
-
-                    <section id="dash-settings" class="dash-section">
-                        <div class="bg-white p-8 md:p-12 rounded-[2rem] border border-gray-100 shadow-sm max-w-4xl mx-auto">
-                            <h2 class="text-3xl font-black text-gray-900 mb-8 tracking-tight">System Settings</h2>
-                            
-                            <form id="settingsForm" class="space-y-10">
-                                <div>
-                                    <h4 class="font-black text-gray-900 mb-5 text-xl flex items-center gap-2"><i class="fa-solid fa-bell-concierge text-primary"></i> Notification Preferences</h4>
-                                    <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100 space-y-6">
-                                        <label class="flex justify-between items-center cursor-pointer p-2 rounded-lg transition group">
-                                            <div>
-                                                <p class="font-black text-gray-900 group-hover:text-primary transition-colors">API Call Spikes Alert</p>
-                                                <p class="text-sm text-gray-500 font-medium mt-1">Get notified when usage exceeds normal statistical limits by 200%.</p>
-                                            </div>
-                                            <input type="checkbox" checked class="w-6 h-6 accent-primary cursor-pointer border-2 border-gray-300 rounded">
-                                        </label>
-                                        <div class="h-px w-full bg-gray-200"></div>
-                                        <label class="flex justify-between items-center cursor-pointer p-2 rounded-lg transition group">
-                                            <div>
-                                                <p class="font-black text-gray-900 group-hover:text-primary transition-colors">Withdrawal Receipts</p>
-                                                <p class="text-sm text-gray-500 font-medium mt-1">Email me when funds are successfully transferred on-chain.</p>
-                                            </div>
-                                            <input type="checkbox" checked class="w-6 h-6 accent-primary cursor-pointer border-2 border-gray-300 rounded">
-                                        </label>
-                                        <div class="h-px w-full bg-gray-200"></div>
-                                        <label class="flex justify-between items-center cursor-pointer p-2 rounded-lg transition group opacity-60">
-                                            <div>
-                                                <p class="font-black text-gray-900">Weekly Summary Reports</p>
-                                                <p class="text-sm text-gray-500 font-medium mt-1">Receive an analytics digest every Monday morning.</p>
-                                            </div>
-                                            <input type="checkbox" class="w-6 h-6 accent-primary cursor-pointer border-2 border-gray-300 rounded">
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <h4 class="font-black text-gray-900 mb-5 text-xl flex items-center gap-2"><i class="fa-solid fa-server text-primary"></i> Gateway Node</h4>
-                                    <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100">
-                                        <div class="flex items-center justify-between mb-4">
-                                            <p class="font-bold text-gray-700">Preferred Routing Region</p>
-                                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded text-xs font-black uppercase tracking-wider" id="gatewayStatus"><span class="w-2 h-2 inline-block rounded-full bg-green-500 mr-1 animate-pulse"></span> Connected</span>
-                                        </div>
-                                        <select class="w-full p-4 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-bold text-gray-700">
-                                            <option>Global (Anycast Routing - Recommended)</option>
-                                            <option>US East (N. Virginia)</option>
-                                            <option>EU Central (Frankfurt)</option>
-                                            <option>Asia Pacific (Singapore)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="pt-6 flex justify-end border-t border-gray-100">
-                                    <button type="submit" class="px-10 py-4 bg-gray-900 text-white font-black rounded-xl shadow-lg hover:bg-black hover:-translate-y-1 transition-all active:scale-95 text-lg"><i class="fa-solid fa-floppy-disk mr-2"></i> Save Preferences</button>
-                                </div>
-                            </form>
-                        </div>
-                    </section>
-
                 </div>
             </main>
         </div>
@@ -1692,7 +1633,7 @@
             const titles = {
                 'dash-main': 'Developer Console', 'dash-publish': 'Publish API', 'dash-myapis': 'My APIs',
                 'dash-earnings': 'Earnings', 
-                'dash-message-detail': 'Message Details', 'dash-profile': 'My Profile', 'dash-settings': 'Settings'
+                'dash-message-detail': 'Message Details', 'dash-profile': 'My Profile'
             };
             if(document.getElementById('dashHeaderTitle')) {
                 document.getElementById('dashHeaderTitle').innerText = titles[sectionId] || 'Console';
@@ -2087,19 +2028,6 @@
                 alert('Withdraw failed', err);
                 btn.innerHTML = ogText;
             }
-        });
-
-        document.getElementById('settingsForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            console.log('BACKEND HOOK: Save Preferences');
-            const btn = e.target.querySelector('button[type="submit"]');
-            const ogText = btn.innerHTML; 
-            btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Saved!'; 
-            btn.classList.replace('bg-gray-900', 'bg-green-600');
-            setTimeout(() => {
-                btn.innerHTML = ogText;
-                btn.classList.replace('bg-green-600', 'bg-gray-900');
-            }, 2000);
         });
 
         // Function that live-updates provider's API listing in the My APIs table
