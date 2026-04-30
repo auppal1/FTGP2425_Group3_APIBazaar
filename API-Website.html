@@ -219,6 +219,29 @@
             </form>
         </div>
     </div>
+
+    <!--Edit params modal => shows when buyer clicks edit paarams in my apis page -->
+    <div id="editParamsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 opacity-0 invisible pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-[2rem] w-full max-w-md p-8 relative modal-content">
+            <button onclick="closeModal('editParamsModal')" class="absolute top-3 right-3 text-gray-500">X</button>
+            <h2 class="text-xl font-black mb-2">Edit Listing Parameters</h2>
+            <p class="text-xs text-gray-500 mb-4">Changes take effect at the start of the next day.</p>
+            <p id="editParamsAddr" class="text-[10px] font-mono text-gray-400 break-all mb-4">-</p>
+            <div class="mb-4">
+                <label class="block text-sm font-bold mb-1">New Base Price (Wei)</label>
+                <input id="editParamsPrice" type="number" min="1" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-xl"/>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-bold mb-1">New Capacity (Calls / day)</label>
+                <input id="editParamsCapacity" type="number" min="1" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-xl"/>
+            </div>
+            <div class="flex justify-end gap-3 mt-4">
+                <button onclick="closeModal('editParamsModal')" class="px-4 py-2 border border-gray-300 rounded-xl">Cancel</button>
+                <button id="confirmEditParamsBtn" class="px-4 py-2 bg-green-100 border border-gray-300 text-gray-900 rounded-xl">Save</button>
+            </div>
+        </div>
+    </div>
+
     <div id="myTokensModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
         <div class="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl relative overflow-hidden modal-content transform scale-95 transition-all duration-300 max-h-[85vh] flex flex-col">
             <div class="bg-gray-900 p-6 text-white relative overflow-hidden flex justify-between items-center">
@@ -271,6 +294,10 @@
                         <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Provider</p>
                         <p id="detailsProviderAddr" class="text-xs font-mono text-gray-700 break-all">-</p>
                     </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Contract Address</p>
+                        <p id="detailsContractAddr" class="text-xs font-mono text-gray-700 break-all">-</p>
+                    </div>                    
                 </div>
                 <!-- Active parameters -->
                 <div class="bg-white rounded-2xl border border-gray-100 p-5">
@@ -372,54 +399,12 @@
                 </div>
                 
                 <div class="lg:w-1/2 w-full max-w-lg mx-auto lg:max-w-none relative animate-float">
-                    <div class="w-full aspect-[4/3] relative bg-white/70 backdrop-blur-xl rounded-[2rem] border border-white shadow-2xl p-6 overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-purple-50/50 -z-10"></div>
-                        <div class="flex justify-between items-center mb-6">
-                            <div>
-                                <h3 class="font-black text-gray-900 text-lg">Bonding Curve Pricing</h3>
-                                <p class="text-xs font-bold text-gray-400">Automated Market Maker for API Calls</p>
-                            </div>
-                            <div class="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-black uppercase tracking-wider">Live Sim</div>
-                        </div>
-                        
-                        <div class="w-full h-[70%] relative">
-                            <svg width="100%" height="100%" viewBox="0 0 450 280" preserveAspectRatio="xMidYMid meet">
-                                <defs>
-                                    <linearGradient id="heroCurveGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stop-color="#5E6AD2" />
-                                        <stop offset="100%" stop-color="#165DFF" />
-                                    </linearGradient>
-                                    <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                        <stop offset="0%" stop-color="#5E6AD2" stop-opacity="0.2"/>
-                                        <stop offset="100%" stop-color="#5E6AD2" stop-opacity="0"/>
-                                    </linearGradient>
-                                </defs>
-                                <line x1="60" y1="230" x2="420" y2="230" stroke="#E2E8F0" stroke-width="2" />
-                                <line x1="60" y1="230" x2="60" y2="40" stroke="#E2E8F0" stroke-width="2" />
-                                <line x1="60" y1="135" x2="420" y2="135" stroke="#F1F5F9" stroke-width="1" stroke-dasharray="4" />
-                                
-                                <path d="M60,230 Q170,220 270,140 T420,40 L420,230 Z" fill="url(#areaGradient)" />
-                                
-                                <path d="M60,230 Q170,220 270,140 T420,40" fill="none" stroke="url(#heroCurveGradient)" stroke-width="5" class="curve-visual stroke-linecap-round" />
-                                
-                                <circle cx="270" cy="140" r="6" fill="#165DFF" stroke="#fff" stroke-width="3">
-                                    <animate attributeName="r" values="6;8;6" dur="2s" repeatCount="indefinite" />
-                                </circle>
-                                
-                                <text x="240" y="260" fill="#94A3B8" font-size="14" font-weight="bold" font-family="Inter" text-anchor="middle">Supply (Total Calls Minted)</text>
-                                <text x="25" y="135" fill="#94A3B8" font-size="14" font-weight="bold" font-family="Inter" transform="rotate(-90, 25, 135)" text-anchor="middle">Price (USDC)</text>
-                                
-                                <text x="140" y="210" fill="#5E6AD2" font-size="13" font-weight="900" font-family="Inter">Early Adopters</text>
-                                <text x="300" y="80" fill="#165DFF" font-size="13" font-weight="900" font-family="Inter">Price Scales</text>
-                            </svg>
-                        </div>
-
-                        <div class="absolute -right-6 top-1/4 w-14 h-14 bg-white shadow-xl rounded-2xl border border-gray-50 flex items-center justify-center text-blue-500 text-2xl animate-bounce" style="animation-duration: 3s;"><i class="fa-brands fa-ethereum"></i></div>
-                        <div class="absolute -left-4 bottom-1/4 w-12 h-12 bg-gray-900 shadow-xl rounded-xl flex items-center justify-center text-white text-xl animate-bounce" style="animation-duration: 4s; animation-delay: 1s;"><i class="fa-solid fa-code"></i></div>
-                        <div class="absolute right-1/4 -bottom-6 w-16 h-16 bg-white shadow-xl rounded-full border border-gray-50 flex items-center justify-center text-green-500 text-2xl animate-bounce" style="animation-duration: 3.5s; animation-delay: 0.5s;"><i class="fa-solid fa-coins"></i></div>
+                    <div class="w-full aspect-[4/3] relative rounded-[2rem] overflow-hidden shadow-2xl">
+                        <img
+                            src="./assets/camel_logo.jpg" class="absolute top-0 right-[0%] w-[110%] h-[110%]  max-w-none object-cover">
                     </div>
                 </div>
-            </div>
+
             
             <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
             <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
@@ -671,20 +656,16 @@
                 </div>
                 
                 <nav class="flex-1 p-5 overflow-y-auto">
-                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Main Menu</p>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Provider Menu</p>
                     <ul class="space-y-1.5" id="providerNav">
                         <li><a href="#dash-main" class="sidebar-active flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all font-bold text-sm hover:bg-gray-50"><i class="fa-solid fa-gauge w-5 text-center text-lg"></i>Dashboard</a></li>
                         <li><a href="#dash-publish" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-cloud-arrow-up w-5 text-center text-lg"></i>Publish API</a></li>
-                        <li><a href="#dash-myapis" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-list-code w-5 text-center text-lg"></i>My APIs</a></li>
-                        <li><a href="#dash-earnings" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-sack-dollar w-5 text-center text-lg"></i>Earnings</a></li>
-                        <li><a href="#dash-notifications" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm relative">
-                            <i class="fa-solid fa-bell w-5 text-center text-lg"></i>Notifications
-                            <span id="unreadCountBadge" class="hidden absolute top-1/2 -translate-y-1/2 right-4 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                        <li><a href="#dash-myapis" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-list w-5 text-center text-lg"></i>My APIs</a></li>
+                        <li><a href="#dash-earnings" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-money-bill-transfer w-5 text-center text-lg"></i>Withdraw</a></li>
                         </a></li>
                         
                         <li class="pt-6 mt-4 border-t border-gray-100"><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Account</p></li>
                         <li><a href="#dash-profile" class="profile-nav-link flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-user w-5 text-center text-lg"></i>My Profile</a></li>
-                        <li><a href="#dash-settings" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-gear w-5 text-center text-lg"></i>Settings</a></li>
                     </ul>
                 </nav>
                 
@@ -707,10 +688,6 @@
                         <h2 class="text-2xl font-black text-gray-900 tracking-tight" id="dashHeaderTitle">Developer Console</h2>
                     </div>
                     <div class="flex items-center gap-6">
-                        <button onclick="showProviderSection('dash-notifications')" class="relative p-2 rounded-full hover:bg-gray-100 transition text-gray-500" aria-label="Open notifications">
-                            <i class="fa-solid fa-bell text-xl"></i>
-                            <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white hidden" id="headerUnreadDot"></span>
-                        </button>
                         <div class="h-8 w-px bg-gray-200"></div>
                         <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition group" onclick="showProviderSection('dash-profile')">
                             <div class="hidden md:block text-right">
@@ -724,56 +701,24 @@
 
                 <div class="p-6 md:p-10 max-w-7xl mx-auto w-full">
 
-                    <section id="dash-main" class="dash-section dash-active">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <section id="dash-main" class="dash-section dash-active h-screen flex items-center">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 w-full">
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
-                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-code text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-arrow-up mr-1"></i>2</span></div>
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-code text-xl"></i></div></div>
                                 <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total APIs Active</p><h3 id="statApiActive" class="text-3xl font-black text-gray-900">-</h3></div>
                             </div>
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
-                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-warehouse text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-arrow-up mr-1"></i>15%</span></div>
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-warehouse text-xl"></i></div></div>
                                 <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total Supply (today)</p><h3 id="statTotalSupply" class="text-3xl font-black text-gray-900">-</h3></div>
                             </div>
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
-                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><i class="fa-solid fa-percent text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg">+$45.20</span></div>
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><i class="fa-solid fa-percent text-xl"></i></div></div>
                                 <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Utilisation Rate</p><h3 id="statUtilisation" class="text-3xl font-black text-gray-900">-</h3></div>
                             </div>
                             <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-3xl shadow-lg border border-gray-700 flex flex-col justify-between text-white relative overflow-hidden">
                                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
                                 <div class="flex justify-between items-start mb-4 relative z-10"><div class="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center border border-white/10"><i class="fa-solid fa-wallet text-xl"></i></div><button onclick="showProviderSection('dash-earnings')" class="text-xs font-bold text-gray-300 hover:text-white hover:underline">Withdraw</button></div>
                                 <div class="relative z-10"><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Withdrawable Balance</p><h3 id="statWithdrawable" class="text-3xl font-black text-white">-</h3></div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm lg:col-span-2">
-                                <div class="flex justify-between items-center mb-8">
-                                    <h3 class="text-xl font-black text-gray-900">Earnings Trend</h3>
-                                    <select class="bg-gray-50 border border-gray-200 text-gray-600 text-sm font-bold rounded-lg px-3 py-1.5 outline-none focus:border-primary"><option>Last 30 Days</option><option>Last 7 Days</option></select>
-                                </div>
-                                <div class="h-72 w-full"><canvas id="earningsChart"></canvas></div>
-                            </div>
-
-                            <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col h-full">
-                                <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-black text-gray-900">Live Activity</h3><span class="flex h-3 w-3 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span></div>
-                                <div class="space-y-4 overflow-y-auto flex-1 pr-2 hide-scrollbar">
-                                    <div class="flex gap-4 border-b border-gray-50 pb-4">
-                                        <div class="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid fa-check"></i></div>
-                                        <div class="flex-1"><div class="flex justify-between mb-1"><span class="font-bold text-sm text-gray-900">Wallet Risk API</span><span class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">2m ago</span></div><p class="text-textSub text-xs font-mono mb-1">0x123...456 • 0.01 USD</p></div>
-                                    </div>
-                                    <div class="flex gap-4 border-b border-gray-50 pb-4">
-                                        <div class="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid fa-check"></i></div>
-                                        <div class="flex-1"><div class="flex justify-between mb-1"><span class="font-bold text-sm text-gray-900">Contract Scan API</span><span class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">15m ago</span></div><p class="text-textSub text-xs font-mono mb-1">0x789...012 • 0.02 USD</p></div>
-                                    </div>
-                                    <div class="flex gap-4 border-b border-gray-50 pb-4">
-                                        <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid fa-xmark"></i></div>
-                                        <div class="flex-1"><div class="flex justify-between mb-1"><span class="font-bold text-sm text-gray-900">Wallet Risk API</span><span class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">1h ago</span></div><p class="text-red-400 text-xs font-mono mb-1">0x456...789 • Failed (Out of Gas)</p></div>
-                                    </div>
-                                    <div class="flex gap-4 pb-2">
-                                        <div class="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid fa-check"></i></div>
-                                        <div class="flex-1"><div class="flex justify-between mb-1"><span class="font-bold text-sm text-gray-900">NFT Metadata API</span><span class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">2h ago</span></div><p class="text-textSub text-xs font-mono mb-1">0x234...567 • 0.005 USD</p></div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </section>
@@ -797,8 +742,8 @@
                                 <div class="p-8 rounded-[2rem] border border-gray-100 bg-gray-50/50">
                                     <h4 class="font-black text-gray-900 mb-6 text-xl flex items-center gap-2"><i class="fa-solid fa-chart-line text-primary"></i> API Call Pricing</h4>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Base Price (wei) *</label><input id="curveBasePrice" type="number" step="0.001" min="0.001" value="0.01" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Max Capacity (Calls) *</label><input id="curveMaxCapacity" type="number" min="100" value="100000" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Base Price (wei) *</label><input id="curveBasePrice" type="number" step="0.001" min="0.001" value="1" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Max Capacity (Calls) *</label><input id="curveMaxCapacity" type="number" min="100" value="1000" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
                                     </div>
                                     
                                     <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
@@ -830,10 +775,10 @@
                             <div class="overflow-x-auto border border-gray-100 rounded-2xl shadow-inner">
                                 <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]">
                                     <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-widest font-black">
-                                        <tr><th class="p-5 border-b border-gray-200">API Name</th><th class="p-5 border-b border-gray-200">Address</th><th class="p-5 border-b border-gray-200">Base Price</th><th class="p-5 border-b border-gray-200">Supply Today</th><th class="p-5 border-b border-gray-200">Capacity</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200 text-right">Endpoint</th></tr>
+                                        <tr><th class="p-5 border-b border-gray-200">API Name</th><th class="p-5 border-b border-gray-200">Address</th><th class="p-5 border-b border-gray-200">Base Price</th><th class="p-5 border-b border-gray-200">Supply Today</th><th class="p-5 border-b border-gray-200">Capacity</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200">Actions</th><th class="p-5 border-b border-gray-200 text-right">Endpoint</th></tr>
                                     </thead>
                                     <tbody id="myApisTable" class="text-sm font-medium text-gray-800 divide-y divide-gray-100">
-                                         <tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">Connect your wallet to see your APIs.</td></tr>
+                                         <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Connect your wallet to see your APIs.</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -842,123 +787,19 @@
 
                     <section id="dash-earnings" class="dash-section">
                         <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 md:p-12 mb-6">
-                            <h2 class="text-3xl font-black text-gray-900 mb-8 tracking-tight">Earnings Dashboard</h2>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                                <div class="p-8 border border-gray-100 rounded-3xl bg-gray-50 hover:bg-white hover:shadow-lg transition-all duration-300"><p class="text-gray-400 text-sm font-black uppercase tracking-wider mb-3">Gross Total Earned</p><h3 class="text-4xl font-black text-gray-900">$128.90</h3></div>
-                                <div class="p-8 border border-gray-100 rounded-3xl bg-gray-50 hover:bg-white hover:shadow-lg transition-all duration-300"><p class="text-gray-400 text-sm font-black uppercase tracking-wider mb-3">Successfully Withdrawn</p><h3 class="text-4xl font-black text-gray-900">$39.40</h3></div>
-                                <div class="p-8 border border-warning/30 rounded-3xl bg-gradient-to-br from-warning/10 to-transparent hover:shadow-lg transition-all duration-300"><p class="text-warning text-sm font-black uppercase tracking-wider mb-3">Available to Withdraw</p><h3 class="text-4xl font-black text-warning">$89.50</h3></div>
-                            </div>
-
-                            <div class="border-t border-gray-100 pt-10 mb-10">
-                                <h3 class="font-black text-gray-900 mb-6 text-xl flex items-center gap-3"><i class="fa-solid fa-money-bill-transfer text-primary"></i> Request Withdrawal</h3>
-                                <form id="withdrawForm" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/30 p-8 rounded-[2rem] border border-blue-100">
-                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Amount to Withdraw (USDC) *</label><input type="number" id="wdAmount" step="0.01" max="89.50" required class="w-full p-4 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono text-lg" placeholder="Max available: 89.50"></div>
-                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Destination Wallet Address *</label><input type="text" id="wdAddress" class="w-full p-4 bg-gray-100 border border-gray-200 rounded-xl outline-none text-gray-500 font-mono text-sm dash-wallet-addr cursor-not-allowed" readonly title="Must withdraw to the connected wallet"></div>
-                                    <div class="md:col-span-2 flex items-center justify-between mt-4">
-                                        <p class="text-xs font-bold text-gray-400"><i class="fa-solid fa-circle-info text-primary mr-1"></i> Funds are withdrawn via Arbitrum One. Network gas applies.</p>
-                                        <button type="submit" class="px-10 py-4 bg-primary text-white rounded-xl font-black hover:bg-primary/90 transition-all flex items-center gap-2 shadow-md hover:shadow-xl active:scale-[0.98]"><i class="fa-solid fa-arrow-right-from-bracket"></i> Withdraw Funds</button>
+                            <h2 class="text-3xl font-black text-gray-900 mb-8 tracking-tight">Withdraw Earnings</h2>
+                            <p class="text-gray-500 font-medium mb-8">Click the button below to withdraw all available credits from every API listing you own. The transaction will be sent to your connected wallet.</p>
+                            <form id="withdrawForm">
+                                <div class="bg-blue-50/30 p-8 rounded-[2rem] border border-blue-100 flex flex-col items-center text-center gap-6">
+                                    <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-3xl">
+                                        <i class="fa-solid fa-money-bill-transfer"></i>
                                     </div>
-                                </form>
-                            </div>
-
-                            <div>
-                                <h3 class="font-black text-gray-900 mb-6 text-xl">Withdrawal History</h3>
-                                <div class="overflow-x-auto border border-gray-100 rounded-2xl shadow-inner">
-                                    <table class="w-full text-left whitespace-nowrap min-w-[600px]">
-                                        <thead class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-widest font-black"><tr><th class="p-5 border-b border-gray-200">Date & Time</th><th class="p-5 border-b border-gray-200">Amount</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200 text-right">Blockchain Tx Hash</th></tr></thead>
-                                        <tbody class="text-sm font-medium text-gray-800 divide-y divide-gray-100">
-                                            <tr class="hover:bg-gray-50/50"><td class="p-5 text-gray-500 font-mono">2026-03-15 14:30</td><td class="p-5 font-black text-gray-900">$25.00</td><td class="p-5"><span class="px-3 py-1 text-[10px] bg-green-100 text-green-700 rounded-lg font-black uppercase tracking-wider border border-green-200">Confirmed</span></td><td class="p-5 text-right"><a href="#" class="font-mono text-primary text-xs hover:underline flex items-center justify-end gap-2">0x123...456 <i class="fa-solid fa-up-right-from-square text-[10px]"></i></a></td></tr>
-                                            <tr class="hover:bg-gray-50/50"><td class="p-5 text-gray-500 font-mono">2026-02-20 09:15</td><td class="p-5 font-black text-gray-900">$14.40</td><td class="p-5"><span class="px-3 py-1 text-[10px] bg-green-100 text-green-700 rounded-lg font-black uppercase tracking-wider border border-green-200">Confirmed</span></td><td class="p-5 text-right"><a href="#" class="font-mono text-primary text-xs hover:underline flex items-center justify-end gap-2">0x789...012 <i class="fa-solid fa-up-right-from-square text-[10px]"></i></a></td></tr>
-                                        </tbody>
-                                    </table>
+                                    <p class="text-sm text-gray-600 font-medium max-w-md">Funds are sent directly to the connected MetaMask wallet. Network gas applies.</p>
+                                    <button type="submit" class="px-10 py-4 bg-primary text-white rounded-xl font-black hover:bg-primary/90 transition-all flex items-center gap-2 shadow-md hover:shadow-xl active:scale-[0.98]">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Withdraw All Credits
+                                    </button>
                                 </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="dash-notifications" class="dash-section">
-                        <div class="bg-white p-8 md:p-10 rounded-[2rem] border border-gray-100 shadow-sm max-w-5xl mx-auto">
-                            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 pb-6 border-b border-gray-100">
-                                <div><h2 class="text-3xl font-black text-gray-900 tracking-tight">Notification Center</h2><p class="text-sm text-gray-500 font-medium mt-2">Review platform alerts, API spikes, and system messages.</p></div>
-                                <div class="flex items-center gap-4">
-                                    <span class="px-4 py-2 text-xs font-black bg-red-100 text-red-600 rounded-lg uppercase tracking-wider border border-red-200 shadow-sm" id="unreadCounterText">3 Unread</span>
-                                    <button id="markAllReadBtn" class="px-5 py-2 border border-gray-200 text-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm">Mark all read</button>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                                <div class="lg:col-span-3 space-y-4" id="notificationList">
-                                    
-                                    <article class="notification-item border border-blue-200 bg-gradient-to-r from-blue-50 to-white rounded-2xl p-6 cursor-pointer hover:shadow-md transition-all group" data-unread="true" data-title="Usage Spike Detected: Wallet Risk Assessment" data-time="10 minutes ago" data-detail="A new enterprise buyer cluster triggered 24 paid calls on your Wallet Risk Assessment API within the last 30 minutes. This is a 400% increase over your average traffic. You generated an estimated revenue increase of $12.40. Ensure your backend infrastructure can handle sustained loads.">
-                                        <div class="flex items-start justify-between gap-4">
-                                            <div class="flex gap-5">
-                                                <div class="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center flex-shrink-0 text-xl shadow-lg shadow-primary/30"><i class="fa-solid fa-chart-pie"></i></div>
-                                                <div>
-                                                    <div class="flex items-center gap-3 mb-1"><h3 class="font-black text-gray-900 text-lg group-hover:text-primary transition-colors">Usage Spike Detected</h3><span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-red-500 text-white rounded-md shadow-sm">New</span></div>
-                                                    <p class="text-sm text-gray-600 font-medium line-clamp-1">Wallet Risk Assessment API received 24 new calls in 30 mins...</p>
-                                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">10 minutes ago • System Alert</p>
-                                                </div>
-                                            </div>
-                                            <button class="notification-read-btn text-primary w-10 h-10 flex items-center justify-center rounded-full hover:bg-blue-100 transition-colors" title="Mark as read"><i class="fa-solid fa-check"></i></button>
-                                        </div>
-                                    </article>
-
-                                    <article class="notification-item border border-blue-200 bg-gradient-to-r from-blue-50 to-white rounded-2xl p-6 cursor-pointer hover:shadow-md transition-all group" data-unread="true" data-title="Withdrawal Successfully Processed" data-time="2 hours ago" data-detail="Your withdrawal request for $25.00 has been processed successfully on the Arbitrum network. The funds should now be visible in your connected wallet. Transaction hash: 0x123...456">
-                                        <div class="flex items-start justify-between gap-4">
-                                            <div class="flex gap-5">
-                                                <div class="w-12 h-12 rounded-2xl bg-success text-white flex items-center justify-center flex-shrink-0 text-xl shadow-lg shadow-success/30"><i class="fa-solid fa-sack-dollar"></i></div>
-                                                <div>
-                                                    <div class="flex items-center gap-3 mb-1"><h3 class="font-black text-gray-900 text-lg group-hover:text-primary transition-colors">Withdrawal Processed</h3><span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-red-500 text-white rounded-md shadow-sm">New</span></div>
-                                                    <p class="text-sm text-gray-600 font-medium line-clamp-1">Your $25.00 payout has been confirmed on-chain.</p>
-                                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">2 hours ago • Finance</p>
-                                                </div>
-                                            </div>
-                                            <button class="notification-read-btn text-primary w-10 h-10 flex items-center justify-center rounded-full hover:bg-blue-100 transition-colors" title="Mark as read"><i class="fa-solid fa-check"></i></button>
-                                        </div>
-                                    </article>
-
-                                    <article class="notification-item border border-gray-100 bg-white rounded-2xl p-6 cursor-pointer hover:bg-gray-50 hover:shadow-sm transition-all group" data-unread="false" data-title="Weekly Performance Summary" data-time="3 days ago" data-detail="Weekly summary: Your active APIs generated a total of 312 calls, reflecting an 18% increase week over week. Total revenue generated was $14.50. Check your dashboard for detailed demographic breakdowns.">
-                                        <div class="flex items-start justify-between gap-4">
-                                            <div class="flex gap-5">
-                                                <div class="w-12 h-12 rounded-2xl bg-gray-100 text-gray-500 flex items-center justify-center flex-shrink-0 text-xl"><i class="fa-solid fa-chart-line"></i></div>
-                                                <div>
-                                                    <h3 class="font-bold text-gray-600 text-lg mb-1 group-hover:text-gray-900 transition-colors">Weekly performance summary</h3>
-                                                    <p class="text-sm text-gray-500 font-medium line-clamp-1">Your APIs generated 312 calls this week, up 18%.</p>
-                                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">3 days ago • Analytics</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </article>
-                                </div>
-                                
-                                <aside class="bg-gray-50 rounded-3xl p-6 border border-gray-100 h-max sticky top-6">
-                                    <h3 class="font-black text-gray-900 mb-6 text-sm uppercase tracking-widest">Filter By</h3>
-                                    <div class="space-y-2 text-sm font-bold text-gray-600">
-                                        <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white hover:text-primary transition-all border border-transparent hover:border-gray-200"><span>All messages</span><span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-md text-xs">7</span></button>
-                                        <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white hover:text-primary transition-all border border-transparent hover:border-gray-200"><span>Unread</span><span class="bg-red-100 text-red-600 px-2 py-0.5 rounded-md text-xs" id="unreadFilterNum">2</span></button>
-                                        <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white hover:text-primary transition-all border border-transparent hover:border-gray-200"><span>Finance</span><span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-md text-xs">2</span></button>
-                                        <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white hover:text-primary transition-all border border-transparent hover:border-gray-200"><span>System</span><span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-md text-xs">1</span></button>
-                                    </div>
-                                </aside>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="dash-message-detail" class="dash-section">
-                        <div class="bg-white p-8 md:p-12 rounded-[2rem] border border-gray-100 shadow-sm max-w-4xl mx-auto min-h-[500px]">
-                            <div class="flex items-start justify-between gap-4 mb-8 border-b border-gray-100 pb-8">
-                                <div>
-                                    <p class="text-[10px] font-black text-primary uppercase tracking-widest mb-3 bg-primary/10 inline-block px-3 py-1 rounded-lg">Notification Detail</p>
-                                    <h2 id="messageDetailTitle" class="text-3xl font-black text-gray-900 tracking-tight">Message Title</h2>
-                                    <p id="messageDetailMeta" class="text-sm text-gray-400 font-bold mt-3"><i class="fa-regular fa-clock mr-1"></i> Message meta information</p>
-                                </div>
-                                <button id="backToNotificationsBtn" class="px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-white hover:shadow-sm transition-all font-bold text-gray-600 flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to List</button>
-                            </div>
-                            <div class="bg-blue-50/30 rounded-2xl p-8 border border-blue-100">
-                                <h3 class="font-black text-gray-900 mb-4 text-lg"><i class="fa-solid fa-envelope-open-text text-primary mr-2"></i> Message Content</h3>
-                                <p id="messageDetailBody" class="text-gray-700 leading-relaxed font-medium text-lg whitespace-pre-wrap"></p>
-                            </div>
+                            </form>
                         </div>
                     </section>
 
@@ -1024,64 +865,6 @@
                             </div>
                         </div>
                     </section>
-
-                    <section id="dash-settings" class="dash-section">
-                        <div class="bg-white p-8 md:p-12 rounded-[2rem] border border-gray-100 shadow-sm max-w-4xl mx-auto">
-                            <h2 class="text-3xl font-black text-gray-900 mb-8 tracking-tight">System Settings</h2>
-                            
-                            <form id="settingsForm" class="space-y-10">
-                                <div>
-                                    <h4 class="font-black text-gray-900 mb-5 text-xl flex items-center gap-2"><i class="fa-solid fa-bell-concierge text-primary"></i> Notification Preferences</h4>
-                                    <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100 space-y-6">
-                                        <label class="flex justify-between items-center cursor-pointer p-2 rounded-lg transition group">
-                                            <div>
-                                                <p class="font-black text-gray-900 group-hover:text-primary transition-colors">API Call Spikes Alert</p>
-                                                <p class="text-sm text-gray-500 font-medium mt-1">Get notified when usage exceeds normal statistical limits by 200%.</p>
-                                            </div>
-                                            <input type="checkbox" checked class="w-6 h-6 accent-primary cursor-pointer border-2 border-gray-300 rounded">
-                                        </label>
-                                        <div class="h-px w-full bg-gray-200"></div>
-                                        <label class="flex justify-between items-center cursor-pointer p-2 rounded-lg transition group">
-                                            <div>
-                                                <p class="font-black text-gray-900 group-hover:text-primary transition-colors">Withdrawal Receipts</p>
-                                                <p class="text-sm text-gray-500 font-medium mt-1">Email me when funds are successfully transferred on-chain.</p>
-                                            </div>
-                                            <input type="checkbox" checked class="w-6 h-6 accent-primary cursor-pointer border-2 border-gray-300 rounded">
-                                        </label>
-                                        <div class="h-px w-full bg-gray-200"></div>
-                                        <label class="flex justify-between items-center cursor-pointer p-2 rounded-lg transition group opacity-60">
-                                            <div>
-                                                <p class="font-black text-gray-900">Weekly Summary Reports</p>
-                                                <p class="text-sm text-gray-500 font-medium mt-1">Receive an analytics digest every Monday morning.</p>
-                                            </div>
-                                            <input type="checkbox" class="w-6 h-6 accent-primary cursor-pointer border-2 border-gray-300 rounded">
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <h4 class="font-black text-gray-900 mb-5 text-xl flex items-center gap-2"><i class="fa-solid fa-server text-primary"></i> Gateway Node</h4>
-                                    <div class="bg-gray-50 p-8 rounded-3xl border border-gray-100">
-                                        <div class="flex items-center justify-between mb-4">
-                                            <p class="font-bold text-gray-700">Preferred Routing Region</p>
-                                            <span class="px-3 py-1 bg-green-100 text-green-700 rounded text-xs font-black uppercase tracking-wider" id="gatewayStatus"><span class="w-2 h-2 inline-block rounded-full bg-green-500 mr-1 animate-pulse"></span> Connected</span>
-                                        </div>
-                                        <select class="w-full p-4 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-bold text-gray-700">
-                                            <option>Global (Anycast Routing - Recommended)</option>
-                                            <option>US East (N. Virginia)</option>
-                                            <option>EU Central (Frankfurt)</option>
-                                            <option>Asia Pacific (Singapore)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                
-                                <div class="pt-6 flex justify-end border-t border-gray-100">
-                                    <button type="submit" class="px-10 py-4 bg-gray-900 text-white font-black rounded-xl shadow-lg hover:bg-black hover:-translate-y-1 transition-all active:scale-95 text-lg"><i class="fa-solid fa-floppy-disk mr-2"></i> Save Preferences</button>
-                                </div>
-                            </form>
-                        </div>
-                    </section>
-
                 </div>
             </main>
         </div>
@@ -1127,7 +910,9 @@
             "function terminationDay() view returns (uint256)",
             "function changeParamsDay() view returns (uint256)",
             "function currentDay() view returns (uint256)",
-            "function getActiveParameters() view returns (uint256 activeCapacity, uint256 activeBasePrice)"
+            "function getActiveParameters() view returns (uint256 activeCapacity, uint256 activeBasePrice)",
+            "function queueParameterChange(uint256 newCapacity, uint256 newBasePrice) external",
+            "function queueTermination () external"
         ];
 
         /* Read-only provider — used to load listings before the user connects */
@@ -1614,6 +1399,7 @@
             const pendingWhenElement = document.getElementById('detailsPendingParamsWhen');
             const terminationBoxElement = document.getElementById('detailsTerminationBox');
             const terminationTextElement = document.getElementById('detailsTerminationText');
+            const contrAddrElement = document.getElementById('detailsContractAddr')
 
             // Store the button attributes to use lateer
             purchaseBtn.setAttribute('data-name', name || '');
@@ -1623,6 +1409,7 @@
 
             // Show already known details
             nameElement.innerText = name || 'API Details';
+            contrAddrElement.innerText = listingAddr || '-';
 
             // Look up off-chain meta date (description, category) by listing address 
             const key = (listingAddr || '').toLowerCase();
@@ -1770,7 +1557,115 @@
             openModal('purchaseModal')
             refreshPriceQuote()
         });        
-        
+
+        // Listener for terminating a contract 
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.terminate-listing-btn');
+            if (!btn) return;
+            
+            // Ensure wallet is connected, if not then open wallet connect
+            if (!signer) {
+                openModal('walletModal');
+                return;
+            }
+
+            // Find out which contract to terminate
+            const addr = btn.getAttribute('data-listing-addr');
+            const name = btn.getAttribute('data-listing-name');
+
+            // important: explain termination to user with confirm window
+            const ok = window.confirm(`Terminate "${name}"?\n\nIf the listing has been used today, termination will be queued for tomorrow. Otherwise it terminates immediately. New purchases will be blocked.`);
+            if (!ok) return;
+
+            btn.disabled = true;
+
+            try {
+                // Create a contract instance and call queue termination
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const tx = await listing.queueTermination();
+                await tx.wait();
+                alert('Termination transaction sent:\n' + tx.hash);
+
+                // Refresh other pages to show this
+                loadProviderListings();
+                getDashboardStats();
+            } catch (err) {
+                console.error('Terminate failed', err);
+                alert('Terminate failed: ' + err);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Listener for edit parameters modal
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.edit-listing-btn');
+            if (!btn) return;
+            
+            // Get the current information about the listing
+            const addr = btn.getAttribute('data-listing-addr');
+            const currentCapacity = btn.getAttribute('data-current-capacity');
+            const currentPrice = btn.getAttribute('data-current-price');
+
+            // Fill edit params modal 
+            document.getElementById('editParamsAddr').innerText = addr;
+            document.getElementById('editParamsPrice').value = currentPrice || '';
+            document.getElementById('editParamsCapacity').value = currentCapacity || '';
+
+            // Store the address on the confirm button
+            document.getElementById('confirmEditParamsBtn').setAttribute('data-listing-addr', addr);
+            openModal('editParamsModal');
+        });
+
+        // Confirm parameter change
+        document.getElementById('confirmEditParamsBtn').onclick = async (e) => {
+            const btn = e.currentTarget;
+            const addr = btn.getAttribute('data-listing-addr');
+            
+            // Ensure wallet is connected, if not then open wallet connect
+            if (!signer) {
+                openModal('walletModal');
+                return;
+            }
+
+            // Get the inputs for new price and new capacity
+            const newBasePrice = document.getElementById('editParamsPrice').value.trim();
+            const newCapacity = document.getElementById('editParamsCapacity').value.trim();
+
+            const basePriceNum = Number(newBasePrice);
+            const capacityNum = Number(newCapacity);
+
+            // Validate inputs
+            if (!Number.isInteger(basePriceNum) || basePriceNum <= 0) {
+                alert('Price must be a positive whole number.');
+                return;
+            }
+            if (!Number.isInteger(capacityNum) || capacityNum <= 0) {
+                alert('Capacity must be a positive whole number.');
+                return;
+            }
+
+            btn.disabled = true;
+
+            try {
+                // Create new contract instance to change params
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                // queueParameterChange() takes capacity first, and then basePrice
+                const tx = await listing.queueParameterChange(BigInt(capacityNum), BigInt(basePriceNum));
+                await tx.wait();
+
+                alert('Parameter change queued:\n' + tx.hash);
+                closeModal('editParamsModal');
+                loadProviderListings();
+                getDashboardStats();
+            } catch (err) {
+                console.error('Param change failed', err);
+                alert('Parameter change failed: ' + err);
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
         // Authorize on-chain buyTokens 
         document.getElementById('confirmPurchaseBtn').onclick = async (e) => {
             const btn    = e.currentTarget;
@@ -1870,8 +1765,8 @@
             // Update Header Title based on section
             const titles = {
                 'dash-main': 'Developer Console', 'dash-publish': 'Publish API', 'dash-myapis': 'My APIs',
-                'dash-earnings': 'Earnings', 'dash-notifications': 'Notification Center', 
-                'dash-message-detail': 'Message Details', 'dash-profile': 'My Profile', 'dash-settings': 'Settings'
+                'dash-earnings': 'Earnings', 
+                'dash-message-detail': 'Message Details', 'dash-profile': 'My Profile'
             };
             if(document.getElementById('dashHeaderTitle')) {
                 document.getElementById('dashHeaderTitle').innerText = titles[sectionId] || 'Console';
@@ -1890,7 +1785,6 @@
             }
 
             // Init charts if needed
-            if(sectionId === 'dash-main') requestAnimationFrame(initDashboardChart);
             if(sectionId === 'dash-publish') requestAnimationFrame(initBondingCurveChart);
             
             document.getElementById('providerMainScroll').scrollTo(0,0);
@@ -1901,124 +1795,11 @@
         });
         document.querySelectorAll('.profile-nav-link').forEach(link => link.onclick = (e) => { e.preventDefault(); showProviderSection(link.getAttribute('href').substring(1)); });
 
-        /** NOTIFICATIONS & MESSAGE DETAIL */
-        const notificationItems = document.querySelectorAll('.notification-item');
+
+
         
-        function refreshUnreadCount() {
-            const unreadCount = document.querySelectorAll('.notification-item[data-unread="true"]').length;
-            const badge = document.getElementById('unreadCountBadge');
-            const headerDot = document.getElementById('headerUnreadDot');
-            const txt = document.getElementById('unreadCounterText');
-            const filter = document.getElementById('unreadFilterNum');
-            
-            if(badge) unreadCount > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
-            if(headerDot) unreadCount > 0 ? headerDot.classList.remove('hidden') : headerDot.classList.add('hidden');
-            if(txt) txt.innerText = `${unreadCount} Unread`;
-            if(filter) filter.innerText = unreadCount;
-        }
-
-        function markNotificationAsRead(item) {
-            item.setAttribute('data-unread', 'false');
-            item.classList.replace('bg-gradient-to-r', 'bg-white');
-            item.classList.remove('from-blue-50', 'to-white');
-            item.classList.replace('border-blue-200', 'border-gray-100');
-            item.classList.replace('hover:shadow-md', 'hover:shadow-sm');
-            item.classList.add('hover:bg-gray-50');
-            
-            // Remove 'New' badge
-            const newBadge = item.querySelector('.bg-red-500');
-            if(newBadge) newBadge.remove();
-            
-            // Change Icon colors to neutral
-            const primaryIcon = item.querySelector('.bg-primary');
-            if(primaryIcon) {
-                primaryIcon.classList.replace('bg-primary', 'bg-gray-100');
-                primaryIcon.classList.replace('text-white', 'text-gray-500');
-                primaryIcon.classList.remove('shadow-lg', 'shadow-primary/30');
-            }
-            const successIcon = item.querySelector('.bg-success');
-            if(successIcon) {
-                successIcon.classList.replace('bg-success', 'bg-gray-100');
-                successIcon.classList.replace('text-white', 'text-gray-500');
-                successIcon.classList.remove('shadow-lg', 'shadow-success/30');
-            }
-
-            // Remove read button
-            const readBtn = item.querySelector('.notification-read-btn');
-            if(readBtn) readBtn.remove();
-            
-            refreshUnreadCount();
-        }
-
-        function openMessageDetail(item) {
-            document.getElementById('messageDetailTitle').innerText = item.dataset.title || "Notification";
-            document.getElementById('messageDetailMeta').innerHTML = `<i class="fa-regular fa-clock mr-1"></i> ${item.dataset.time || ""}`;
-            document.getElementById('messageDetailBody').innerText = item.dataset.detail || "";
-            if(item.getAttribute('data-unread') === 'true') markNotificationAsRead(item);
-            showProviderSection('dash-message-detail', false); // false to keep 'Notifications' active in sidebar
-        }
-
-        notificationItems.forEach(item => {
-            item.addEventListener('click', (event) => {
-                if (event.target.closest('.notification-read-btn')) return;
-                openMessageDetail(item);
-            });
-
-            const button = item.querySelector('.notification-read-btn');
-            if (button) {
-                button.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    markNotificationAsRead(item);
-                });
-            }
-        });
-
-        document.getElementById('markAllReadBtn')?.addEventListener('click', () => {
-            notificationItems.forEach((item) => markNotificationAsRead(item));
-        });
-
-        document.getElementById('backToNotificationsBtn')?.addEventListener('click', () => showProviderSection('dash-notifications'));
-
-        /** CHARTS IMPLEMENTATION (Chart.js) */
-        let earningsChartInstance = null, bondingCurveChartInstance = null;
+        let bondingCurveChartInstance = null;
         
-        function initDashboardChart() {
-            const ctx = document.getElementById('earningsChart')?.getContext('2d');
-            if(!ctx) return;
-            if(earningsChartInstance) { earningsChartInstance.resize(); return; }
-            
-            earningsChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: { 
-                    labels: ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'], 
-                    datasets: [{ 
-                        label: 'Earnings (USDC)', 
-                        data: [10, 25, 18, 45, 38, 55, 89], 
-                        borderColor: '#5E6AD2', 
-                        backgroundColor: 'rgba(94, 106, 210, 0.15)', 
-                        fill: true, 
-                        tension: 0.4, 
-                        borderWidth: 4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#5E6AD2',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } }, 
-                    scales: { 
-                        y: { grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }, beginAtZero:true }, 
-                        x: { grid: { display: false, drawBorder: false } } 
-                    },
-                    interaction: { mode: 'index', intersect: false }
-                }
-            });
-        }
-
         // Create bonding curve chart that reflects bonding curves in solidity
         // Therefore, should be constant at basePrice for 90% of supply range and then 
         // follow 4x^3 up to capacity (as integral of 4x^3 is x**4 which was convenient for solidity)
@@ -2029,8 +1810,8 @@
             // Get params for the curve from webpage input:
             // basePrice => the constant price for the first 90% of the supply range
             // capacity => the maximum supply (for a given day)
-            const basePrice = parseFloat(document.getElementById('curveBasePrice').value || 0.01);
-            const capacity = parseInt(document.getElementById('curveMaxCapacity').value) || 100000;
+            const basePrice = parseFloat(document.getElementById('curveBasePrice').value || 1);
+            const capacity = parseInt(document.getElementById('curveMaxCapacity').value) || 1000;
             const stepPoint = Math.floor(capacity * 0.9);
 
             // Store x-axis (supply) values
@@ -2179,8 +1960,7 @@
                 else el.innerText = state.wallet ? `${state.wallet.slice(0,8)}...${state.wallet.slice(-6)}` : "Not Connected";
             });
 
-            // Ensure notifications count is accurate
-            refreshUnreadCount();
+            
         }
 
         // Create API listing through registry contract and ask metamask to confirm transaction
@@ -2383,19 +2163,6 @@
             }
         });
 
-        document.getElementById('settingsForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            console.log('BACKEND HOOK: Save Preferences');
-            const btn = e.target.querySelector('button[type="submit"]');
-            const ogText = btn.innerHTML; 
-            btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Saved!'; 
-            btn.classList.replace('bg-gray-900', 'bg-green-600');
-            setTimeout(() => {
-                btn.innerHTML = ogText;
-                btn.classList.replace('bg-green-600', 'bg-gray-900');
-            }, 2000);
-        });
-
         // Function that live-updates provider's API listing in the My APIs table
         // Based on the number of listings associated with the connected wallet
         // Uses the getProviderListings view function in APIBazaarRegistry.sol
@@ -2472,9 +2239,28 @@
                         // Show active in the HTML
                         status = '<span class="px-2 py-1 rounded bg-green-100 text-green-700">Active</span>';
                     }
+                    
+                    // BUTTONS TERMINATION AND PARAMETER CHANGE IN CONTRACT 
+                    let actionsCell;
+                    
+                    // If the listing has already been terminated, then no action to be made (as termination is permanetnt)
+                    if (terminated) {
+                    actionsCell = '<span class="text-xs text-gray-400">No actions</span>';
+                    } else {
+                        // If it has not been terminated, the make button to allow param change and termination
+                        actionsCell = `
+                            <button
+                                class="edit-listing-btn px-3 py-1 bg-gray-900 text-white rounded-xl text-xs font-black mr-2" data-listing-addr="${addr}" data-current-capacity="${capacity}" data-current-price="${priceWei}"> Edit Params
+                            </button>
+                            <button
+                                class="terminate-listing-btn px-3 py-1 bg-red-600 text-white rounded-xl font-black text-xs mr-2" data-listing-addr="${addr}" data-listing-name="${metadata.name}"> Terminate
+                            </button>
+                        `;
+                    }
 
                     // Add one table row for this listing 
                     // Formatted same as groupmate's previous placeholder table rows from old commit 
+                    // Includes button to terminate lsting and change parameters (actionsCell) 
                     allRows += `
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="p-5 font-black text-gray-900">${metadata.name} <span class="text-xs text-gray-400 font-mono">(${metadata.symbol.toUpperCase()})</span></td>
@@ -2483,6 +2269,7 @@
                             <td class="p-5 font-bold">${dailySupply}</td>
                             <td class="p-5 font-black">${capacity}</td>
                             <td class="p-5">${status}</td>
+                            <td class="p-5">${actionsCell}</td>
                             <td class="p-5 text-right text-gray-400 text-xs font-mono">${metadata.endpoint.slice(0, 30)}...</td>
                         </tr>`;
                 }
