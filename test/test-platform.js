@@ -28,9 +28,9 @@ describe("API Bazaar", function() {
     let treasuryContractAddress;
 
     // For API listing, once one has been deployed
-    let listingFactory;
-    let APIListing;
-    let listingContractAddress;
+    let listingData;
+    let listingAddresses;
+    let APIListingAddress;
 
     // Initialise accounts and associated addresses to use for testing
     let registryOwner;
@@ -39,8 +39,6 @@ describe("API Bazaar", function() {
     let treasuryOwnerAddress; // address of treasury owner account
     let APIProvider;
     let providerAddress; // address of API provider
-    let user;
-    let userAddress; // address of API user
 
     // Initialise token/contract properties for listing deployment
     let tokenName;
@@ -128,19 +126,19 @@ describe("API Bazaar", function() {
         // Whitespace before next console log
         console.log();
 
-        // DEPLOY A LISTING CONTRACT
+
+        // DEPLOY API LISTING CONTRACT
         // Set up token/contract properties for constructor
         tokenName = "RandomToken";
         tokenSymbol = "RNT";
         capacity = 12;
-        basePrice = 1;
+        basePrice = 10;
 
-        // DEPLOY API LISTING CONTRACT
         listingFactory = await ethers.getContractFactory("APIListing");
         // Deploy the contract with name "APIBazaarRegistry"
         APIListing = await listingFactory.deploy(
             providerAddress,
-            treasuryOwnerAddress,
+            treasuryContractAddress,
             tokenName,
             tokenSymbol,
             capacity,
@@ -227,12 +225,15 @@ describe("API Bazaar", function() {
                 // in the allListingAddresses array - its length will be 1
                 // So first get the array
                 listingAddresses = await APIBazaarRegistry.getAllListings();
-                assert.equal(listingAddresses.length.toString(), "1");
-                // Get the address and listing data of the new listing for subsequent tests
+                // Then get the address and listing data of the new listing for subsequent 
+                // tests
                 APIListingAddress = listingAddresses[0];
                 listingData = await APIBazaarRegistry.getListing(APIListingAddress);
                 // Get the time at which the lisitng was created
                 createdTime = listingData.createdAt
+                // Finally, for this test, assert that 
+                // listingAddresses array length should = 1
+                assert.equal(listingAddresses.length.toString(), "1");
             })
 
             it("Should update the provider lisitngs mapping", async function() {
@@ -319,52 +320,93 @@ describe("API Bazaar", function() {
     })
 
     describe("Contract interactions", function() {
-        describe("consumeTokens() in API listing should split revenues, \
-            updating treasury balance and crediting the API provider", function () {
-                // Initialise variables
+        describe("Calling consumeTokens() should split revenues,\
+             sending 5% to treasury contract", async function() {
+                // Initialise variables for use in consumeTokens() tests
                 let userConnection;
                 let providerConnection;
+                let treasuryPercentage;
+                let providerPercentage;
+                let credits;
+                
+                // For buying tokens
                 let price;
+                let sendValue;
 
                 // Let's say the user buys 5 tokens and consumes them all
-                const amount = capacity;                
+                const amount = 5;
 
                 beforeEach(async function() {
+                    // Work out how much money to send to buy the desired amount of tokens
+                    // via API listing's getPurchasePrice function
+                    price = await APIListing.getPurchasePrice(amount);
+                    sendValue = ethers.parseUnits(price.toString(), "wei");
+
                     // connect the user account to the contract
                     userConnection = await APIListing.connect(user);
-                    price = await userConnection.getPurchasePrice(amount);
-                    //console.log(price);
-                    const sendValue = ethers.parseUnits(price.toString(), "wei");
-                    //console.log(sendValue);
                     // user needs to buy the tokens before they can consume them
                     await userConnection.buyTokens(amount, {value: sendValue});
-                    let supply = await APIListing.getCurrentDaySupply();
-                    console.log(`Supply after buying: ${supply}`);
 
                     // connect the provider account to the contract
                     providerConnection = await APIListing.connect(APIProvider);
                     // consume the tokens associated with the user's address
                     await providerConnection.consumeTokens(userAddress, amount);
-                    let afterSupply = await APIListing.getCurrentDaySupply();
-                    console.log(`Supply after consuming: ${afterSupply}`);
                 })
 
-                it("Should update the treasury balance", async function() {
-                    treasuryPercentage = parseInt(parseInt(price) * (5/100));
-                    console.log(treasuryPercentage);
-                    // Call getBalance()
+                it("Should update the balance of the treasury contract", async function() {
+                    // consumeTokens() calls splitRevenues() which transfers 5% of the 
+                    // value of the consumed tokens to the platform treasury
+                    // When solidity calculations return a decimal value solidity ignores 
+                    // everything after the decimal point, meaning it effectively always 
+                    // rounds down
+                    // If the fee is rounded down, we need Math.floor() in the below line 
+                    // order to calculate the same percentage as solidity
+                    treasuryPercentage = Math.floor(parseInt(sendValue) * (5/100));
+                    // Get the treasury's updated balance
                     const treasuryBalance = await platformTreasury.getBalance();
-                    console.log(treasuryBalance);
-                    // Assert that the balance should = 0
-                    //assert.equal(treasuryBalance.toString(), treasuryPercentage.toString());
+                    // Assert that the balance should = treasury percentage
+                    assert.equal(treasuryPercentage.toString(), treasuryBalance.toString());
+                    // THIS IMPLICITLY ALSO TESTS THIS ASPECT OF splitRevenues()
+                    // FUNCTIONALITY
+                })
+
+                it("Should credit 95% of consumed token value to provider", async function () {
+                    // consumeTokens() calls splitRevenues() which credits 95% of the value
+                    // of the consumed tokens to the API provider
+                    // splitRevenues() calculates the 5% fee to send to the platform 
+                    // treasury first, then calculates the provider percentage as: 
+                    // value - fee
+                    // When solidity calculations return a decimal value solidity ignores 
+                    // everything after the decimal point, meaning it effectively always 
+                    // rounds down
+                    // If the fee is rounded down, we need Math.ceil() in the below line 
+                    // order to calculate the same percentage as solidity
+                    providerPercentage = Math.ceil(parseInt(sendValue) * (95/100));
+                    // Before each "it" test we have bought and consumed "amount" tokens
+                    // Before the first test 95% of the value of amount should have been
+                    // credited to provider
+                    // This is the second test another 95% should have been credited to
+                    // provider, ie. provider's total creadits should now be 
+                    // 2*(95% of value)
+                    totalProviderCredits = providerPercentage * 2;
+                    // get new value of provider credits
+                    credits = await APIListing.getCredits(providerAddress);
+                    // Assert that provider percentage should = provider credits
+                    assert.equal(totalProviderCredits.toString(), credits.toString());
+                    // THIS IMPLICITLY ALSO TESTS THIS ASPECT OF splitRevenues()
+                    // FUNCTIONALITY
                 })
 
                 it("Should now be possible to withdraw from the treasury", async function() {
+                    // First connent the treasuryOwner account to the platformTreasury 
+                    // contract so that the "Only owner" error won't be triggered
                     const treasuryConnection = await platformTreasury.connect(treasuryOwner);
                     // Then use the connection to call withdraw()
-                    // await expect(treasuryConnection.withdraw()).to.not.be.revertedWith(
-                    //     "Nothing to withdraw"
-                    // );
+                    // If the withdrawal is successful we expect withdraw() not to revert
+                    // with "Nothing to withdraw" error
+                    await expect(treasuryConnection.withdraw()).to.not.be.revertedWith(
+                        "Nothing to withdraw"
+                    );
                 })
             })
     })

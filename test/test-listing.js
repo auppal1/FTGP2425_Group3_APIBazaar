@@ -561,6 +561,7 @@ describe("API Listing", function() {
             //console.log(`Provider credits: ${credits}`);
             // Assert that provider percentage should = provider credits
             assert.equal(providerPercentage.toString(), credits.toString());
+            // THIS IMPLICITLY ALSO TESTS PROVIDER CRDEIT UPDATING BY splitRevenues()
         })
     })
 
