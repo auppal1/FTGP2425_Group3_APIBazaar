@@ -1661,7 +1661,14 @@
         
                 btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Mining tx…';
                 const receipt = await tx.wait();
-        
+
+                // IMPORTANT: need to check receipt status to see if transaction actually went through
+                // ethers.js receipt.status == 1 if transaction is a success or 0 if failure
+                // therefore need to ensure ==1 otherwise throw an error (stops failed mints from going into My Tokens page)
+                if (receipt.status !== 1) {
+                    throw new Error('Transasction failed on chain! No tokens minted')
+                }
+                
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Tokens minted!';
                 btn.classList.replace('bg-gray-500', 'bg-green-500');
                 status.innerHTML =
