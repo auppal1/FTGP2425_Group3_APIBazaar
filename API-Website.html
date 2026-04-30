@@ -1050,6 +1050,7 @@
                 
                 console.log('Wallet Connected', { walletAddress });
                 updateUIState();
+                refreshTestButtons();
 
                 // Close walletModal to remove metasmask popup 
                 closeModal('walletModal');
@@ -1071,6 +1072,7 @@
             state.wallet = null;
             // NOTE: do NOT clear state.isLoggedIn here — wallet ≠ session
             updateUIState();
+            refreshTestButtons();
         });
 
         /** BUYER MARKETPLACE LOGIC */
@@ -1143,6 +1145,10 @@
                             data-price="${priceEth}"
                             data-listing-addr="${address}">View / Buy</button>
                     </div>
+                    <button class="test-call-btn w-full mt-3 py-2.5 rounded-xl text-sm font-bold bg-gray-100 text-gray-400 cursor-not-allowed transition-all"
+                        data-listing-addr="${address}"
+                        data-test-path="${meta.testPath || '/'}"
+                        disabled>Connect Wallet to Test</button>
                 </div>`;
         }
 
@@ -1198,6 +1204,7 @@
                         return buildCardHTML(card, meta);
                     })
                     .join("");
+                    refreshTestButtons();
             } catch (err) {
                 console.error("renderListings failed", err);
                 grid.innerHTML = `<div class="col-span-full text-center py-16 text-red-500 font-bold">
@@ -1318,6 +1325,48 @@
             openModal('purchaseModal');
             refreshPriceQuote();
         });
+
+
+        function setTestBtn(btn, mode, balance = 0) {
+            const base = 'test-call-btn w-full mt-3 py-2.5 rounded-xl text-sm font-bold transition-all';
+            if (mode === 'ready') {
+                btn.className = `${base} bg-green-500 text-white hover:bg-green-600 active:scale-95`;
+                btn.textContent = `Test Call (${balance} left)`;
+                btn.disabled = false;
+            } else if (mode === 'loading') {
+                btn.className = `${base} bg-gray-100 text-gray-400`;
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"><\/i> Checking\u2026';
+                btn.disabled = true;
+            } else if (mode === 'no-tokens') {
+                btn.className = `${base} bg-gray-100 text-gray-400 cursor-not-allowed`;
+                btn.textContent = 'Buy Tokens to Test';
+                btn.disabled = true;
+            } else {
+                btn.className = `${base} bg-gray-100 text-gray-400 cursor-not-allowed`;
+                btn.textContent = 'Connect Wallet to Test';
+                btn.disabled = true;
+            }
+        }
+
+        async function refreshTestButtons() {
+            const btns = document.querySelectorAll('.test-call-btn');
+            if (!state.wallet) {
+                btns.forEach(b => setTestBtn(b, 'no-wallet'));
+                return;
+            }
+            btns.forEach(b => setTestBtn(b, 'loading'));
+            await Promise.all([...btns].map(async btn => {
+                const listing = btn.getAttribute('data-listing-addr');
+                try {
+                    const r = await fetch(`${GATEWAY_URL}/api/balance/${listing}/${state.wallet}`);
+                    const { balance } = await r.json();
+                    const n = Number(balance);
+                    setTestBtn(btn, n > 0 ? 'ready' : 'no-tokens', n);
+                } catch {
+                    setTestBtn(btn, 'no-wallet');
+                }
+            }));
+        }
 
         // Make the function reachable from inline onclick
         window.openMyTokensModal = openMyTokensModal;
@@ -1535,6 +1584,56 @@
                 price: btn.getAttribute('data-price'),
                 listingAddr: btn.getAttribute('data-listing-addr')
             });
+        });
+
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.test-call-btn');
+            if (!btn || btn.disabled) return;
+
+            const listingAddr = btn.getAttribute('data-listing-addr');
+            const testPath    = btn.getAttribute('data-test-path');
+
+            const base = 'test-call-btn w-full mt-3 py-2.5 rounded-xl text-sm font-bold transition-all';
+            btn.disabled  = true;
+            btn.className = `${base} bg-green-400 text-white`;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"><\/i> Calling\u2026';
+            
+            const win = window.open('', '_blank');
+            try {
+                const res = await fetch(`${GATEWAY_URL}/api/request`, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({
+                        listingAddress: listingAddr,
+                        walletAddress:  state.wallet,
+                        path:           testPath,
+                        method:         'GET'
+                    })
+                });
+                const payload = await res.json();
+                if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
+
+                const msg = payload?.data?.message;
+                if (typeof msg === 'string' && msg.startsWith('http')) {
+                    win.location.href = msg;
+                } else {
+                    win.document.write('<pre>' + JSON.stringify(payload.data, null, 2) + '<\/pre>');
+                }
+            } catch (err) {
+                console.error('Test call failed', err);
+                win.close();
+                alert(`Test call failed: ${err.message}`);
+            }
+
+            // Refresh counter regardless of outcome
+            try {
+                const r = await fetch(`${GATEWAY_URL}/api/balance/${listingAddr}/${state.wallet}`);
+                const { balance } = await r.json();
+                const n = Number(balance);
+                setTestBtn(btn, n > 0 ? 'ready' : 'no-tokens', n);
+            } catch {
+                setTestBtn(btn, 'no-tokens');
+            }
         });
 
         // Card click to open the description modal and purchase modal 

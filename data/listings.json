@@ -1,1 +1,9 @@
-{}
+{
+  "0xfd2ad4f016b22bdd6129f442157c7c0bcf2dd359": {
+    "endpoint": "https://dog.ceo/api",
+    "testPath": "/breeds/image/random",
+    "iconBg": "bg-amber-50 text-amber-600",
+    "category": "Misc",
+    "description": "Random dog image API. Serves images of 100+ breeds from the Dog CEO collection."
+  }
+}
