@@ -633,15 +633,12 @@
                 </div>
                 
                 <nav class="flex-1 p-5 overflow-y-auto">
-                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Main Menu</p>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Provider Menu</p>
                     <ul class="space-y-1.5" id="providerNav">
                         <li><a href="#dash-main" class="sidebar-active flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all font-bold text-sm hover:bg-gray-50"><i class="fa-solid fa-gauge w-5 text-center text-lg"></i>Dashboard</a></li>
                         <li><a href="#dash-publish" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-cloud-arrow-up w-5 text-center text-lg"></i>Publish API</a></li>
                         <li><a href="#dash-myapis" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-list w-5 text-center text-lg"></i>My APIs</a></li>
                         <li><a href="#dash-earnings" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-money-bill-transfer w-5 text-center text-lg"></i>Withdraw</a></li>
-                        <li><a href="#dash-notifications" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm relative">
-                            <i class="fa-solid fa-bell w-5 text-center text-lg"></i>Notifications
-                            <span id="unreadCountBadge" class="hidden absolute top-1/2 -translate-y-1/2 right-4 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
                         </a></li>
                         
                         <li class="pt-6 mt-4 border-t border-gray-100"><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Account</p></li>
@@ -669,10 +666,6 @@
                         <h2 class="text-2xl font-black text-gray-900 tracking-tight" id="dashHeaderTitle">Developer Console</h2>
                     </div>
                     <div class="flex items-center gap-6">
-                        <button onclick="showProviderSection('dash-notifications')" class="relative p-2 rounded-full hover:bg-gray-100 transition text-gray-500" aria-label="Open notifications">
-                            <i class="fa-solid fa-bell text-xl"></i>
-                            <span class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white hidden" id="headerUnreadDot"></span>
-                        </button>
                         <div class="h-8 w-px bg-gray-200"></div>
                         <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition group" onclick="showProviderSection('dash-profile')">
                             <div class="hidden md:block text-right">
@@ -686,8 +679,8 @@
 
                 <div class="p-6 md:p-10 max-w-7xl mx-auto w-full">
 
-                    <section id="dash-main" class="dash-section dash-active">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <section id="dash-main" class="dash-section dash-active h-screen flex items-center">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 w-full">
                             <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
                                 <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-code text-xl"></i></div><span class="text-xs font-bold text-green-600 bg-green-50 px-2.5 py-1 rounded-lg"><i class="fa-solid fa-arrow-up mr-1"></i>2</span></div>
                                 <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total APIs Active</p><h3 id="statApiActive" class="text-3xl font-black text-gray-900">-</h3></div>
@@ -704,38 +697,6 @@
                                 <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
                                 <div class="flex justify-between items-start mb-4 relative z-10"><div class="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center border border-white/10"><i class="fa-solid fa-wallet text-xl"></i></div><button onclick="showProviderSection('dash-earnings')" class="text-xs font-bold text-gray-300 hover:text-white hover:underline">Withdraw</button></div>
                                 <div class="relative z-10"><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Withdrawable Balance</p><h3 id="statWithdrawable" class="text-3xl font-black text-white">-</h3></div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm lg:col-span-2">
-                                <div class="flex justify-between items-center mb-8">
-                                    <h3 class="text-xl font-black text-gray-900">Earnings Trend</h3>
-                                    <select class="bg-gray-50 border border-gray-200 text-gray-600 text-sm font-bold rounded-lg px-3 py-1.5 outline-none focus:border-primary"><option>Last 30 Days</option><option>Last 7 Days</option></select>
-                                </div>
-                                <div class="h-72 w-full"><canvas id="earningsChart"></canvas></div>
-                            </div>
-
-                            <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col h-full">
-                                <div class="flex justify-between items-center mb-6"><h3 class="text-xl font-black text-gray-900">Live Activity</h3><span class="flex h-3 w-3 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span></div>
-                                <div class="space-y-4 overflow-y-auto flex-1 pr-2 hide-scrollbar">
-                                    <div class="flex gap-4 border-b border-gray-50 pb-4">
-                                        <div class="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid fa-check"></i></div>
-                                        <div class="flex-1"><div class="flex justify-between mb-1"><span class="font-bold text-sm text-gray-900">Wallet Risk API</span><span class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">2m ago</span></div><p class="text-textSub text-xs font-mono mb-1">0x123...456 • 0.01 USD</p></div>
-                                    </div>
-                                    <div class="flex gap-4 border-b border-gray-50 pb-4">
-                                        <div class="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid fa-check"></i></div>
-                                        <div class="flex-1"><div class="flex justify-between mb-1"><span class="font-bold text-sm text-gray-900">Contract Scan API</span><span class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">15m ago</span></div><p class="text-textSub text-xs font-mono mb-1">0x789...012 • 0.02 USD</p></div>
-                                    </div>
-                                    <div class="flex gap-4 border-b border-gray-50 pb-4">
-                                        <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid fa-xmark"></i></div>
-                                        <div class="flex-1"><div class="flex justify-between mb-1"><span class="font-bold text-sm text-gray-900">Wallet Risk API</span><span class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">1h ago</span></div><p class="text-red-400 text-xs font-mono mb-1">0x456...789 • Failed (Out of Gas)</p></div>
-                                    </div>
-                                    <div class="flex gap-4 pb-2">
-                                        <div class="w-10 h-10 rounded-full bg-green-50 text-green-500 flex items-center justify-center flex-shrink-0 text-sm"><i class="fa-solid fa-check"></i></div>
-                                        <div class="flex-1"><div class="flex justify-between mb-1"><span class="font-bold text-sm text-gray-900">NFT Metadata API</span><span class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">2h ago</span></div><p class="text-textSub text-xs font-mono mb-1">0x234...567 • 0.005 USD</p></div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </section>
@@ -759,8 +720,8 @@
                                 <div class="p-8 rounded-[2rem] border border-gray-100 bg-gray-50/50">
                                     <h4 class="font-black text-gray-900 mb-6 text-xl flex items-center gap-2"><i class="fa-solid fa-chart-line text-primary"></i> API Call Pricing</h4>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Base Price (wei) *</label><input id="curveBasePrice" type="number" step="0.001" min="0.001" value="0.01" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
-                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Max Capacity (Calls) *</label><input id="curveMaxCapacity" type="number" min="100" value="100000" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Base Price (wei) *</label><input id="curveBasePrice" type="number" step="0.001" min="0.001" value="1" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Max Capacity (Calls) *</label><input id="curveMaxCapacity" type="number" min="100" value="1000" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
                                     </div>
                                     
                                     <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
@@ -817,91 +778,6 @@
                                     </button>
                                 </div>
                             </form>
-                        </div>
-                    </section>
-
-                    <section id="dash-notifications" class="dash-section">
-                        <div class="bg-white p-8 md:p-10 rounded-[2rem] border border-gray-100 shadow-sm max-w-5xl mx-auto">
-                            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 pb-6 border-b border-gray-100">
-                                <div><h2 class="text-3xl font-black text-gray-900 tracking-tight">Notification Center</h2><p class="text-sm text-gray-500 font-medium mt-2">Review platform alerts, API spikes, and system messages.</p></div>
-                                <div class="flex items-center gap-4">
-                                    <span class="px-4 py-2 text-xs font-black bg-red-100 text-red-600 rounded-lg uppercase tracking-wider border border-red-200 shadow-sm" id="unreadCounterText">3 Unread</span>
-                                    <button id="markAllReadBtn" class="px-5 py-2 border border-gray-200 text-gray-600 rounded-lg font-bold text-sm hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm">Mark all read</button>
-                                </div>
-                            </div>
-                            
-                            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                                <div class="lg:col-span-3 space-y-4" id="notificationList">
-                                    
-                                    <article class="notification-item border border-blue-200 bg-gradient-to-r from-blue-50 to-white rounded-2xl p-6 cursor-pointer hover:shadow-md transition-all group" data-unread="true" data-title="Usage Spike Detected: Wallet Risk Assessment" data-time="10 minutes ago" data-detail="A new enterprise buyer cluster triggered 24 paid calls on your Wallet Risk Assessment API within the last 30 minutes. This is a 400% increase over your average traffic. You generated an estimated revenue increase of $12.40. Ensure your backend infrastructure can handle sustained loads.">
-                                        <div class="flex items-start justify-between gap-4">
-                                            <div class="flex gap-5">
-                                                <div class="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center flex-shrink-0 text-xl shadow-lg shadow-primary/30"><i class="fa-solid fa-chart-pie"></i></div>
-                                                <div>
-                                                    <div class="flex items-center gap-3 mb-1"><h3 class="font-black text-gray-900 text-lg group-hover:text-primary transition-colors">Usage Spike Detected</h3><span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-red-500 text-white rounded-md shadow-sm">New</span></div>
-                                                    <p class="text-sm text-gray-600 font-medium line-clamp-1">Wallet Risk Assessment API received 24 new calls in 30 mins...</p>
-                                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">10 minutes ago • System Alert</p>
-                                                </div>
-                                            </div>
-                                            <button class="notification-read-btn text-primary w-10 h-10 flex items-center justify-center rounded-full hover:bg-blue-100 transition-colors" title="Mark as read"><i class="fa-solid fa-check"></i></button>
-                                        </div>
-                                    </article>
-
-                                    <article class="notification-item border border-blue-200 bg-gradient-to-r from-blue-50 to-white rounded-2xl p-6 cursor-pointer hover:shadow-md transition-all group" data-unread="true" data-title="Withdrawal Successfully Processed" data-time="2 hours ago" data-detail="Your withdrawal request for $25.00 has been processed successfully on the Arbitrum network. The funds should now be visible in your connected wallet. Transaction hash: 0x123...456">
-                                        <div class="flex items-start justify-between gap-4">
-                                            <div class="flex gap-5">
-                                                <div class="w-12 h-12 rounded-2xl bg-success text-white flex items-center justify-center flex-shrink-0 text-xl shadow-lg shadow-success/30"><i class="fa-solid fa-sack-dollar"></i></div>
-                                                <div>
-                                                    <div class="flex items-center gap-3 mb-1"><h3 class="font-black text-gray-900 text-lg group-hover:text-primary transition-colors">Withdrawal Processed</h3><span class="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-red-500 text-white rounded-md shadow-sm">New</span></div>
-                                                    <p class="text-sm text-gray-600 font-medium line-clamp-1">Your $25.00 payout has been confirmed on-chain.</p>
-                                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">2 hours ago • Finance</p>
-                                                </div>
-                                            </div>
-                                            <button class="notification-read-btn text-primary w-10 h-10 flex items-center justify-center rounded-full hover:bg-blue-100 transition-colors" title="Mark as read"><i class="fa-solid fa-check"></i></button>
-                                        </div>
-                                    </article>
-
-                                    <article class="notification-item border border-gray-100 bg-white rounded-2xl p-6 cursor-pointer hover:bg-gray-50 hover:shadow-sm transition-all group" data-unread="false" data-title="Weekly Performance Summary" data-time="3 days ago" data-detail="Weekly summary: Your active APIs generated a total of 312 calls, reflecting an 18% increase week over week. Total revenue generated was $14.50. Check your dashboard for detailed demographic breakdowns.">
-                                        <div class="flex items-start justify-between gap-4">
-                                            <div class="flex gap-5">
-                                                <div class="w-12 h-12 rounded-2xl bg-gray-100 text-gray-500 flex items-center justify-center flex-shrink-0 text-xl"><i class="fa-solid fa-chart-line"></i></div>
-                                                <div>
-                                                    <h3 class="font-bold text-gray-600 text-lg mb-1 group-hover:text-gray-900 transition-colors">Weekly performance summary</h3>
-                                                    <p class="text-sm text-gray-500 font-medium line-clamp-1">Your APIs generated 312 calls this week, up 18%.</p>
-                                                    <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-3">3 days ago • Analytics</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </article>
-                                </div>
-                                
-                                <aside class="bg-gray-50 rounded-3xl p-6 border border-gray-100 h-max sticky top-6">
-                                    <h3 class="font-black text-gray-900 mb-6 text-sm uppercase tracking-widest">Filter By</h3>
-                                    <div class="space-y-2 text-sm font-bold text-gray-600">
-                                        <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white hover:text-primary transition-all border border-transparent hover:border-gray-200"><span>All messages</span><span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-md text-xs">7</span></button>
-                                        <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white hover:text-primary transition-all border border-transparent hover:border-gray-200"><span>Unread</span><span class="bg-red-100 text-red-600 px-2 py-0.5 rounded-md text-xs" id="unreadFilterNum">2</span></button>
-                                        <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white hover:text-primary transition-all border border-transparent hover:border-gray-200"><span>Finance</span><span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-md text-xs">2</span></button>
-                                        <button class="w-full flex items-center justify-between px-4 py-3 rounded-xl hover:bg-white hover:text-primary transition-all border border-transparent hover:border-gray-200"><span>System</span><span class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-md text-xs">1</span></button>
-                                    </div>
-                                </aside>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section id="dash-message-detail" class="dash-section">
-                        <div class="bg-white p-8 md:p-12 rounded-[2rem] border border-gray-100 shadow-sm max-w-4xl mx-auto min-h-[500px]">
-                            <div class="flex items-start justify-between gap-4 mb-8 border-b border-gray-100 pb-8">
-                                <div>
-                                    <p class="text-[10px] font-black text-primary uppercase tracking-widest mb-3 bg-primary/10 inline-block px-3 py-1 rounded-lg">Notification Detail</p>
-                                    <h2 id="messageDetailTitle" class="text-3xl font-black text-gray-900 tracking-tight">Message Title</h2>
-                                    <p id="messageDetailMeta" class="text-sm text-gray-400 font-bold mt-3"><i class="fa-regular fa-clock mr-1"></i> Message meta information</p>
-                                </div>
-                                <button id="backToNotificationsBtn" class="px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-white hover:shadow-sm transition-all font-bold text-gray-600 flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to List</button>
-                            </div>
-                            <div class="bg-blue-50/30 rounded-2xl p-8 border border-blue-100">
-                                <h3 class="font-black text-gray-900 mb-4 text-lg"><i class="fa-solid fa-envelope-open-text text-primary mr-2"></i> Message Content</h3>
-                                <p id="messageDetailBody" class="text-gray-700 leading-relaxed font-medium text-lg whitespace-pre-wrap"></p>
-                            </div>
                         </div>
                     </section>
 
@@ -1815,7 +1691,7 @@
             // Update Header Title based on section
             const titles = {
                 'dash-main': 'Developer Console', 'dash-publish': 'Publish API', 'dash-myapis': 'My APIs',
-                'dash-earnings': 'Earnings', 'dash-notifications': 'Notification Center', 
+                'dash-earnings': 'Earnings', 
                 'dash-message-detail': 'Message Details', 'dash-profile': 'My Profile', 'dash-settings': 'Settings'
             };
             if(document.getElementById('dashHeaderTitle')) {
@@ -1835,7 +1711,6 @@
             }
 
             // Init charts if needed
-            if(sectionId === 'dash-main') requestAnimationFrame(initDashboardChart);
             if(sectionId === 'dash-publish') requestAnimationFrame(initBondingCurveChart);
             
             document.getElementById('providerMainScroll').scrollTo(0,0);
@@ -1846,124 +1721,11 @@
         });
         document.querySelectorAll('.profile-nav-link').forEach(link => link.onclick = (e) => { e.preventDefault(); showProviderSection(link.getAttribute('href').substring(1)); });
 
-        /** NOTIFICATIONS & MESSAGE DETAIL */
-        const notificationItems = document.querySelectorAll('.notification-item');
+
+
         
-        function refreshUnreadCount() {
-            const unreadCount = document.querySelectorAll('.notification-item[data-unread="true"]').length;
-            const badge = document.getElementById('unreadCountBadge');
-            const headerDot = document.getElementById('headerUnreadDot');
-            const txt = document.getElementById('unreadCounterText');
-            const filter = document.getElementById('unreadFilterNum');
-            
-            if(badge) unreadCount > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
-            if(headerDot) unreadCount > 0 ? headerDot.classList.remove('hidden') : headerDot.classList.add('hidden');
-            if(txt) txt.innerText = `${unreadCount} Unread`;
-            if(filter) filter.innerText = unreadCount;
-        }
-
-        function markNotificationAsRead(item) {
-            item.setAttribute('data-unread', 'false');
-            item.classList.replace('bg-gradient-to-r', 'bg-white');
-            item.classList.remove('from-blue-50', 'to-white');
-            item.classList.replace('border-blue-200', 'border-gray-100');
-            item.classList.replace('hover:shadow-md', 'hover:shadow-sm');
-            item.classList.add('hover:bg-gray-50');
-            
-            // Remove 'New' badge
-            const newBadge = item.querySelector('.bg-red-500');
-            if(newBadge) newBadge.remove();
-            
-            // Change Icon colors to neutral
-            const primaryIcon = item.querySelector('.bg-primary');
-            if(primaryIcon) {
-                primaryIcon.classList.replace('bg-primary', 'bg-gray-100');
-                primaryIcon.classList.replace('text-white', 'text-gray-500');
-                primaryIcon.classList.remove('shadow-lg', 'shadow-primary/30');
-            }
-            const successIcon = item.querySelector('.bg-success');
-            if(successIcon) {
-                successIcon.classList.replace('bg-success', 'bg-gray-100');
-                successIcon.classList.replace('text-white', 'text-gray-500');
-                successIcon.classList.remove('shadow-lg', 'shadow-success/30');
-            }
-
-            // Remove read button
-            const readBtn = item.querySelector('.notification-read-btn');
-            if(readBtn) readBtn.remove();
-            
-            refreshUnreadCount();
-        }
-
-        function openMessageDetail(item) {
-            document.getElementById('messageDetailTitle').innerText = item.dataset.title || "Notification";
-            document.getElementById('messageDetailMeta').innerHTML = `<i class="fa-regular fa-clock mr-1"></i> ${item.dataset.time || ""}`;
-            document.getElementById('messageDetailBody').innerText = item.dataset.detail || "";
-            if(item.getAttribute('data-unread') === 'true') markNotificationAsRead(item);
-            showProviderSection('dash-message-detail', false); // false to keep 'Notifications' active in sidebar
-        }
-
-        notificationItems.forEach(item => {
-            item.addEventListener('click', (event) => {
-                if (event.target.closest('.notification-read-btn')) return;
-                openMessageDetail(item);
-            });
-
-            const button = item.querySelector('.notification-read-btn');
-            if (button) {
-                button.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    markNotificationAsRead(item);
-                });
-            }
-        });
-
-        document.getElementById('markAllReadBtn')?.addEventListener('click', () => {
-            notificationItems.forEach((item) => markNotificationAsRead(item));
-        });
-
-        document.getElementById('backToNotificationsBtn')?.addEventListener('click', () => showProviderSection('dash-notifications'));
-
-        /** CHARTS IMPLEMENTATION (Chart.js) */
-        let earningsChartInstance = null, bondingCurveChartInstance = null;
+        let bondingCurveChartInstance = null;
         
-        function initDashboardChart() {
-            const ctx = document.getElementById('earningsChart')?.getContext('2d');
-            if(!ctx) return;
-            if(earningsChartInstance) { earningsChartInstance.resize(); return; }
-            
-            earningsChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: { 
-                    labels: ['Day 1', 'Day 5', 'Day 10', 'Day 15', 'Day 20', 'Day 25', 'Day 30'], 
-                    datasets: [{ 
-                        label: 'Earnings (USDC)', 
-                        data: [10, 25, 18, 45, 38, 55, 89], 
-                        borderColor: '#5E6AD2', 
-                        backgroundColor: 'rgba(94, 106, 210, 0.15)', 
-                        fill: true, 
-                        tension: 0.4, 
-                        borderWidth: 4,
-                        pointBackgroundColor: '#fff',
-                        pointBorderColor: '#5E6AD2',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }] 
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } }, 
-                    scales: { 
-                        y: { grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false }, beginAtZero:true }, 
-                        x: { grid: { display: false, drawBorder: false } } 
-                    },
-                    interaction: { mode: 'index', intersect: false }
-                }
-            });
-        }
-
         // Create bonding curve chart that reflects bonding curves in solidity
         // Therefore, should be constant at basePrice for 90% of supply range and then 
         // follow 4x^3 up to capacity (as integral of 4x^3 is x**4 which was convenient for solidity)
@@ -1974,8 +1736,8 @@
             // Get params for the curve from webpage input:
             // basePrice => the constant price for the first 90% of the supply range
             // capacity => the maximum supply (for a given day)
-            const basePrice = parseFloat(document.getElementById('curveBasePrice').value || 0.01);
-            const capacity = parseInt(document.getElementById('curveMaxCapacity').value) || 100000;
+            const basePrice = parseFloat(document.getElementById('curveBasePrice').value || 1);
+            const capacity = parseInt(document.getElementById('curveMaxCapacity').value) || 1000;
             const stepPoint = Math.floor(capacity * 0.9);
 
             // Store x-axis (supply) values
@@ -2124,8 +1886,7 @@
                 else el.innerText = state.wallet ? `${state.wallet.slice(0,8)}...${state.wallet.slice(-6)}` : "Not Connected";
             });
 
-            // Ensure notifications count is accurate
-            refreshUnreadCount();
+            
         }
 
         // Create API listing through registry contract and ask metamask to confirm transaction
