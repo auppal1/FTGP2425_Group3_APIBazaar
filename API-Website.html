@@ -617,9 +617,24 @@
         </nav>
 
         <main class="flex-1 container mx-auto px-4 py-12 md:py-20 max-w-7xl animate-fade-in">
-            <div class="text-center mb-16">
-                <h2 class="text-5xl md:text-6xl font-black mb-6 text-gray-900 tracking-tight">Discover APIs</h2>
-                <p class="text-gray-500 mb-10 text-xl font-medium max-w-2xl mx-auto">Access powerful long-tail APIs instantly via smart contracts.</p>
+            <div class="text-center mb-10">
+                <h2 class="text-4xl md:text-5xl font-black mb-4 text-gray-900 tracking-tight">Discover APIs</h2>
+                <p class="text-gray-500 mb-8 text-xl font-medium max-w-2xl mx-auto">Access powerful long-tail APIs instantly via smart contracts.</p>
+                
+                
+                <div class="relative w-full max-w-3xl mx-auto group mb-8">
+                    <input type="text" id="searchInput" placeholder="Search APIs by name, provider, or tags..." class="w-full p-5 pl-14 bg-white border border-gray-200 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition text-lg font-medium text-gray-800" onkeyup="filterMarketplace()">
+                    <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl group-focus-within:text-primary transition"></i>
+                </div>
+
+                
+                <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2 px-2 justify-start md:justify-center" id="categoryFilters">
+                    <button class="filter-btn px-6 py-2.5 bg-gray-900 text-white rounded-full text-sm font-bold whitespace-nowrap shadow-md transition" onclick="setCategoryFilter(this, 'All')">All APIs</button>
+                    <button class="filter-btn px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-full text-sm font-bold hover:border-gray-400 hover:text-gray-900 whitespace-nowrap transition" onclick="setCategoryFilter(this, 'Web3')">⛓️ Web3 & DeFi</button>
+                    <button class="filter-btn px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-full text-sm font-bold hover:border-gray-400 hover:text-gray-900 whitespace-nowrap transition" onclick="setCategoryFilter(this, 'AI')">🤖 AI & ML</button>
+                    <button class="filter-btn px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-full text-sm font-bold hover:border-gray-400 hover:text-gray-900 whitespace-nowrap transition" onclick="setCategoryFilter(this, 'Data Analytics')">📊 Data Analytics</button>
+                    <button class="filter-btn px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-full text-sm font-bold hover:border-gray-400 hover:text-gray-900 whitespace-nowrap transition" onclick="setCategoryFilter(this, 'Utilities')">🛠️ Utilities</button>
+                </div>
             </div>
             <div id="apiCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div id="apiCardsEmpty" class="col-span-full text-center py-16 text-gray-400 font-bold">
@@ -921,6 +936,65 @@
             }
         };
 
+        /** BUYER PAGE FRONTEND FILTER LOGIC */
+        let currentCategory = 'All';
+
+        function setCategoryFilter(btn, category) {
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('bg-gray-900', 'text-white', 'shadow-md');
+                b.classList.add('bg-white', 'text-gray-600');
+            });
+            btn.classList.remove('bg-white', 'text-gray-600');
+            btn.classList.add('bg-gray-900', 'text-white', 'shadow-md');
+            
+            currentCategory = category;
+            filterMarketplace();
+        }
+
+        function filterMarketplace() {
+            const searchInput = document.getElementById('searchInput');
+            if(!searchInput) return;
+            
+            const query = searchInput.value.toLowerCase();
+            const cards = document.querySelectorAll('#apiCardsGrid > div.api-card'); 
+            
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = (card.getAttribute('data-name') || '').toLowerCase();
+                const provider = (card.getAttribute('data-provider') || '').toLowerCase();
+                const category = card.getAttribute('data-category') || '';
+                
+                const matchesQuery = name.includes(query) || provider.includes(query);
+                const matchesCategory = currentCategory === 'All' || category.includes(currentCategory);
+
+                if (matchesQuery && matchesCategory) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Handle empty state
+            let emptyMsg = document.getElementById('apiCardsEmptyMessage');
+            if(visibleCount === 0 && cards.length > 0) {
+                if(!emptyMsg) {
+                    emptyMsg = document.createElement('div');
+                    emptyMsg.id = 'apiCardsEmptyMessage';
+                    emptyMsg.className = 'col-span-full text-center py-16 text-gray-500 font-bold text-lg';
+                    emptyMsg.innerHTML = '<i class="fa-solid fa-ghost text-3xl mb-3 block"></i> No APIs found matching your criteria.';
+                    document.getElementById('apiCardsGrid').appendChild(emptyMsg);
+                }
+                emptyMsg.style.display = 'block';
+            } else if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
+        }
+
+        window.setCategoryFilter = setCategoryFilter;
+        window.filterMarketplace = filterMarketplace;
+
         /** ROUTING & MODALS */
         function switchView(viewId) {
             document.querySelectorAll('.view-section').forEach(v => v.classList.remove('view-active', 'view-flex-active'));
@@ -1089,8 +1163,8 @@
                 ? `<div class="absolute top-0 right-0 ${meta.badgeStyle || 'bg-primary/10 text-primary'} text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">${meta.badge}</div>`
                 : "";
             return `
-                <div class="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group overflow-hidden">
-                    ${badgeHTML}
+                <div class="api-card bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group overflow-hidden"
+                     data-name="${name}" data-provider="${providerAddr.slice(0,6)}" data-category="${meta.category || 'Misc'}">
                     <div class="flex justify-between items-start mb-6">
                         <div class="w-16 h-16 ${meta.iconBg || 'bg-gray-100 text-gray-600'} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                             <i class="fa-solid ${meta.icon || 'fa-cube'} text-3xl"></i>
@@ -1173,6 +1247,7 @@
                     })
                     .join("");
                     refreshTestButtons();
+                    filterMarketplace();
             } catch (err) {
                 console.error("renderListings failed", err);
                 grid.innerHTML = `<div class="col-span-full text-center py-16 text-red-500 font-bold">
