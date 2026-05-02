@@ -5,5 +5,16 @@
     "iconBg": "bg-amber-50 text-amber-600",
     "category": "Misc",
     "description": "Random dog image API. Serves images of 100+ breeds from the Dog CEO collection."
+  },
+  "0x8577a5f68ebfff63d77cc1c39fe5019d1ba8fdca": {
+    "name": "Joke API",
+    "description": "jokes !!",
+    "category": "Utilities",
+    "icon": "fa-screwdriver-wrench",
+    "iconBg": "bg-gray-100 text-gray-600",
+    "badge": "New",
+    "badgeStyle": "bg-primary/10 text-primary",
+    "endpoint": "https://official-joke-api.appspot.com/random_joke",
+    "listingAddress": "0x8577A5f68ebfff63d77cc1c39FE5019d1BA8fdca"
   }
 }
