@@ -1154,7 +1154,7 @@
             "crypto social sentiment": { provider: "provider2", path: "/sentiment"  }
         };
 
-        const GATEWAY_URL = "http://localhost:5000";
+        const GATEWAY_URL = "http://localhost:3000";
 
         // Build one card's HTML from on-chain data + metadata
         function buildCardHTML({ address, name, providerAddr, basePriceWei }, meta) {
@@ -2196,15 +2196,26 @@
                         body: JSON.stringify({
                             listingAddress,
                             name,
+                            endpoint,
                             description,
                             ...visual,
                             badge:      "New",
                             badgeStyle: "bg-primary/10 text-primary"
                         })
                     });
+                    if (!metaRes.ok) {
+                        const errBody = await metaRes.json().catch(() => ({}));
+                        throw new Error(errBody.error || `Gateway returned HTTP ${metaRes.status}`);
+                    }
                     console.log('Metadata POST →', metaRes.status, await metaRes.json());
                 } catch (metaErr) {
-                    console.warn('Failed to save metadata (listing still on-chain):', metaErr);
+                    console.error('Failed to save metadata (listing still on-chain):', metaErr);
+                    alert(
+                        `⚠️ Your API was deployed on-chain but failed to register with the gateway.\n\n` +
+                        `Listing Address: ${listingAddress}\n` +
+                        `Error: ${metaErr.message}\n\n` +
+                        `Please note this address and contact support, or re-submit the form.`
+                    );
                 }
 
                 // Show success state
