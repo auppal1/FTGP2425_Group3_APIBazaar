@@ -227,13 +227,15 @@ contract APIListing {
         uint256 day = currentDay();
         uint256 S = supplyByDay[day];
 
+        // Initialise purchase price variable
+        uint256 purchasePrice;
+
         // Get active parameters, to accomodate for parameter changes that have just come into effect
         (uint256 activeCapacity, uint256 activeBasePrice) = getActiveParameters();
 
         // Validate inputs
         require(amount > 0 && amount <= activeCapacity, "Invalid Amount");
-        require(S + amount < activeCapacity, "Amount breaches capacity");
-        uint256 purchasePrice;
+        require(S + amount <= activeCapacity, "Amount breaches capacity");
 
         // Calculate price for requested number of tokens
 
@@ -280,6 +282,8 @@ contract APIListing {
         // Initialise current day and supply variables 
         uint256 day = currentDay();
         uint256 S = supplyByDay[day];
+
+        // Initialise sale price variable
         uint256 salePrice;
 
         // Get active parameters, to accomodate for parameter changes that have just come into effect
@@ -300,7 +304,7 @@ contract APIListing {
             salePrice = activeBasePrice * amount;
         }
         else if (S - amount >= stepPoint) {
-            // sale entire follows cubic portion of curve
+            // sale entirely follows cubic portion of curve
             uint256 curveValueBefore = (S - stepPoint)**4;  // cumulative cubic portion before sale
             uint256 curveValueAfter = (S - amount - stepPoint)**4;  // cumulative cubic portion after sale
             uint256 nonLinearContribution = curveValueBefore - curveValueAfter;
@@ -364,8 +368,7 @@ contract APIListing {
         }
         return true;     
     }
-    
-    // TODO: Decide whether to burn at constant rate to stop people speculative trading the token
+
     // Function to burn/enable selling of tokens
     function sellTokens(uint256 amount) public returns (bool) {
 
@@ -407,7 +410,8 @@ contract APIListing {
     }
 
     // Function for consuming tokens when API call has been accepted
-    // Should only be called by the owner of contract (or API gateway), to prevent users consuming other users' tokens
+    // Should only be called by the owner of contract (or API gateway),
+    // to prevent users consuming other users' tokens
     function consumeTokens (address user, uint256 amount) external returns (bool) {
 
         // Ensure contract has not been terminated:
@@ -453,6 +457,8 @@ contract APIListing {
         return true;
     }
 
+    // Function to enable a user to withdraw, eg. after they have sold their tokens
+    // and received the credits
     function withdraw() external returns (bool) {
 
         // Process day rollover logic before continuing
