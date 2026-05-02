@@ -17,11 +17,13 @@ function loadMetadata() {
 function saveMetadata(data) {
     fs.mkdirSync(pathLib.dirname(METADATA_FILE), { recursive: true });
     fs.writeFileSync(METADATA_FILE, JSON.stringify(data, null, 2));
+    console.log('[saveMetadata] Written to:', METADATA_FILE, '| Keys:', Object.keys(data).length); 
 }
 
 // Save (or update) a single listing's metadata after it's been deployed
 router.post('/metadata', (req, res) => {
     const { listingAddress, endpoint, ...meta } = req.body;
+    console.log('[POST /metadata] Received:', { listingAddress, endpoint }); // ← ADD
     if (!listingAddress) return res.status(400).json({ error: 'listingAddress required' });
     if (!endpoint || !/^https?:\/\//.test(endpoint)) {
         return res.status(400).json({ error: 'valid endpoint URL required' });
@@ -128,6 +130,7 @@ router.get('/balance/:listingAddress/:walletAddress', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // TEMPORARY TEST ROUTE — remove before production!
 router.get('/admin/settle', async (req, res) => {
