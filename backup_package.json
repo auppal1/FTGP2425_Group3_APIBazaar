@@ -22,6 +22,10 @@
   "scripts": {
     "test": "yarn hardhat test",
     "localtest": "yarn hardhat test --network localhost",
+    "platformtest": "yarn hardhat test ./test/test-platform.js",
+    "localplatformtest": "yarn hardhat test ./test/test-platform.js --network localhost",
+    "listtest": "yarn hardhat test ./test/test-listing.js",
+    "locallisttest": "yarn hardhat test ./test/test-listing.js --network localhost",
     "deploy": "yarn hardhat run ./scripts/deploy.js",
     "localdeploy": "yarn hardhat run ./scripts/deploy.js --network localhost",
     "accounts": "yarn hardhat accounts"

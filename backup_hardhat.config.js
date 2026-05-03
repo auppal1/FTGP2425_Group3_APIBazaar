@@ -1,5 +1,4 @@
 require("@nomicfoundation/hardhat-toolbox");
-require("hardhat-deploy");
 
 
 // A hardhat task to list available hardhat 'fake' accounts 
@@ -50,13 +49,14 @@ module.exports = {
 
   // named accounts added to enable deployment from specific accounts/wallet addresses
   namedAccounts: {
-    deployer: {
+    registryOwner: {
       default: 0,
-      // when deploying on hardhat network use account 1
-      31337: 1,
+      // when deploying on hardhat network use account 0
+      31337: 0,
     },
-    user: {
-      default: 2,
+    treasuryOwner: {
+      default: 1,
+      31337: 1,
     }
   },
 };
