@@ -19,3 +19,4 @@ package.json
 .deps/
 gas-report.txt
 deployments
+.vercel
