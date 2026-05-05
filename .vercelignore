@@ -1,0 +1,16 @@
+server.js
+routes/
+config/
+middleware/
+jobs/
+data/
+contracts/
+scripts/
+test/
+jupyter_notebooks/
+reference_code/
+backup_package.json
+backup_hardhat.config.js
+.env
+.env.example
+node_modules
