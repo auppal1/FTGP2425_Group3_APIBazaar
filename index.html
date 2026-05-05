@@ -1,0 +1,2549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Bazaar - The Web3 API Marketplace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5E6AD2', secondary: '#165DFF', dark: '#2D3748', light: '#F5F7FA',
+                        success: '#10B981', warning: '#F59E0B', danger: '#EF4444', textMain: '#1A202C', textSub: '#718096'
+                    },
+                    fontFamily: { inter: ['Inter', 'system-ui', 'sans-serif'] },
+                    animation: { 
+                        'fade-in': 'fadeIn 0.5s ease-in-out', 
+                        'float': 'float 4s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.6s ease-out'
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-15px)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .curve-visual { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: dash 3s ease-out forwards; }
+            @keyframes dash { to { stroke-dashoffset: 0; } }
+            .nav-scrolled { @apply bg-white/95 shadow-md py-3 backdrop-blur-lg border-b border-gray-100; }
+            .sidebar-active { @apply bg-primary/10 text-primary border-r-4 border-primary font-black; }
+            .form-input-focus { @apply ring-2 ring-primary/30 border-primary outline-none transition-all; }
+            .modal-active { @apply opacity-100 visible pointer-events-auto scale-100; }
+            .view-section { display: none; }
+            .view-active { display: block; animation: fadeIn 0.4s ease-out; }
+            .view-flex-active { display: flex; animation: fadeIn 0.4s ease-out; }
+            .dash-section { display: none; }
+            .dash-active { display: block; animation: slideUp 0.4s ease-out; }
+            .hide-scrollbar::-webkit-scrollbar { display: none; }
+            .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            /* Smooth scrolling for anchor links */
+            html { scroll-behavior: smooth; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-gray-50 text-textMain antialiased overflow-x-hidden selection:bg-primary/30 selection:text-primary">
+
+    <div id="authModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] w-full max-w-md p-8 relative shadow-2xl transform transition-all duration-300 scale-95 modal-content">
+            <button onclick="closeModal('authModal')" class="absolute top-6 right-6 text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex border-b border-gray-100 mb-8">
+                <button id="loginTab" class="px-6 py-4 font-black border-b-2 border-primary text-primary text-lg transition-colors">Login</button>
+                <button id="registerTab" class="px-6 py-4 font-bold text-gray-400 hover:text-gray-600 text-lg transition-colors border-b-2 border-transparent">Register</button>
+            </div>
+            
+            <form id="loginForm" class="space-y-6 animate-fade-in">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
+                    <div class="relative">
+                        <i class="fa-regular fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="email" id="loginEmail" placeholder="you@example.com" required class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:form-input-focus transition">
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="block text-sm font-bold text-gray-700">Password</label>
+                        <a href="#" class="text-xs font-bold text-primary hover:underline">Forgot?</a>
+                    </div>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <input type="password" id="loginPwd" placeholder="••••••••" required class="w-full pl-11 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:form-input-focus transition">
+                    </div>
+                </div>
+                <button type="submit" class="w-full py-4 bg-primary text-white rounded-xl font-black text-lg hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all active:scale-[0.98]">Enter Platform</button>
+            </form>
+
+            <form id="registerForm" class="hidden space-y-5 animate-fade-in">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">I want to join as a:</label>
+                    <div class="flex gap-2 p-1.5 bg-gray-100 rounded-xl">
+                        <button type="button" id="regRoleProvider" class="flex-1 py-3 rounded-lg bg-white shadow-sm font-black text-primary transition-all">API Provider</button>
+                        <button type="button" id="regRoleBuyer" class="flex-1 py-3 rounded-lg font-bold text-gray-500 hover:text-gray-800 transition-all">API Buyer</button>
+                    </div>
+                </div>
+                <div>
+                    <input type="text" id="regUsername" placeholder="Display Name" required class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:form-input-focus transition">
+                </div>
+                <div>
+                    <input type="email" id="regEmail" placeholder="Email Address" required class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:form-input-focus transition">
+                </div>
+                <div>
+                    <input type="password" id="regPwd" placeholder="Create Password" required class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:form-input-focus transition">
+                </div>
+                <button type="submit" class="w-full py-4 bg-gray-900 text-white rounded-xl font-black text-lg hover:bg-black hover:shadow-xl transition-all active:scale-[0.98]">Create Account</button>
+                <p class="text-xs text-center text-gray-400 mt-4">By registering, you agree to our Terms of Service.</p>
+            </form>
+        </div>
+    </div>
+
+    <div id="walletModal" class="fixed inset-0 z-[120] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] shadow-2xl w-full max-w-sm overflow-hidden relative modal-content transform scale-95 transition-all duration-300">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+                <h3 class="font-black text-xl text-gray-900">Connect Wallet</h3>
+                <button onclick="closeModal('walletModal')" class="text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-6 space-y-4 bg-gray-50/50">
+                <button id="connectMetamask" class="w-full flex items-center justify-between p-4 bg-white border border-gray-200 rounded-2xl hover:border-blue-300 hover:shadow-md transition-all group">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"><span class="text-2xl">🦊</span></div>
+                        <span class="font-black text-gray-800 text-lg">MetaMask</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-gray-300 group-hover:text-blue-500 transition"></i>
+                </button>
+                <button class="w-full flex items-center justify-between p-4 bg-white border border-gray-200 rounded-2xl opacity-50 cursor-not-allowed">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center"><span class="text-2xl">🔗</span></div>
+                        <span class="font-black text-gray-500 text-lg">WalletConnect</span>
+                    </div>
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-wider bg-gray-100 px-2 py-1 rounded">Soon</span>
+                </button>
+            </div>
+            <div class="p-5 bg-white text-center text-xs font-medium text-gray-400 border-t border-gray-100">
+                New to Web3? <a href="#" class="text-primary hover:underline font-bold">Learn about wallets</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="purchaseModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl relative overflow-hidden modal-content transform scale-95 transition-all duration-300">
+            <div class="bg-gray-900 p-8 text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                <button onclick="closeModal('purchaseModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white transition w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <div class="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 text-white text-3xl shadow-inner backdrop-blur-sm border border-white/10"><i class="fa-solid fa-file-signature"></i></div>
+                <h3 class="text-white font-black text-2xl tracking-tight">Confirm Purchase</h3>
+                <p class="text-gray-400 text-sm mt-1 font-medium">Sign transaction to generate API keys</p>
+            </div>
+            <div class="p-8 bg-gray-50">
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 mb-6 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-gray-500 font-bold text-sm">API Name</span>
+                        <span id="buyApiName" class="font-black text-gray-900">-</span>
+                    </div>
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-gray-500 font-bold text-sm">Provider</span>
+                        <span id="buyApiProvider" class="font-bold text-gray-700">-</span>
+                    </div>
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-gray-500 font-bold text-sm">Price per call</span>
+                        <div class="text-right">
+                            <span id="buyApiPrice" class="font-black text-primary text-lg block">-</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <label for="buyAmountInput" class="text-gray-500 font-bold text-sm">No. of Calls</label>
+                        <input id="buyAmountInput" type="number" min="1" value="1"
+                            class="w-24 text-right font-mono font-black text-gray-900 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition">
+                    </div>
+
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-gray-500 font-bold text-sm">Total Cost (on-chain)</span>
+                        <div class="text-right">
+                            <span id="buyTotalCost" class="font-black text-gray-900 text-sm font-mono">-</span>
+                            <span class="text-xs font-bold text-gray-400 block">Wei</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pb-3 border-b border-gray-50">
+                        <span class="text-gray-500 font-bold text-sm">Your Balance (today)</span>
+                        <span id="buyCurrentBalance" class="font-bold text-gray-600 text-sm font-mono">-</span>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 font-bold text-sm">Network Gas</span>
+                        <span class="font-mono text-gray-900 text-sm font-bold bg-gray-100 px-2 py-0.5 rounded">~0.0005 ETH</span>
+                    </div>
+                </div>
+
+                <p id="buyPriceStatus" class="text-xs text-center text-gray-400 font-medium mb-4 min-h-[1rem]"></p>
+
+                <button id="confirmPurchaseBtn" class="w-full py-4 bg-primary text-white rounded-xl font-black text-lg hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98] mb-3">
+                    <i class="fa-solid fa-fingerprint"></i> Authorize Transaction
+                </button>
+
+                <button id="sellBackBtn" class="w-full py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:border-red-300 hover:text-red-600 hover:bg-red-50 transition-all items-center justify-center gap-2 hidden">
+                    <i class="fa-solid fa-rotate-left"></i> Sell Back Tokens
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="editProfileModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] w-full max-w-2xl p-8 md:p-10 relative shadow-2xl max-h-[90vh] overflow-y-auto modal-content transform scale-95 transition-all duration-300">
+            <button onclick="closeModal('editProfileModal')" class="absolute top-6 right-6 text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 w-10 h-10 rounded-full flex items-center justify-center transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h2 class="text-3xl font-black mb-8 text-gray-900 tracking-tight">Edit Profile</h2>
+            <form id="editProfileForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div><label class="block text-sm font-bold text-gray-700 mb-2">Full Name</label><input id="editFullName" type="text" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus transition"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-2">Developer ID</label><input id="editDeveloperId" type="text" readonly class="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 font-mono text-sm cursor-not-allowed"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-2">Username (Handle)</label><input id="editUsername" type="text" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus transition"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-2">Role/Title</label><input id="editRole" type="text" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus transition"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-2">Email Address</label><input id="editEmail" type="email" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus transition"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-2">Location</label><input id="editLocation" type="text" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus transition"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-2">Specialties</label><input id="editSpecialties" type="text" placeholder="e.g. Web3, DeFi, AI" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus transition"></div>
+                <div><label class="block text-sm font-bold text-gray-700 mb-2">Languages</label><input id="editLanguages" type="text" placeholder="e.g. Rust, Go, TypeScript" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus transition"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-2">About Me</label><textarea id="editAbout" rows="4" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus transition resize-none"></textarea></div>
+                
+                <div class="md:col-span-2 flex justify-end gap-4 mt-6 pt-6 border-t border-gray-100">
+                    <button type="button" onclick="closeModal('editProfileModal')" class="px-8 py-3.5 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition">Cancel</button>
+                    <button type="submit" class="px-8 py-3.5 bg-gray-900 text-white font-black rounded-xl hover:bg-black transition shadow-lg hover:shadow-xl active:scale-[0.98]">Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!--Edit params modal => shows when buyer clicks edit paarams in my apis page -->
+    <div id="editParamsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 opacity-0 invisible pointer-events-none transition-all duration-300">
+        <div class="bg-white rounded-[2rem] w-full max-w-md p-8 relative modal-content">
+            <button onclick="closeModal('editParamsModal')" class="absolute top-3 right-3 text-gray-500">X</button>
+            <h2 class="text-xl font-black mb-2">Edit Listing Parameters</h2>
+            <p class="text-xs text-gray-500 mb-4">Changes take effect at the start of the next day.</p>
+            <p id="editParamsAddr" class="text-[10px] font-mono text-gray-400 break-all mb-4">-</p>
+            <div class="mb-4">
+                <label class="block text-sm font-bold mb-1">New Base Price (Wei)</label>
+                <input id="editParamsPrice" type="number" min="1" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-xl"/>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-bold mb-1">New Capacity (Calls / day)</label>
+                <input id="editParamsCapacity" type="number" min="1" step="1" class="w-full px-3 py-2 border border-gray-300 rounded-xl"/>
+            </div>
+            <div class="flex justify-end gap-3 mt-4">
+                <button onclick="closeModal('editParamsModal')" class="px-4 py-2 border border-gray-300 rounded-xl">Cancel</button>
+                <button id="confirmEditParamsBtn" class="px-4 py-2 bg-green-100 border border-gray-300 text-gray-900 rounded-xl">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="myTokensModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl relative overflow-hidden modal-content transform scale-95 transition-all duration-300 max-h-[85vh] flex flex-col">
+            <div class="bg-gray-900 p-6 text-white relative overflow-hidden flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner backdrop-blur-sm border border-white/10"><i class="fa-solid fa-coins"></i></div>
+                    <div>
+                        <h3 class="font-black text-xl tracking-tight">My Tokens</h3>
+                        <p class="text-gray-400 text-xs font-medium">Today's API call balances across every listing</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('myTokensModal')" class="text-gray-400 hover:text-white transition w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="myTokensBody" class="p-6 bg-gray-50 overflow-y-auto flex-1">
+                <div class="text-center py-12 text-gray-400 font-bold">
+                    <i class="fa-solid fa-spinner animate-spin mr-2"></i>Loading your balances…
+                </div>
+            </div>
+            <div class="p-4 bg-white border-t border-gray-100 text-center text-xs font-medium text-gray-400">
+                Balances reset daily at 00:00 UTC. Unused tokens can be sold back for ETH.
+            </div>
+        </div>
+    </div>
+
+    <!--Details modal => shows when buyer clicks view and purchase and shows information about the listing i.e, -->
+    <!--parmas, terminations, description etc. etc. -->
+    <!--Uses the similar formatting as the 'myTokensModal' above ^^^ -->
+    <div id="detailsModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-gray-900/60 opacity-0 invisible pointer-events-none transition-all duration-300 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] w-full max-w-xl shadow-2xl relative overflow-hidden modal-content transform scale-95 transition-all duration-300 max-h-[90vh] flex flex-col">
+    
+            <!-- Header -->
+            <div class="bg-gray-900 p-6 text-white relative overflow-hidden flex justify-between items-start gap-3">
+                <div class="flex items-start gap-4 min-w-0">
+                    <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner backdrop-blur-sm border border-white/10 flex-shrink-0"><i class="fa-solid fa-circle-info"></i></div>
+                    <div>
+                        <h3 id="detailsName" class="font-black text-xl tracking-tight truncate">API Details</h3>
+                        <p id="detailsCategory" class="text-gray-400 text-xs font-medium truncate">-</p>
+                    </div>
+                </div>
+                <button onclick="closeModal('detailsModal')" class="text-gray-400 hover:text-white transition w-8 h-8 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 bg-gray-50 overflow-y-auto flex-1 space-y-4">
+                <!-- Description (taken from off-chain metadata) -->
+                <div class="bg-white rounded-2xl border border-gray-100 p-5">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Description</p>
+                    <p id="detailsDescription" class="text-sm font-medium text-gray-700 leading-relaxed">-</p>
+                </div>
+                <!-- Provider address -->
+                <div class="bg-white rounded-2xl border border-gray-100 p-5 space-y-3">
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Provider</p>
+                        <p id="detailsProviderAddr" class="text-xs font-mono text-gray-700 break-all">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Contract Address</p>
+                        <p id="detailsContractAddr" class="text-xs font-mono text-gray-700 break-all">-</p>
+                    </div>                    
+                </div>
+                <!-- Active parameters -->
+                <div class="bg-white rounded-2xl border border-gray-100 p-5">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Active Parameters</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Base Price</p>
+                            <p id="detailsBasePrice" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                            <p class="text-[10px] font-bold text-gray-400">Wei</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Capacity</p>
+                            <p id="detailsCapacity" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                            <p class="text-[10px] font-bold text-gray-400">Calls / day</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Supply Today</p>
+                            <p id="detailsSupply" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                            <p class="text-[10px] font-bold text-gray-400">Minted today</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Pending parameter changes (only shown when actually pending) -->
+                <div id="detailsPendingParamsBox" class="bg-yellow-50 rounded-2xl border border-yellow-200 p-5 hidden">
+                    <p class="text-[10px] font-black text-yellow-700 uppercase tracking-widest mb-3"><i class="fa-solid fa-clock mr-1"></i> Pending Parameter Change</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <p class="text-[10px] font-bold text-yellow-700 uppercase">New Base Price</p>
+                            <p id="detailsPendingBasePrice" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-yellow-700 uppercase">New Capacity</p>
+                            <p id="detailsPendingCapacity" class="font-black text-gray-900 text-sm font-mono break-all">-</p>
+                        </div>
+                    </div>
+                    <p id="detailsPendingParamsWhen" class="text-[11px] font-medium text-yellow-700 mt-3">-</p>
+                </div>
+                <!-- Termination box (only shown if terminated or termination queued) -->
+                <div id="detailsTerminationBox" class="bg-red-50 rounded-2xl border border-red-200 p-5 hidden">
+                    <p class="text-[10px] font-black text-red-700 uppercase tracking-widest mb-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Termination Status</p>
+                    <p id="detailsTerminationText" class="text-sm font-bold text-red-700">-</p>
+                </div>
+            </div>
+            <div class="p-4 bg-white border-t border-gray-100 flex justify-end gap-3">
+                <button onclick="closeModal('detailsModal')" class="px-5 py-3 border-2 border-gray-200 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition">Close</button>
+                <button id="detailsPurchaseBtn" class="px-6 py-3 bg-primary text-white rounded-xl font-black hover:bg-primary/90 hover:shadow-lg transition-all flex items-center gap-2 active:scale-[0.98]"><i class="fa-solid fa-cart-shopping"></i> Purchase Tokens</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="view-home" class="view-section view-active bg-white">
+        <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 py-5 bg-white/80 backdrop-blur-md">
+            <div class="container mx-auto px-6 md:px-10 max-w-7xl flex justify-between items-center">
+                <button onclick="switchView('view-home')" class="flex items-center gap-3 hover:opacity-80 transition group" aria-label="API Bazaar home">
+                    <div class="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center text-xl shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform"><i class="fa-solid fa-cubes"></i></div>
+                    <span class="text-2xl font-black tracking-tight text-gray-900">API Bazaar</span>
+                </button>
+                
+                <div class="hidden lg:flex items-center gap-10 font-bold text-gray-600">
+                    <a href="#how-it-works" class="hover:text-primary transition-colors">How it Works</a>
+                    <a href="#values" class="hover:text-primary transition-colors">Why Web3</a>
+                    <a href="#faq" class="hover:text-primary transition-colors">FAQs</a>
+                    <button onclick="switchView('view-buyer')" class="hover:text-primary transition-colors flex items-center gap-2"><i class="fa-solid fa-store"></i> Marketplace</button>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <button id="navLoginBtn" class="hidden md:block px-6 py-2.5 text-gray-600 font-bold hover:text-primary transition-colors">Login</button>
+                    <button class="btn-open-wallet px-6 py-2.5 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-colors flex items-center gap-2 shadow-lg hover:shadow-xl">
+                        <i class="fa-solid fa-wallet"></i>
+                        <span class="wallet-status-text">Connect Wallet</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <section class="pt-40 pb-24 md:pt-48 md:pb-32 bg-light relative overflow-hidden">
+            <div class="container mx-auto px-6 md:px-10 max-w-7xl flex flex-col lg:flex-row items-center gap-16 relative z-10">
+                <div class="lg:w-1/2 animate-fade-in text-center lg:text-left">
+                    <h1 class="text-5xl md:text-6xl lg:text-[4.5rem] font-black leading-[1.1] mb-6 text-gray-900 tracking-tight">
+                        The Long-Tail <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-purple-600">API Marketplace</span>
+                    </h1>
+                    <p class="text-lg md:text-xl text-textSub mb-10 max-w-2xl mx-auto lg:mx-0 font-medium leading-relaxed">
+                        Built for indie developers and niche data providers. Transparent pricing via on-chain bonding curves, pay-as-you-go access, and instant crypto settlements.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
+                        <button onclick="handleProtectedRoute('view-provider')" class="px-8 py-4 bg-primary text-white rounded-xl shadow-xl shadow-primary/20 hover:-translate-y-1 transition-transform text-lg font-black flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-cloud-arrow-up text-xl"></i> Publish Your API
+                        </button>
+                        <button onclick="switchView('view-buyer')" class="px-8 py-4 border-2 border-gray-200 bg-white text-gray-800 rounded-xl hover:border-gray-900 hover:text-gray-900 hover:shadow-lg transition-all text-lg font-black flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-magnifying-glass text-xl"></i> Explore APIs
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-center lg:justify-start gap-6 text-sm font-bold text-gray-400 uppercase tracking-wider">
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-check text-success"></i> No Nasty Subscriptions</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-check text-success"></i> No Unfair Comission</div>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2 w-full max-w-lg mx-auto lg:max-w-none relative animate-float">
+                    <div class="w-full aspect-[4/3] relative rounded-[2rem] overflow-hidden shadow-2xl">
+                        <img
+                            src="./assets/camel_logo.jpg" class="absolute top-0 right-[0%] w-[110%] h-[110%]  max-w-none object-cover">
+                    </div>
+                </div>
+
+            
+            <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-[100px] -z-10 pointer-events-none"></div>
+        </section>
+
+        <div class="bg-gray-900 py-10 border-y border-gray-800">
+            <div class="container mx-auto px-6 max-w-7xl">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-gray-800">
+                    <div class="text-center px-4"><h4 class="text-3xl md:text-4xl font-black text-white mb-1">LOW FEES</h4><p class="text-gray-400 font-bold text-sm uppercase tracking-wider">Only 5% comission + gas</p></div>
+                    <div class="text-center px-4"><h4 class="text-3xl md:text-4xl font-black text-white mb-1">EASY SETUP</h4><p class="text-gray-400 font-bold text-sm uppercase tracking-wider">Choose two params and go!</p></div>
+                    <div class="text-center px-4"><h4 class="text-3xl md:text-4xl font-black text-white mb-1">SECURE</h4><p class="text-gray-400 font-bold text-sm uppercase tracking-wider">Chain verified calls</p></div>
+                    <div class="text-center px-4"><h4 class="text-3xl md:text-4xl font-black text-white mb-1">SEAMLESS</h4><p class="text-gray-400 font-bold text-sm uppercase tracking-wider">Buy a token and make a call</p></div>
+                </div>
+            </div>
+        </div>
+
+        <section id="how-it-works" class="py-24 bg-white">
+            <div class="container mx-auto px-6 max-w-7xl">
+                <div class="text-center mb-16 max-w-3xl mx-auto">
+                    <h2 class="text-sm font-black text-primary uppercase tracking-widest mb-3">Workflow</h2>
+                    <h3 class="text-4xl font-black text-gray-900 mb-6">How API Bazaar Works</h3>
+                    <p class="text-gray-500 text-lg font-medium">A marketplace built for the niche, by the niche. A home for developers to expose their greatest creations, and buyers to put them to use.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative">
+                    <div class="hidden md:block absolute top-24 left-[15%] right-[15%] h-1 bg-gradient-to-r from-blue-100 via-primary/20 to-purple-100 -z-10"></div>
+                    
+                    <div class="relative bg-white pt-8 px-6 text-center">
+                        <div class="w-25 h-20 mx-auto bg-blue-50 border-4 border-white shadow-xl rounded-2xl flex items-center justify-center text-primary text-3xl mb-8 font-black">Sell</div>
+                        <h4 class="text-xl font-black text-gray-900 mb-3">Publish & Configure</h4>
+                        <p class="text-gray-500 font-medium leading-relaxed">Providers deploy their API endpoint, and configure their pricing function. Choose maximum daily API capacity, and the base price for a call.</p>
+                    </div>
+                    
+                    <div class="relative bg-white pt-8 px-6 text-center">
+                        <div class="w-25 h-20 mx-auto bg-purple-50 border-4 border-white shadow-xl rounded-2xl flex items-center justify-center text-purple-600 text-3xl mb-8 font-black">Buy</div>
+                        <h4 class="text-xl font-black text-gray-900 mb-3">Mint API Access Tokens</h4>
+                        <p class="text-gray-500 font-medium leading-relaxed">Buyers explore the marketplace and purchase API call rights using ETH. Smart contracts mint access tokens.</p>
+                    </div>
+                    
+                    <div class="relative bg-white pt-8 px-6 text-center">
+                        <div class="w-25 h-20 mx-auto bg-green-50 border-4 border-white shadow-xl rounded-2xl flex items-center justify-center text-success text-3xl mb-8 font-black">Call!</div>
+                        <h4 class="text-xl font-black text-gray-900 mb-3">Enjoy & Earn</h4>
+                        <p class="text-gray-500 font-medium leading-relaxed">Buyers hit the decentralized gateway. Tokens are consumed upon successful calls, and funds are automatically unlocked for providers to withdraw.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="values" class="py-24 bg-gray-50 border-y border-gray-100">
+            <div class="container mx-auto px-6 max-w-7xl text-center">
+                <h2 class="text-sm font-black text-primary uppercase tracking-widest mb-3">The Advantage</h2>
+                <h3 class="text-4xl font-black text-gray-900 mb-16">Why Publish on Web3?</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="p-10 rounded-[2rem] border border-gray-100 bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 text-left group">
+                        <div class="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-2xl mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-percent text-primary text-3xl"></i></div>
+                        <h4 class="text-2xl font-black mb-4 text-gray-900">Low Middleman Fees</h4>
+                        <p class="text-gray-500 font-medium leading-relaxed">Traditional platforms take up to 30% cuts. Contract-based economics lowers our costs, so you can earn more! Here, protocol fees are immutably 5%, ensuring creators are rewarded for their efforts.</p>
+                    </div>
+                    <div class="p-10 rounded-[2rem] border border-gray-100 bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 text-left group">
+                        <div class="w-16 h-16 flex items-center justify-center bg-purple-50 rounded-2xl mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-money-bill-transfer text-purple-600 text-3xl"></i></div>
+                        <h4 class="text-2xl font-black mb-4 text-gray-900">True Pay-as-you-go</h4>
+                        <p class="text-gray-500 font-medium leading-relaxed">No expensive monthly subscription tiers that lock buyers in. You only pay for the exact number of API calls you execute. Short-term project? Here at API Bazaar, you spend £5, not £50...</p>
+                    </div>
+                    <div class="p-10 rounded-[2rem] border border-gray-100 bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 text-left group">
+                        <div class="w-16 h-16 flex items-center justify-center bg-green-50 rounded-2xl mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-shield-halved text-success text-3xl"></i></div>
+                        <h4 class="text-2xl font-black mb-4 text-gray-900">API Protection by Design</h4>
+                        <p class="text-gray-500 font-medium leading-relaxed">Economic disincentives support rate limits through capacity aware pricing. Spamming an API burns real crypto, naturally protecting providers from malicious attackers.</p>
+                    </div>
+                    <div class="p-10 rounded-[2rem] border border-gray-100 bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 text-left group">
+                        <div class="w-16 h-16 flex items-center justify-center bg-orange-50 rounded-2xl mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-house text-orange-500 text-3xl"></i></div>
+                        <h4 class="text-2xl font-black mb-4 text-gray-900">A Home for All</h4>
+                        <p class="text-gray-500 font-medium leading-relaxed">Don't get pushed out by the big players. At API Bazaar, we welcome all developers from weird to wonderful!</p>
+                    </div>
+                    <div class="p-10 rounded-[2rem] border border-gray-100 bg-white hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 text-left group lg:col-span-2 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+                        <div class="w-16 h-16 flex items-center justify-center bg-white/10 rounded-2xl mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-bolt text-yellow-400 text-3xl"></i></div>
+                        <h4 class="text-2xl font-black mb-4 text-white">Gas Optimisation</h4>
+                        <p class="text-gray-300 font-medium leading-relaxed max-w-2xl">Oil shocks raising your bills? Not here!<br>Our smart contracts were carefully crafted by leading experts in the field.<br> Its about as O(1) as it gets.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="py-24 bg-white">
+            <div class="container mx-auto px-6 max-w-4xl">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-black text-gray-900 mb-4">Frequently Asked Questions</h2>
+                    <p class="text-gray-500 font-medium text-lg">Everything you need to know about publishing and consuming on the platform.</p>
+                </div>
+                
+                <div class="space-y-6">
+                    <div class="p-8 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 transition">
+                        <h4 class="text-xl font-black text-gray-900 mb-3">Do I need to rewrite my existing API?</h4>
+                        <p class="text-gray-600 font-medium leading-relaxed">No. Just give us your endpoint, sit back, relax, and let the earnings roll in. Our API gateway verifies a caller's tokens by scanning the immutable blockchain.</p>
+                    </div>
+                    <div class="p-8 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 transition">
+                        <h4 class="text-xl font-black text-gray-900 mb-3">How do I know my endpoint won't be abused?</h4>
+                        <p class="text-gray-600 font-medium leading-relaxed">Tokens are dished out on a daily basis and are capped at your capacity. Our bonding curves are configured so prices exponentially increase near capacity. If someone wants to attack, they make you a millionaire in the process. We know which we would choose...</p>
+                    </div>
+                    <div class="p-8 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 transition">
+                        <h4 class="text-xl font-black text-gray-900 mb-3">How does API Bazaar benefit buyers?</h4>
+                        <p class="text-gray-600 font-medium leading-relaxed">With far lower comissions comes far lower prices. We HATE subscriptions and LOVE transparent, pay-as-you-go models. Smart contracts are designed such that prices are immutable during the current day, meaning no suprises!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 bg-primary relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+                <svg class="h-full w-full" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="cta-grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M0 40L40 0H20L0 20M40 40V20L20 40" fill="none" stroke="white" stroke-width="2"/></pattern></defs><rect width="100%" height="100%" fill="url(#cta-grid)"/></svg>
+            </div>
+            
+            <div class="container mx-auto px-6 relative z-10 text-center max-w-3xl">
+                <h2 class="text-4xl md:text-5xl font-black mb-8 text-white tracking-tight">Ready to join the Web3 Data Economy?</h2>
+                <p class="text-blue-100 mb-12 font-medium text-xl leading-relaxed">Whether you're a developer looking to monetize a hobby project, or a builder needing niche data, API Bazaar is your hub.</p>
+                <div class="flex flex-col sm:flex-row justify-center gap-5">
+                    <button onclick="handleProtectedRoute('view-provider')" class="px-10 py-5 bg-white text-primary rounded-2xl hover:bg-gray-50 hover:shadow-2xl transition-all font-black text-lg">Start Earning</button>
+                    <button onclick="switchView('view-buyer')" class="px-10 py-5 border-2 border-white/30 text-white rounded-2xl hover:bg-white/10 hover:border-white transition-all font-black text-lg">Browse APIs</button>
+                </div>
+            </div>
+        </section>
+
+        <footer class="bg-gray-900 pt-20 pb-10 border-t border-gray-800">
+            <div class="container mx-auto px-6 max-w-7xl">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
+                    <div class="md:col-span-2">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-10 h-10 bg-primary text-white rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-cubes"></i></div>
+                            <span class="text-2xl font-black text-white tracking-tight">API Bazaar</span>
+                        </div>
+                        <p class="text-gray-400 font-medium leading-relaxed max-w-sm mb-6">The decentralized marketplace for long-tail APIs. Fair monetization through smart contracts and bonding curves.</p>
+                        <div class="flex gap-4">
+                            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition"><i class="fa-brands fa-twitter"></i></a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition"><i class="fa-brands fa-github"></i></a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition"><i class="fa-brands fa-discord"></i></a>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-black mb-6 uppercase tracking-wider text-sm">Platform</h4>
+                        <ul class="space-y-4 text-gray-400 font-medium">
+                            <li><a href="#" onclick="switchView('view-buyer')" class="hover:text-primary transition">Marketplace</a></li>
+                            <li><a href="#" class="hover:text-primary transition">Providers</a></li>
+                            <li><a href="#" class="hover:text-primary transition">Bonding Curves</a></li>
+                            <li><a href="#" class="hover:text-primary transition">Documentation</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-black mb-6 uppercase tracking-wider text-sm">Legal & Help</h4>
+                        <ul class="space-y-4 text-gray-400 font-medium">
+                            <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+                            <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                            <li><a href="#" class="hover:text-white transition">Smart Contract Audit</a></li>
+                            <li><a href="#" class="hover:text-white transition">Contact Us</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-sm font-medium text-gray-500">2026 API Bazaar. Built for the Decentralized Web.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div id="view-login" class="view-section bg-gray-50 min-h-screen items-center justify-center relative p-6">
+        <div class="absolute top-6 left-6 md:top-10 md:left-10 z-10">
+            <button onclick="switchView('view-home')" class="text-gray-500 hover:text-gray-900 font-bold flex items-center gap-2 px-5 py-2.5 bg-white rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md"><i class="fa-solid fa-arrow-left"></i> Home</button>
+        </div>
+        
+        <div class="bg-white p-10 md:p-16 rounded-[2.5rem] shadow-2xl max-w-5xl w-full text-center border border-gray-100 relative overflow-hidden animate-fade-in">
+            <div class="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2"></div>
+            
+            <div class="w-20 h-20 bg-gray-50 rounded-2xl mx-auto flex items-center justify-center text-primary text-4xl mb-8 border border-gray-100 shadow-sm"><i class="fa-solid fa-users"></i></div>
+            <h1 class="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight">Choose Your Path</h1>
+            <p class="text-gray-500 font-medium text-lg mb-12 max-w-2xl mx-auto">Select how you want to interact with the API Bazaar ecosystem.</p>
+            
+            <div class="flex flex-col md:flex-row gap-6 md:gap-8 justify-center">
+                <button onclick="switchView('view-buyer')" class="flex-1 border-2 border-gray-100 hover:border-primary hover:bg-blue-50/30 hover:shadow-xl p-10 rounded-[2rem] transition-all group text-left relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform"></div>
+                    <div class="w-20 h-20 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-store text-4xl text-primary"></i></div>
+                    <h3 class="text-3xl font-black text-gray-900 mb-4 tracking-tight">I am a Buyer</h3>
+                    <p class="text-gray-500 font-medium leading-relaxed text-lg">Explore the marketplace, discover niche Web3 & AI APIs, and integrate them into your DApps seamlessly paying with crypto.</p>
+                    <div class="mt-8 flex items-center gap-2 text-primary font-bold"><i class="fa-solid fa-arrow-right-long group-hover:translate-x-2 transition-transform"></i> Enter Marketplace</div>
+                </button>
+                
+                
+                <button onclick="handleProtectedRoute('view-provider')" class="flex-1 border-2 border-gray-100 hover:border-secondary hover:bg-purple-50/30 hover:shadow-xl p-10 rounded-[2rem] transition-all group text-left relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform"></div>
+                    <div class="w-20 h-20 bg-secondary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform"><i class="fa-solid fa-code text-4xl text-secondary"></i></div>
+                    <h3 class="text-3xl font-black text-gray-900 mb-4 tracking-tight">I am a Provider</h3>
+                    <p class="text-gray-500 font-medium leading-relaxed text-lg">Deploy your API endpoints to our smart contracts, set your bonding curve pricing, track analytics, and start earning USDC.</p>
+                    <div class="mt-8 flex items-center gap-2 text-secondary font-bold"><i class="fa-solid fa-arrow-right-long group-hover:translate-x-2 transition-transform"></i> Go to Console</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-buyer" class="view-section min-h-screen bg-gray-50 flex flex-col">
+        <nav class="bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-200 p-4 px-6 flex justify-between items-center sticky top-0 z-40">
+            <button onclick="switchView('view-home')" class="hover:opacity-80 transition flex items-center gap-3">
+                <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center shadow-md"><i class="fa-solid fa-cubes text-sm"></i></div>
+                <span class="text-xl font-black text-gray-900 hidden sm:block tracking-tight">Marketplace</span>
+            </button>
+            <div class="flex gap-4 items-center">
+                <button onclick="openMyTokensModal()" class="flex items-center gap-2 px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-coins"></i> My Tokens</button>
+                <button onclick="handleProtectedRoute('view-provider')" class="flex items-center gap-2 px-5 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 transition-colors"><i class="fa-solid fa-gauge"></i> Provider Console</button>
+                <button class="btn-open-wallet bg-gray-900 hover:bg-black text-white font-bold py-2.5 px-6 rounded-xl transition-all wallet-status-text flex items-center gap-2 shadow-lg active:scale-95">
+                    <i class="fa-solid fa-wallet"></i> Connect
+                </button>
+            </div>
+        </nav>
+
+        <main class="flex-1 container mx-auto px-4 py-12 md:py-20 max-w-7xl animate-fade-in">
+            <div class="text-center mb-10">
+                <h2 class="text-4xl md:text-5xl font-black mb-4 text-gray-900 tracking-tight">Discover APIs</h2>
+                <p class="text-gray-500 mb-8 text-xl font-medium max-w-2xl mx-auto">Access powerful long-tail APIs instantly via smart contracts.</p>
+                
+                
+                <div class="relative w-full max-w-3xl mx-auto group mb-8">
+                    <input type="text" id="searchInput" placeholder="Search APIs by name, provider, or tags..." class="w-full p-5 pl-14 bg-white border border-gray-200 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition text-lg font-medium text-gray-800" onkeyup="filterMarketplace()">
+                    <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-xl group-focus-within:text-primary transition"></i>
+                </div>
+
+                
+                <div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2 px-2 justify-start md:justify-center" id="categoryFilters">
+                    <button class="filter-btn px-6 py-2.5 bg-gray-900 text-white rounded-full text-sm font-bold whitespace-nowrap shadow-md transition" onclick="setCategoryFilter(this, 'All')">All APIs</button>
+                    <button class="filter-btn px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-full text-sm font-bold hover:border-gray-400 hover:text-gray-900 whitespace-nowrap transition" onclick="setCategoryFilter(this, 'Web3')">⛓️ Web3 & DeFi</button>
+                    <button class="filter-btn px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-full text-sm font-bold hover:border-gray-400 hover:text-gray-900 whitespace-nowrap transition" onclick="setCategoryFilter(this, 'AI')">🤖 AI & ML</button>
+                    <button class="filter-btn px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-full text-sm font-bold hover:border-gray-400 hover:text-gray-900 whitespace-nowrap transition" onclick="setCategoryFilter(this, 'Data Analytics')">📊 Data Analytics</button>
+                    <button class="filter-btn px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-full text-sm font-bold hover:border-gray-400 hover:text-gray-900 whitespace-nowrap transition" onclick="setCategoryFilter(this, 'Utilities')">🛠️ Utilities</button>
+                </div>
+            </div>
+            <div id="apiCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div id="apiCardsEmpty" class="col-span-full text-center py-16 text-gray-400 font-bold">
+                    <i class="fa-solid fa-spinner animate-spin mr-2"></i>Loading listings from registry…
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="view-provider" class="view-section h-screen w-screen overflow-hidden bg-gray-50">
+        <div class="flex h-full w-full">
+            
+            <aside class="w-72 bg-white border-r border-gray-200 h-full flex flex-col z-40 shadow-sm flex-shrink-0">
+                <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                    <button onclick="switchView('view-home')" class="hover:opacity-80 transition flex items-center gap-3">
+                        <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center shadow-md"><i class="fa-solid fa-cubes text-sm"></i></div>
+                        <span class="text-xl font-black text-gray-900 tracking-tight">API Bazaar</span>
+                    </button>
+                </div>
+                
+                <nav class="flex-1 p-5 overflow-y-auto">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Provider Menu</p>
+                    <ul class="space-y-1.5" id="providerNav">
+                        <li><a href="#dash-main" class="sidebar-active flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all font-bold text-sm hover:bg-gray-50"><i class="fa-solid fa-gauge w-5 text-center text-lg"></i>Dashboard</a></li>
+                        <li><a href="#dash-publish" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-cloud-arrow-up w-5 text-center text-lg"></i>Publish API</a></li>
+                        <li><a href="#dash-myapis" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-list w-5 text-center text-lg"></i>My APIs</a></li>
+                        <li><a href="#dash-earnings" class="flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-money-bill-transfer w-5 text-center text-lg"></i>Withdraw</a></li>
+                        </a></li>
+                        
+                        <li class="pt-6 mt-4 border-t border-gray-100"><p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4 px-2">Account</p></li>
+                        <li><a href="#dash-profile" class="profile-nav-link flex items-center gap-4 px-4 py-3.5 rounded-xl text-gray-600 hover:bg-gray-50 hover:text-primary transition-all font-bold text-sm"><i class="fa-solid fa-user w-5 text-center text-lg"></i>My Profile</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="p-6 border-t border-gray-100 bg-gray-50/50">
+                    <div class="mb-4">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex justify-between">Connected Wallet <span class="text-green-500">Live</span></p>
+                        <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-gradient-to-r from-orange-400 to-red-400 flex-shrink-0"></div>
+                            <p class="text-xs font-mono text-gray-800 truncate dash-wallet-addr font-bold">Not Connected</p>
+                        </div>
+                    </div>
+                    <button class="btn-disconnect-wallet w-full py-3 bg-white border border-gray-200 text-gray-600 rounded-xl font-bold hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-power-off"></i> Disconnect</button>
+                </div>
+            </aside>
+
+            <main class="flex-1 overflow-y-auto relative scroll-smooth bg-[#F8FAFC]" id="providerMainScroll">
+                
+                <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200 p-6 flex justify-between items-center shadow-sm">
+                    <div>
+                        <h2 class="text-2xl font-black text-gray-900 tracking-tight" id="dashHeaderTitle">Developer Console</h2>
+                    </div>
+                    <div class="flex items-center gap-6">
+                        <div class="h-8 w-px bg-gray-200"></div>
+                        <div class="flex items-center gap-3 cursor-pointer hover:opacity-80 transition group" onclick="showProviderSection('dash-profile')">
+                            <div class="hidden md:block text-right">
+                                <span class="font-bold text-gray-900 block leading-tight text-sm" id="dashUser">John Developer</span>
+                                <span class="text-xs font-bold text-gray-400 group-hover:text-primary transition-colors">View Profile</span>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-white font-black shadow-md text-sm border-2 border-white ring-2 ring-transparent group-hover:ring-primary/30 transition-all" id="dashInitials">JD</div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="p-6 md:p-10 max-w-7xl mx-auto w-full">
+
+                    <section id="dash-main" class="dash-section dash-active h-screen flex items-center">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 w-full">
+                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-code text-xl"></i></div></div>
+                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total APIs Active</p><h3 id="statApiActive" class="text-3xl font-black text-gray-900">-</h3></div>
+                            </div>
+                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><i class="fa-solid fa-warehouse text-xl"></i></div></div>
+                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Total Supply (today)</p><h3 id="statTotalSupply" class="text-3xl font-black text-gray-900">-</h3></div>
+                            </div>
+                            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition">
+                                <div class="flex justify-between items-start mb-4"><div class="w-12 h-12 rounded-xl bg-green-50 text-green-600 flex items-center justify-center"><i class="fa-solid fa-percent text-xl"></i></div></div>
+                                <div><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Utilisation Rate</p><h3 id="statUtilisation" class="text-3xl font-black text-gray-900">-</h3></div>
+                            </div>
+                            <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-3xl shadow-lg border border-gray-700 flex flex-col justify-between text-white relative overflow-hidden">
+                                <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
+                                <div class="flex justify-between items-start mb-4 relative z-10"><div class="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center border border-white/10"><i class="fa-solid fa-wallet text-xl"></i></div><button onclick="showProviderSection('dash-earnings')" class="text-xs font-bold text-gray-300 hover:text-white hover:underline">Withdraw</button></div>
+                                <div class="relative z-10"><p class="text-gray-400 text-xs font-black uppercase tracking-wider mb-1">Withdrawable Balance</p><h3 id="statWithdrawable" class="text-3xl font-black text-white">-</h3></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="dash-publish" class="dash-section">
+                        <div class="bg-white p-8 md:p-12 rounded-[2rem] border border-gray-100 shadow-sm">
+                            <div class="mb-10 max-w-2xl">
+                                <h3 class="text-3xl font-black text-gray-900 mb-3 tracking-tight">Deploy New Endpoint</h3>
+                                <p class="text-gray-500 font-medium text-lg">Configure your API details and deploy the bonding curve pricing smart contract to the network.</p>
+                            </div>
+                            
+                            <form id="publishForm" class="space-y-10">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">API Name <span class="text-red-500">*</span></label><input type="text" id="pubName" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus" placeholder="e.g. NFT Floor Tracker"></div>
+                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Category <span class="text-red-500">*</span></label><select id="pubCat" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus"><option value="">Select Category</option><option value="web3">Web3 / Blockchain</option><option value="ai">AI / Machine Learning</option><option value="data">Data Analytics</option><option value="util">Utilities</option></select></div>
+                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Token Symbol <span class="text-red-500">*</span></label><input type="text" id="pubSymbol" maxlength="10" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus font-mono" placeholder="e.g. NFTFLR"></div>
+                                    <div><label class="block text-sm font-bold text-gray-700 mb-2">Endpoint Target URL <span class="text-red-500">*</span></label><div class="relative"><i class="fa-solid fa-link absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i><input type="url" id="pubUrl" required class="w-full pl-11 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus" placeholder="https://api.yourdomain.com/v1/..."></div><p class="text-xs text-gray-400 font-medium mt-2">The decentralized gateway will proxy authenticated requests to this URL.</p></div>
+                                    <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-2">Description <span class="text-red-500">*</span></label><textarea id="pubDesc" rows="4" required class="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:form-input-focus resize-none" placeholder="Describe the functionality, inputs, and output format..."></textarea></div>
+                                </div>
+                                
+                                <div class="p-8 rounded-[2rem] border border-gray-100 bg-gray-50/50">
+                                    <h4 class="font-black text-gray-900 mb-6 text-xl flex items-center gap-2"><i class="fa-solid fa-chart-line text-primary"></i> API Call Pricing</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Base Price (wei) *</label><input id="curveBasePrice" type="number" step="0.001" min="0.001" value="1" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
+                                        <div><label class="block text-sm font-bold text-gray-700 mb-2">Max Capacity (Calls) *</label><input id="curveMaxCapacity" type="number" min="100" value="1000" class="w-full p-3.5 bg-white border border-gray-200 rounded-xl focus:form-input-focus font-mono"></div>
+                                    </div>
+                                    
+                                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                                        <div class="flex justify-between items-center mb-4 pb-4 border-b border-gray-50">
+                                            <span class="font-black text-gray-900">Live Curve Preview</span>
+                                        </div>
+                                        <div class="h-64 w-full"><canvas id="bondingCurveChart"></canvas></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-4 flex justify-end gap-4 border-t border-gray-100">
+                                    <button type="submit" class="px-10 py-4 bg-primary text-white font-black rounded-xl shadow-lg hover:bg-primary/90 hover:shadow-primary/30 transition-all flex items-center gap-2 active:scale-[0.98] text-lg"><i class="fa-solid fa-rocket"></i> Deploy to Blockchain</button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <section id="dash-myapis" class="dash-section">
+                        <div class="bg-white p-8 md:p-10 rounded-[2rem] border border-gray-100 shadow-sm">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+                                <div>
+                                    <h3 class="text-2xl font-black text-gray-900">My Published Endpoints</h3>
+                                    <p class="text-sm font-medium text-gray-500 mt-1">Manage, pause, or edit your active APIs.</p>
+                                </div>
+                                <button onclick="showProviderSection('dash-publish')" class="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition shadow-md flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i> Create New</button>
+                            </div>
+                            
+                            <div class="overflow-x-auto border border-gray-100 rounded-2xl shadow-inner">
+                                <table class="w-full text-left border-collapse whitespace-nowrap min-w-[800px]">
+                                    <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-widest font-black">
+                                        <tr><th class="p-5 border-b border-gray-200">API Name</th><th class="p-5 border-b border-gray-200">Address</th><th class="p-5 border-b border-gray-200">Base Price</th><th class="p-5 border-b border-gray-200">Supply Today</th><th class="p-5 border-b border-gray-200">Capacity</th><th class="p-5 border-b border-gray-200">Status</th><th class="p-5 border-b border-gray-200">Actions</th><th class="p-5 border-b border-gray-200 text-right">Endpoint</th></tr>
+                                    </thead>
+                                    <tbody id="myApisTable" class="text-sm font-medium text-gray-800 divide-y divide-gray-100">
+                                         <tr><td colspan="8" class="p-8 text-center text-gray-400 font-medium">Connect your wallet to see your APIs.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="dash-earnings" class="dash-section">
+                        <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-8 md:p-12 mb-6">
+                            <h2 class="text-3xl font-black text-gray-900 mb-8 tracking-tight">Withdraw Earnings</h2>
+                            <p class="text-gray-500 font-medium mb-8">Click the button below to withdraw all available credits from every API listing you own. The transaction will be sent to your connected wallet.</p>
+                            <form id="withdrawForm">
+                                <div class="bg-blue-50/30 p-8 rounded-[2rem] border border-blue-100 flex flex-col items-center text-center gap-6">
+                                    <div class="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-3xl">
+                                        <i class="fa-solid fa-money-bill-transfer"></i>
+                                    </div>
+                                    <p class="text-sm text-gray-600 font-medium max-w-md">Funds are sent directly to the connected MetaMask wallet. Network gas applies.</p>
+                                    <button type="submit" class="px-10 py-4 bg-primary text-white rounded-xl font-black hover:bg-primary/90 transition-all flex items-center gap-2 shadow-md hover:shadow-xl active:scale-[0.98]">
+                                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Withdraw All Credits
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </section>
+
+                    <section id="dash-profile" class="dash-section">
+                        <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden mb-6 max-w-5xl mx-auto">
+                            <div class="h-48 bg-gradient-to-r from-primary via-blue-600 to-secondary relative">
+                                <svg class="absolute inset-0 opacity-20 w-full h-full" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="profile-grid" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.5" fill="white"/></pattern></defs><rect width="100%" height="100%" fill="url(#profile-grid)"/></svg>
+                            </div>
+                            
+                            <div class="px-8 md:px-12 pb-12">
+                                <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 -mt-20 mb-8 border-b border-gray-50 pb-8">
+                                    <div class="flex items-end gap-6 relative z-10">
+                                        <div class="w-36 h-36 rounded-3xl border-[6px] border-white bg-blue-50 shadow-xl flex items-center justify-center text-primary text-5xl font-black shrink-0" id="profileBigInitials">JD</div>
+                                        <div class="mb-2">
+                                            <div class="flex items-center gap-3 mb-1">
+                                                <p class="text-sm font-bold text-gray-400" id="profileUsername">@johndeveloper</p>
+                                                <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded font-mono text-[10px] font-bold" id="profileDeveloperId">ID #AB-1048</span>
+                                            </div>
+                                            <h2 id="profileNameHeading" class="text-4xl font-black text-gray-900 tracking-tight">John Developer</h2>
+                                            <p id="profileRole" class="text-gray-600 font-bold mt-2 text-lg">Senior Web3 API Engineer</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="openModal('editProfileModal')" class="px-8 py-3.5 bg-gray-900 text-white rounded-xl font-black hover:bg-black transition-all shadow-md active:scale-95 mb-2 relative z-10 flex items-center gap-2"><i class="fa-solid fa-pen-to-square"></i> Edit Profile</button>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                                    <div class="lg:col-span-2 space-y-10">
+                                        <div>
+                                            <h3 class="font-black text-gray-900 mb-4 text-xl">About Me</h3>
+                                            <p id="profileAbout" class="text-gray-600 leading-relaxed font-medium text-lg bg-gray-50 p-6 rounded-2xl border border-gray-100">Builds scalable blockchain APIs and smart contract integrations. Focuses on security-first backend design and monetized API products.</p>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-black text-gray-900 mb-4 text-xl">Details</h3>
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div class="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm"><div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 mb-3"><i class="fa-solid fa-envelope"></i></div><p class="text-gray-400 font-black mb-1 uppercase tracking-wider text-[10px]">Email</p><p id="profileEmail" class="font-bold text-gray-900 truncate">john@example.com</p></div>
+                                                <div class="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm"><div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 mb-3"><i class="fa-solid fa-location-dot"></i></div><p class="text-gray-400 font-black mb-1 uppercase tracking-wider text-[10px]">Location</p><p id="profileLocation" class="font-bold text-gray-900 truncate">London, UK</p></div>
+                                                <div class="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm"><div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 mb-3"><i class="fa-solid fa-star"></i></div><p class="text-gray-400 font-black mb-1 uppercase tracking-wider text-[10px]">Specialties</p><p id="profileSpecialties" class="font-bold text-gray-900 truncate">Web3 APIs, Data</p></div>
+                                                <div class="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm"><div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 mb-3"><i class="fa-solid fa-language"></i></div><p class="text-gray-400 font-black mb-1 uppercase tracking-wider text-[10px]">Languages</p><p id="profileLanguages" class="font-bold text-gray-900 truncate">English, Rust</p></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <aside class="space-y-6">
+                                        <div class="bg-gradient-to-b from-blue-50/50 to-white rounded-3xl p-8 border border-blue-100">
+                                            <h3 class="font-black text-gray-900 mb-6 text-lg border-b border-gray-100 pb-4">Achievements</h3>
+                                            <div class="space-y-6">
+                                                <div class="flex items-center gap-4 group">
+                                                    <div class="w-12 h-12 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-trophy"></i></div>
+                                                    <div><p class="font-black text-gray-900 text-sm">Top 10% Provider</p><p class="text-xs font-bold text-gray-500">Based on earnings</p></div>
+                                                </div>
+                                                <div class="flex items-center gap-4 group">
+                                                    <div class="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-shield-check"></i></div>
+                                                    <div><p class="font-black text-gray-900 text-sm">Security Verified</p><p class="text-xs font-bold text-gray-500">Passed automated audit</p></div>
+                                                </div>
+                                                <div class="flex items-center gap-4 group">
+                                                    <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-fire"></i></div>
+                                                    <div><p class="font-black text-gray-900 text-sm">1M+ Calls Routed</p><p class="text-xs font-bold text-gray-500">Lifetime milestone</p></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </aside>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+
+    <script type="module">
+
+        // Import Ethers.js (need to use URL as html not using node.js)
+        import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
+        
+        // Connecting to solidity contracts:
+
+        // Store registry address
+        const REGISTRY_ADDRESS = "0xBeD7F16398220AbB9B6B72F7dA5E400b27A1E281"
+
+        // Manually create ABIs (as node.js hasnt been used)
+        const REGISTRY_ABI = [
+            "function createAPIListing(string name, string symbol, string endpoint, uint256 capacity, uint256 basePrice) external",
+            "function getAllListings() view returns (address[])",
+            "function getProviderListings(address provider) view returns (address[])",
+            "function getListing(address listingAddress) view returns (tuple(address provider, address listingAddress, string name, string symbol, string endpoint, uint256 createdAt))",
+            "event CreatedListing(address indexed provider, address indexed apiListing, string name, string symbol)"
+        ];
+
+        const LISTING_ABI = [
+            "function tokenName() view returns (string)",
+            "function tokenSymbol() view returns (string)",
+            "function provider() view returns (address)",
+            "function capacity() view returns (uint256)",
+            "function basePrice() view returns (uint256)",
+            "function getPurchasePrice(uint256 amount) view returns (uint256)",
+            "function getSalePrice(uint256 amount) view returns (uint256)",
+            "function getCurrentDaySupply() view returns (uint256)",
+            "function getCurrentDayBalance(address user) view returns (uint256)",
+            "function credits(address user) view returns (uint256)",
+            "function buyTokens(uint256 amount) payable returns (bool)",
+            "function sellTokens(uint256 amount) returns (bool)",
+            "function withdraw() returns (bool)",
+            "function isTerminated() view returns (bool)",
+            "function pendingBasePrice() view returns (uint256)",
+            "function pendingCapacity() view returns (uint256)",
+            "function terminationDay() view returns (uint256)",
+            "function changeParamsDay() view returns (uint256)",
+            "function currentDay() view returns (uint256)",
+            "function getActiveParameters() view returns (uint256 activeCapacity, uint256 activeBasePrice)",
+            "function queueParameterChange(uint256 newCapacity, uint256 newBasePrice) external",
+            "function queueTermination () external"
+        ];
+
+        /* Read-only provider — used to load listings before the user connects */
+        const READ_ONLY_RPC = "https://ethereum-sepolia.publicnode.com";
+        const readProvider  = new ethers.JsonRpcProvider(READ_ONLY_RPC);
+        const readRegistry  = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, readProvider);
+
+        let provider = null;
+        let signer = null;
+        let registryContract = null;
+
+        /** GLOBAL STATE */
+        const state = { 
+            isLoggedIn: false, 
+            user: 'John Developer', 
+            role: null, 
+            wallet: null,
+            profile: {
+                username: '@johndeveloper', developerId: 'ID #AB-1048', roleTitle: 'Senior Web3 API Engineer',
+                email: 'john@example.com', location: 'London, UK', specialties: 'Web3 APIs, Data', languages: 'English, Rust',
+                about: 'Builds scalable blockchain APIs and smart contract integrations. Focuses on security-first backend design and monetized API products.'
+            }
+        };
+
+        /** BUYER PAGE FRONTEND FILTER LOGIC */
+        let currentCategory = 'All';
+
+        function setCategoryFilter(btn, category) {
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('bg-gray-900', 'text-white', 'shadow-md');
+                b.classList.add('bg-white', 'text-gray-600');
+            });
+            btn.classList.remove('bg-white', 'text-gray-600');
+            btn.classList.add('bg-gray-900', 'text-white', 'shadow-md');
+            
+            currentCategory = category;
+            filterMarketplace();
+        }
+
+        function filterMarketplace() {
+            const searchInput = document.getElementById('searchInput');
+            if(!searchInput) return;
+            
+            const query = searchInput.value.toLowerCase();
+            const cards = document.querySelectorAll('#apiCardsGrid > div.api-card'); 
+            
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const name = (card.getAttribute('data-name') || '').toLowerCase();
+                const provider = (card.getAttribute('data-provider') || '').toLowerCase();
+                const category = card.getAttribute('data-category') || '';
+                
+                const matchesQuery = name.includes(query) || provider.includes(query);
+                const matchesCategory = currentCategory === 'All' || category.includes(currentCategory);
+
+                if (matchesQuery && matchesCategory) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Handle empty state
+            let emptyMsg = document.getElementById('apiCardsEmptyMessage');
+            if(visibleCount === 0 && cards.length > 0) {
+                if(!emptyMsg) {
+                    emptyMsg = document.createElement('div');
+                    emptyMsg.id = 'apiCardsEmptyMessage';
+                    emptyMsg.className = 'col-span-full text-center py-16 text-gray-500 font-bold text-lg';
+                    emptyMsg.innerHTML = '<i class="fa-solid fa-ghost text-3xl mb-3 block"></i> No APIs found matching your criteria.';
+                    document.getElementById('apiCardsGrid').appendChild(emptyMsg);
+                }
+                emptyMsg.style.display = 'block';
+            } else if (emptyMsg) {
+                emptyMsg.style.display = 'none';
+            }
+        }
+
+        window.setCategoryFilter = setCategoryFilter;
+        window.filterMarketplace = filterMarketplace;
+
+        /** ROUTING & MODALS */
+        function switchView(viewId) {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('view-active', 'view-flex-active'));
+            const target = document.getElementById(viewId);
+            if (viewId === 'view-login' || viewId === 'view-provider') target.classList.add('view-flex-active');
+            else target.classList.add('view-active');
+            
+            if (viewId === 'view-provider') showProviderSection('dash-main');
+            window.scrollTo(0, 0);
+        }
+
+        function handleProtectedRoute(viewId) {
+            if (!state.isLoggedIn) openModal('authModal');
+            else switchView(viewId);
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('modal-active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('modal-active'); }
+
+        /** HOME / NAVBAR BEHAVIOR */
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            if(nav && !document.getElementById('view-home').classList.contains('hidden')) {
+                nav.classList.toggle('nav-scrolled', window.scrollY > 50);
+            }
+        });
+
+        document.querySelectorAll('#navLoginBtn').forEach(btn => {
+            btn.onclick = () => state.isLoggedIn ? handleProtectedRoute('view-provider') : openModal('authModal');
+        });
+
+        /** AUTH TABS & FORMS LOGIC */
+        document.getElementById('registerTab').onclick = (e) => {
+            const login = document.getElementById('loginTab');
+            login.classList.replace('text-primary', 'text-gray-400');
+            login.classList.remove('border-primary');
+            login.classList.add('border-transparent');
+            
+            e.target.classList.replace('text-gray-400', 'text-primary');
+            e.target.classList.add('border-primary');
+            e.target.classList.remove('border-transparent');
+            
+            document.getElementById('loginForm').classList.add('hidden');
+            document.getElementById('registerForm').classList.remove('hidden');
+        };
+        document.getElementById('loginTab').onclick = (e) => {
+            const reg = document.getElementById('registerTab');
+            reg.classList.replace('text-primary', 'text-gray-400');
+            reg.classList.remove('border-primary');
+            reg.classList.add('border-transparent');
+            
+            e.target.classList.replace('text-gray-400', 'text-primary');
+            e.target.classList.add('border-primary');
+            e.target.classList.remove('border-transparent');
+            
+            document.getElementById('registerForm').classList.add('hidden');
+            document.getElementById('loginForm').classList.remove('hidden');
+        };
+
+        // Role Select Style
+        document.getElementById('regRoleProvider').onclick = (e) => {
+            e.target.classList.replace('text-gray-500', 'text-primary'); e.target.classList.add('bg-white', 'shadow-sm');
+            const buyer = document.getElementById('regRoleBuyer');
+            buyer.classList.remove('bg-white', 'shadow-sm', 'text-primary'); buyer.classList.add('text-gray-500');
+        };
+        document.getElementById('regRoleBuyer').onclick = (e) => {
+            e.target.classList.replace('text-gray-500', 'text-primary'); e.target.classList.add('bg-white', 'shadow-sm');
+            const provider = document.getElementById('regRoleProvider');
+            provider.classList.remove('bg-white', 'shadow-sm', 'text-primary'); provider.classList.add('text-gray-500');
+        };
+
+        // Submissions
+        document.getElementById('loginForm').onsubmit = (e) => {
+            e.preventDefault();
+            state.isLoggedIn = true;
+            state.user = document.getElementById('loginEmail').value.split('@')[0] || 'User';
+            updateUIState(); closeModal('authModal');
+            if(document.getElementById('view-home').classList.contains('view-active')) handleProtectedRoute('view-provider');
+        };
+        
+        document.getElementById('registerForm').onsubmit = (e) => {
+            e.preventDefault();
+            state.isLoggedIn = true;
+            state.user = document.getElementById('regUsername').value || 'User';
+            state.role = document.getElementById('regRoleProvider').classList.contains('bg-white') ? 'provider' : 'buyer';
+            updateUIState(); closeModal('authModal');
+            switchView(state.role === 'provider' ? 'view-provider' : 'view-buyer');
+        };
+
+        // Allow connection of Meta Mask wallet
+        document.querySelectorAll('.btn-open-wallet').forEach(b => b.onclick = () => {
+            // Ensure that cant click on wallet connect button again after connecting
+            if (state.wallet) {
+                alert('Wallet already connected');
+                return;
+            }
+            openModal('walletModal');
+        });
+        
+        document.getElementById('connectMetamask').onclick = async () => {
+            if (!window.ethereum) { alert('Please install MetaMask'); return; }
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                const walletAddress = await signer.getAddress();
+
+                // Attach registry contract instance to MetaMask signer
+                registryContract = new ethers.Contract(REGISTRY_ADDRESS, REGISTRY_ABI, signer);
+
+                state.wallet = walletAddress;
+                
+                console.log('Wallet Connected', { walletAddress });
+                updateUIState();
+                refreshTestButtons();
+
+                // Close walletModal to remove metasmask popup 
+                closeModal('walletModal');
+
+                // Load provider listings for MyAPIs table
+                loadProviderListings();
+
+                // Load dashboard stats
+                getDashboardStats();
+            } catch (err) {
+                console.error('Wallet connect failed', err);
+            }
+        };
+
+        document.querySelectorAll('.btn-disconnect-wallet').forEach(b => b.onclick = () => {
+            provider = null;
+            signer = null;
+            registryContract = null;
+            state.wallet = null;
+            // NOTE: do NOT clear state.isLoggedIn here — wallet ≠ session
+            updateUIState();
+            refreshTestButtons();
+        });
+
+        // Off-chain visual fallbacks. Used only if the gateway has no metadata for a listing.
+        const METADATA = {
+            "wallet risk scorer":      { icon: "fa-shield-halved", iconBg: "bg-blue-50 text-blue-600",   category: "Web3 Security",  description: "Assigns a dynamic risk score (0-100) to EVM wallets based on historical on-chain behavior.", badge: "Hot", badgeStyle: "bg-yellow-400 text-black" },
+            "deepfake detector":       { icon: "fa-robot",         iconBg: "bg-purple-50 text-purple-600", category: "AI / Vision",    description: "Detect facial manipulation, deepfakes, and generative AI artifacts." },
+            "dex vol aggregator":      { icon: "fa-chart-pie",     iconBg: "bg-green-50 text-green-600",   category: "Data Analytics", description: "Real-time trading volumes and liquidity depth across major DEXes." },
+            "universal nft metadata":  { icon: "fa-image",         iconBg: "bg-orange-50 text-orange-600", category: "NFT Utilities",  description: "Resolve and normalize NFT metadata across IPFS, Arweave, and HTTP." },
+            "l2 gas oracle":           { icon: "fa-gas-pump",      iconBg: "bg-teal-50 text-teal-600",     category: "Web3 Data",      description: "Predictive gas estimation across Arbitrum, Optimism, Base, ZK-Sync.", badge: "New", badgeStyle: "bg-primary/10 text-primary" },
+            "crypto social sentiment": { icon: "fa-comments",      iconBg: "bg-rose-50 text-rose-600",     category: "AI / NLP",       description: "NLP sentiment analysis of crypto-twitter and reddit." }
+        };
+        const DEFAULT_META = { icon: "fa-cube", iconBg: "bg-gray-100 text-gray-600", category: "Misc", description: "On-chain API listing." };
+
+        // Off-chain gateway routes for the "Try a Test Call" button. Keyed by lowercased tokenName.
+        const PROVIDER_ROUTES = {
+            "wallet risk scorer":      { provider: "provider1", path: "/risk-score" },
+            "deepfake detector":       { provider: "provider1", path: "/deepfake"   },
+            "dex vol aggregator":      { provider: "provider2", path: "/dex-vol"    },
+            "universal nft metadata":  { provider: "provider2", path: "/nft-meta"   },
+            "l2 gas oracle":           { provider: "provider1", path: "/gas-oracle" },
+            "crypto social sentiment": { provider: "provider2", path: "/sentiment"  }
+        };
+
+        const GATEWAY_URL = (() => {
+            const fromQuery = new URLSearchParams(location.search).get('gateway');
+            if (fromQuery) { localStorage.setItem('gatewayUrl', fromQuery); return fromQuery; }
+            return localStorage.getItem('gatewayUrl') || 'http://localhost:3000';
+            })();
+
+        // Build one card's HTML from on-chain data + metadata
+        function buildCardHTML({ address, name, providerAddr, basePriceWei }, meta) {
+            const priceEth  = basePriceWei.toString();
+            const badgeHTML = meta.badge
+                ? `<div class="absolute top-0 right-0 ${meta.badgeStyle || 'bg-primary/10 text-primary'} text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-wider">${meta.badge}</div>`
+                : "";
+            return `
+                <div class="api-card bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col relative group overflow-hidden"
+                     data-name="${name}" data-provider="${providerAddr.slice(0,6)}" data-category="${meta.category || 'Misc'}">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-16 h-16 ${meta.iconBg || 'bg-gray-100 text-gray-600'} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fa-solid ${meta.icon || 'fa-cube'} text-3xl"></i>
+                        </div>
+                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-xs font-bold rounded-lg border border-gray-200">${meta.category || 'Misc'}</span>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 mb-2 tracking-tight">${name}</h3>
+                    <div class="flex items-center gap-2 mb-4 text-xs font-bold text-gray-400">
+                        <span>By ${providerAddr.slice(0,6)}…${providerAddr.slice(-4)}</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mb-8 flex-grow leading-relaxed font-medium">${meta.description || 'On-chain API listing.'}</p>
+                    <div class="flex justify-between items-center pt-6 border-t border-gray-100">
+                        <div>
+                            <span class="text-primary text-2xl font-black block leading-none">${priceEth}</span>
+                            <span class="text-xs font-bold text-gray-400">Wei / Call</span>
+                        </div>
+                        <button class="buy-api-btn bg-gray-900 text-white px-6 py-3.5 rounded-xl font-black shadow-md hover:bg-primary hover:shadow-lg transition-all active:scale-95"
+                            data-name="${name}"
+                            data-provider="${providerAddr.slice(0,6)}…${providerAddr.slice(-4)}"
+                            data-price="${priceEth}"
+                            data-listing-addr="${address}">View / Buy</button>
+                    </div>
+                    <button class="test-call-btn w-full mt-3 py-2.5 rounded-xl text-sm font-bold bg-gray-100 text-gray-400 cursor-not-allowed transition-all"
+                        data-listing-addr="${address}"
+                        data-test-path="${meta.testPath || '/'}"
+                        disabled>Connect Wallet to Test</button>
+                </div>`;
+        }
+
+        // Pull every listing from registry + metadata from gateway, render the grid
+        async function renderListings() {
+            const grid = document.getElementById('apiCardsGrid');
+            if (!grid) return;
+            grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 font-bold">
+                <i class="fa-solid fa-spinner animate-spin mr-2"></i>Loading listings from registry…
+            </div>`;
+
+            // Pull off-chain metadata from the gateway (best-effort)
+            let offchain = {};
+            try {
+                const metaRes = await fetch(`${GATEWAY_URL}/api/metadata`);
+                if (metaRes.ok) offchain = await metaRes.json();
+            } catch (err) {
+                console.warn('Could not load gateway metadata, using fallbacks', err);
+            }
+
+            try {
+                const registry = registryContract || readRegistry;
+                const reader   = signer || readProvider;
+                const addrs    = await registry.getAllListings();
+                if (addrs.length === 0) {
+                    grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-400 font-bold">
+                        No listings deployed yet. Use Publish API to create one.
+                    </div>`;
+                    return;
+                }
+                const cards = await Promise.all(addrs.map(async (address) => {
+                    try {
+                        const c = new ethers.Contract(address, LISTING_ABI, reader);
+                        const [name, providerAddr, basePriceWei] = await Promise.all([
+                            c.tokenName(), c.provider(), c.basePrice()
+                        ]);
+                        return { address, name, providerAddr, basePriceWei };
+                    } catch (err) {
+                        console.warn("Skipping unreadable listing", address, err.message);
+                        return null;
+                    }
+                }));
+                grid.innerHTML = cards
+                    .filter(Boolean)
+                    .map(card => {
+                        const meta = offchain[card.address.toLowerCase()]      // gateway wins
+                                  || METADATA[card.name.toLowerCase().trim()]   // hardcoded fallback
+                                  || DEFAULT_META;                              // last resort
+                        
+                        // Save into listing metadata so details modal can look this up
+                        LISTING_META_DATA[card.address.toLowerCase()] = meta;
+                        
+                        return buildCardHTML(card, meta);
+                    })
+                    .join("");
+                    refreshTestButtons();
+                    filterMarketplace();
+            } catch (err) {
+                console.error("renderListings failed", err);
+                grid.innerHTML = `<div class="col-span-full text-center py-16 text-red-500 font-bold">
+                    Failed to load listings: ${err.shortMessage || err.message}
+                </div>`;
+            }
+        }
+        
+        // Access token balance
+        async function openMyTokensModal() {
+            openModal('myTokensModal');
+            const body = document.getElementById('myTokensBody');
+
+            if (!signer || !state.wallet) {
+                body.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fa-solid fa-wallet text-4xl text-gray-300 mb-4"></i>
+                        <p class="font-bold text-gray-500 mb-4">Connect your wallet to see your tokens.</p>
+                        <button onclick="closeModal('myTokensModal'); openModal('walletModal');"
+                            class="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition">
+                            Connect Wallet
+                        </button>
+                    </div>`;
+                return;
+            }
+
+            body.innerHTML = `<div class="text-center py-12 text-gray-400 font-bold">
+                <i class="fa-solid fa-spinner animate-spin mr-2"></i>Loading your balances…
+            </div>`;
+
+            try {
+                const registry = registryContract || readRegistry;
+                const reader   = signer || readProvider;
+                const addrs    = await registry.getAllListings();
+
+                let offchain = {};
+                try {
+                    const r = await fetch(`${GATEWAY_URL}/api/metadata`);
+                    if (r.ok) offchain = await r.json();
+                } catch { /* best effort */ }
+
+                const rows = await Promise.all(addrs.map(async (address) => {
+                    try {
+                        const c = new ethers.Contract(address, LISTING_ABI, reader);
+                        const [balance, name, basePriceWei] = await Promise.all([
+                            c.getCurrentDayBalance(state.wallet),
+                            c.tokenName(),
+                            c.basePrice()
+                        ]);
+                        return { address, balance, name, basePriceWei };
+                    } catch (err) {
+                        console.warn('Skipping listing', address, err.message);
+                        return null;
+                    }
+                }));
+
+                const owned = rows.filter(r => r && r.balance > 0n);
+
+                if (owned.length === 0) {
+                    body.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fa-solid fa-inbox text-4xl text-gray-300 mb-4"></i>
+                            <p class="font-bold text-gray-500 mb-2">No tokens yet</p>
+                            <p class="text-sm text-gray-400">Buy access to an API to see it appear here.</p>
+                        </div>`;
+                    return;
+                }
+
+                body.innerHTML = owned.map(r => {
+                    const meta     = offchain[r.address.toLowerCase()] || METADATA[r.name.toLowerCase().trim()] || DEFAULT_META;
+                    const priceEth = r.basePriceWei.toString();
+                    return `
+                        <div class="bg-white rounded-2xl border border-gray-100 p-5 mb-3 flex items-center justify-between gap-4 shadow-sm">
+                            <div class="flex items-center gap-4 min-w-0">
+                                <div class="w-12 h-12 ${meta.iconBg || 'bg-gray-100 text-gray-600'} rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <i class="fa-solid ${meta.icon || 'fa-cube'} text-xl"></i>
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-black text-gray-900 truncate">${r.name}</p>
+                                    <p class="text-xs font-mono text-gray-400 truncate">${r.address.slice(0,10)}…${r.address.slice(-6)}</p>
+                                </div>
+                            </div>
+                            <div class="text-right flex-shrink-0">
+                                <p class="font-black text-2xl text-primary leading-none">${r.balance.toString()}</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mt-1">calls left</p>
+                            </div>
+                            <button class="manage-token-btn bg-gray-900 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-primary transition active:scale-95 flex-shrink-0"
+                                data-name="${r.name}"
+                                data-listing-addr="${r.address}"
+                                data-price="${priceEth}"
+                                data-provider="—">
+                                Manage
+                            </button>
+                        </div>`;
+                }).join("");
+            } catch (err) {
+                console.error('My Tokens load failed', err);
+                body.innerHTML = `<div class="text-center py-12 text-red-500 font-bold">
+                    Failed to load: ${err.shortMessage || err.message}
+                </div>`;
+            }
+        }
+
+        // "Manage" link → close My Tokens, open the existing purchase modal pre-filled
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.manage-token-btn');
+            if (!btn) return;
+            const confirmBtn = document.getElementById('confirmPurchaseBtn');
+            document.getElementById('buyApiName').innerText     = btn.getAttribute('data-name');
+            document.getElementById('buyApiProvider').innerText = btn.getAttribute('data-provider');
+            document.getElementById('buyApiPrice').innerText    = btn.getAttribute('data-price') + " Wei";
+            confirmBtn.setAttribute('data-target-id',    btn.getAttribute('data-name'));
+            confirmBtn.setAttribute('data-listing-addr', btn.getAttribute('data-listing-addr') || "");
+            document.getElementById('sellBackBtn').classList.remove('hidden');
+            document.getElementById('testCallBtn')?.remove();
+            document.getElementById('buyAmountInput').value = 1;
+            closeModal('myTokensModal');
+            openModal('purchaseModal');
+            refreshPriceQuote();
+        });
+
+
+        function setTestBtn(btn, mode, balance = 0) {
+            const base = 'test-call-btn w-full mt-3 py-2.5 rounded-xl text-sm font-bold transition-all';
+            if (mode === 'ready') {
+                btn.className = `${base} bg-green-500 text-white hover:bg-green-600 active:scale-95`;
+                btn.textContent = `Test Call (${balance} left)`;
+                btn.disabled = false;
+            } else if (mode === 'loading') {
+                btn.className = `${base} bg-gray-100 text-gray-400`;
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"><\/i> Checking\u2026';
+                btn.disabled = true;
+            } else if (mode === 'no-tokens') {
+                btn.className = `${base} bg-gray-100 text-gray-400 cursor-not-allowed`;
+                btn.textContent = 'Buy Tokens to Test';
+                btn.disabled = true;
+            } else {
+                btn.className = `${base} bg-gray-100 text-gray-400 cursor-not-allowed`;
+                btn.textContent = 'Connect Wallet to Test';
+                btn.disabled = true;
+            }
+        }
+
+        async function refreshTestButtons() {
+            const btns = document.querySelectorAll('.test-call-btn');
+            if (!state.wallet) {
+                btns.forEach(b => setTestBtn(b, 'no-wallet'));
+                return;
+            }
+            btns.forEach(b => setTestBtn(b, 'loading'));
+            await Promise.all([...btns].map(async btn => {
+                const listing = btn.getAttribute('data-listing-addr');
+                try {
+                    const r = await fetch(`${GATEWAY_URL}/api/balance/${listing}/${state.wallet}`);
+                    const { balance } = await r.json();
+                    const n = Number(balance);
+                    setTestBtn(btn, n > 0 ? 'ready' : 'no-tokens', n);
+                } catch {
+                    setTestBtn(btn, 'no-wallet');
+                }
+            }));
+        }
+
+        // Make the function reachable from inline onclick
+        window.openMyTokensModal = openMyTokensModal;
+
+        // Render on page load — no wallet required
+        window.addEventListener('DOMContentLoaded', renderListings);
+
+
+        // Live on-chain price quote
+        let _quoteTimer = null;
+        async function refreshPriceQuote() {
+            const status    = document.getElementById('buyPriceStatus');
+            const totalEl   = document.getElementById('buyTotalCost');
+            const balanceEl = document.getElementById('buyCurrentBalance');
+            const addr      = document.getElementById('confirmPurchaseBtn').getAttribute('data-listing-addr');
+            const amount    = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
+
+            if (!addr) {
+                status.innerText  = "Listing address not configured";
+                totalEl.innerText = "-";
+                return;
+            }
+            if (amount <= 0) { totalEl.innerText = "0"; return; }
+
+            const runner = signer || readProvider;   // wallet if connected, else read-only
+
+            try {
+                status.innerText = "Fetching live price…";
+                const listing = new ethers.Contract(addr, LISTING_ABI, runner);
+                const price   = await listing.getPurchasePrice(amount);
+                totalEl.innerText = price.toString();
+
+                if (signer && state.wallet) {
+                    const balance = await listing.getCurrentDayBalance(state.wallet);
+                    balanceEl.innerText = balance.toString();
+                } else {
+                    balanceEl.innerText = "Connect wallet";
+                }
+                status.innerText = `Quote @ ${new Date().toLocaleTimeString()}`;
+            } catch (err) {
+                console.error('Quote failed', err);
+                status.innerText = "Quote failed: " + (err.shortMessage || err.message);
+            }
+        }
+
+
+        document.getElementById('buyAmountInput').addEventListener('input', () => {
+            clearTimeout(_quoteTimer);
+            _quoteTimer = setTimeout(refreshPriceQuote, 250);
+        });
+
+        // Need to store listing meta data to display in the buuyer page
+        // I.e., description, category etc.
+        const LISTING_META_DATA = {}
+
+        // Listing details modal. Gets all the fields in the lissting contract 
+        // i.e., active params, pending params, supply, pending termination etc.
+        // adn then fills the modal with this infromation.
+        async function openDetailsModal(listingData) {
+
+            // Get params passed in 
+            const name = listingData.name;
+            const providerLabel = listingData.provider;
+            const price = listingData.price;
+            const listingAddr = listingData.listingAddr;
+
+            // Get references to HTML to pass later
+            const purchaseBtn = document.getElementById('detailsPurchaseBtn');
+            const nameElement = document.getElementById('detailsName');
+            const categoryElement = document.getElementById('detailsCategory');
+            const descriptionElement = document.getElementById('detailsDescription');
+            const providerAddrElement = document.getElementById('detailsProviderAddr');
+            const basePriceElement = document.getElementById('detailsBasePrice');
+            const capacityElement = document.getElementById('detailsCapacity');
+            const supplyElement = document.getElementById('detailsSupply');
+            const pendingBoxElement = document.getElementById('detailsPendingParamsBox');
+            const pendingBasePriceElement = document.getElementById('detailsPendingBasePrice');
+            const pendingCapacityElement = document.getElementById('detailsPendingCapacity');
+            const pendingWhenElement = document.getElementById('detailsPendingParamsWhen');
+            const terminationBoxElement = document.getElementById('detailsTerminationBox');
+            const terminationTextElement = document.getElementById('detailsTerminationText');
+            const contrAddrElement = document.getElementById('detailsContractAddr')
+
+            // Store the button attributes to use lateer
+            purchaseBtn.setAttribute('data-name', name || '');
+            purchaseBtn.setAttribute('data-provider', providerLabel || '');
+            purchaseBtn.setAttribute('data-price', price || '0');
+            purchaseBtn.setAttribute('data-listing-addr', listingAddr || '');
+
+            // Show already known details
+            nameElement.innerText = name || 'API Details';
+            contrAddrElement.innerText = listingAddr || '-';
+
+            // Look up off-chain meta date (description, category) by listing address 
+            const key = (listingAddr || '').toLowerCase();
+            const meta = LISTING_META_DATA[key] || {};
+
+            // show them, or if not found then say misc and no description provided
+            categoryElement.innerText = meta.category || 'Misc';
+            descriptionElement.innerText = meta.description || 'No description provided.';
+
+            // Reset fields that we need to get from blockchain
+            providerAddrElement.innerText = '-';
+            basePriceElement.innerText = '-';
+            capacityElement.innerText = '-';
+            supplyElement.innerText = '-';
+
+            // Hide optional boxes at the start
+            pendingBoxElement.classList.add('hidden');
+            terminationBoxElement.classList.add('hidden');
+
+            // Open the modal
+            openModal('detailsModal');
+
+            // Load details of modal
+            try {
+                // Use wallet signer if connected, or if not use the read-only provider
+                const signerOrReader = signer || readProvider;
+
+                // Create contract object so can call view functions
+                const listing = new ethers.Contract(listingAddr, LISTING_ABI, signerOrReader);
+
+                // Get all from the chain values in parallel using promise
+                const [
+                    // these are variables to fill with off-chain daata
+                    providerAddr,
+                    activeParams,
+                    daySupply,
+                    pendingBasePrice,
+                    pendingCapacity,
+                    terminationDay,
+                    changeParamsDay,
+                    currentDay,
+                    terminated
+                ] = await Promise.all([
+                    // All values to get from the listing contract 
+                    listing.provider(),
+                    listing.getActiveParameters(),   // returns both capacity, basePrice
+                    listing.getCurrentDaySupply(),
+                    listing.pendingBasePrice(),
+                    listing.pendingCapacity(),
+                    listing.terminationDay(),
+                    listing.changeParamsDay(),
+                    listing.currentDay(),
+                    listing.isTerminated()                    
+                ]);
+
+                // Get the base price and capacity (in that order) as
+                // getActiveParameters() returns two values in Solidity Contract 
+                const activeCapacity = activeParams[0];
+                const activeBasePrice = activeParams[1];
+
+                // Fill the active parameters section
+                providerAddrElement.innerText = providerAddr;
+                basePriceElement.innerText = activeBasePrice.toString();
+                capacityElement.innerText = activeCapacity.toString();
+                supplyElement.innerText = daySupply.toString();
+
+                let whenText = ''
+
+                // Show the pending parameter changes if there are any
+                // changeParamsDay == 0 if no termination has been queued 
+                if (changeParamsDay > 0n) {
+                    pendingBasePriceElement.innerText = pendingBasePrice.toString() + ' Wei';
+                    pendingCapacityElement.innerText = pendingCapacity.toString() + ' Calls';
+
+                    // Calcualte number of days until parameeter change
+                    const daysFromNow = changeParamsDay - currentDay;
+                    let whenText = '';
+
+                    // if it is pending, then will either activate on next interaction (meaning its currently the change day)
+                    // or it is not the new day yet
+                    if (daysFromNow <= 0n) {
+                        whenText = 'Will activate on next on-chain ineteraction.';
+                    } else {
+                        whenText = `Activates in ${daysFromNow.toString()} days.`;
+                    }
+
+                    pendingWhenElement.innerText = whenText;
+                    pendingBoxElement.classList.remove('hidden');
+                }
+
+                // show the termination information (only if relevant)
+                if (terminated) {
+                    terminationTextElement.innerText = 'This listing has been terminated. New purchases are blocked.';
+                    terminationBoxElement.classList.remove('hidden');
+                } else if (terminationDay > 0n) { 
+                    // termination has been queued but not yet activated
+                    const daysFromNow = terminationDay - currentDay;
+                    
+                    if (daysFromNow <= 0n) {
+                        whenText = 'Termination queued and will be activated on next interaction.';
+                    } else {
+                        // termination day not been reached yet 
+                        whenText = `Activates in ${daysFromNow.toString()} days.`;
+                    }
+                    
+                    // show the text in html and unhide the box
+                    terminationTextElement.innerText = whenText;
+                    terminationBoxElement.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Failed to load listing details', error);
+                descriptionElement.innerText = 'Failed to load on-chain detials' + error
+            }
+        }
+
+        // Buy Access button on marketplace cards 
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.buy-api-btn');
+            if (!btn) return;
+            openDetailsModal({
+                name: btn.getAttribute('data-name'),
+                provider: btn.getAttribute('data-provider'),
+                price: btn.getAttribute('data-price'),
+                listingAddr: btn.getAttribute('data-listing-addr')
+            });
+        });
+
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.test-call-btn');
+            if (!btn || btn.disabled) return;
+
+            const listingAddr = btn.getAttribute('data-listing-addr');
+            const testPath    = btn.getAttribute('data-test-path');
+
+            const base = 'test-call-btn w-full mt-3 py-2.5 rounded-xl text-sm font-bold transition-all';
+            btn.disabled  = true;
+            btn.className = `${base} bg-green-400 text-white`;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin mr-1"><\/i> Calling\u2026';
+            
+            const win = window.open('', '_blank');
+            try {
+                const res = await fetch(`${GATEWAY_URL}/api/request`, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({
+                        listingAddress: listingAddr,
+                        walletAddress:  state.wallet,
+                        path:           testPath,
+                        method:         'GET'
+                    })
+                });
+                const payload = await res.json();
+                if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
+
+                const msg = payload?.data?.message;
+                if (typeof msg === 'string' && msg.startsWith('http')) {
+                    win.location.href = msg;
+                } else {
+                    win.document.write('<pre>' + JSON.stringify(payload.data, null, 2) + '<\/pre>');
+                }
+            } catch (err) {
+                console.error('Test call failed', err);
+                win.close();
+                alert(`Test call failed: ${err.message}`);
+            }
+
+            // Refresh counter regardless of outcome
+            try {
+                const r = await fetch(`${GATEWAY_URL}/api/balance/${listingAddr}/${state.wallet}`);
+                const { balance } = await r.json();
+                const n = Number(balance);
+                setTestBtn(btn, n > 0 ? 'ready' : 'no-tokens', n);
+            } catch {
+                setTestBtn(btn, 'no-tokens');
+            }
+        });
+
+        // Card click to open the description modal and purchase modal 
+        document.getElementById('detailsPurchaseBtn').addEventListener('click', (e) => {
+            const btn = document.getElementById('detailsPurchaseBtn')
+            const confirmBtn = document.getElementById('confirmPurchaseBtn')
+
+            document.getElementById('buyApiName').innerText = btn.getAttribute('data-name');
+            document.getElementById('buyApiProvider').innerText = btn.getAttribute('data-provider');
+            document.getElementById('buyApiPrice').innerText = btn.getAttribute('data-price') + ' Wei';
+
+            confirmBtn.setAttribute('data-target-id', btn.getAttribute('data-name'));
+            confirmBtn.setAttribute('data-listing-addr', btn.getAttribute('data-listing-addr') || '');
+
+            document.getElementById('sellBackBtn').classList.add('hidden');
+            document.getElementById('testCallBtn')?.remove();
+            document.getElementById('buyAmountInput').value = 1;
+
+            closeModal('detailsModal')
+            openModal('purchaseModal')
+            refreshPriceQuote()
+        });        
+
+        // Listener for terminating a contract 
+        document.addEventListener('click', async (e) => {
+            const btn = e.target.closest('.terminate-listing-btn');
+            if (!btn) return;
+            
+            // Ensure wallet is connected, if not then open wallet connect
+            if (!signer) {
+                openModal('walletModal');
+                return;
+            }
+
+            // Find out which contract to terminate
+            const addr = btn.getAttribute('data-listing-addr');
+            const name = btn.getAttribute('data-listing-name');
+
+            // important: explain termination to user with confirm window
+            const ok = window.confirm(`Terminate "${name}"?\n\nIf the listing has been used today, termination will be queued for tomorrow. Otherwise it terminates immediately. New purchases will be blocked.`);
+            if (!ok) return;
+
+            btn.disabled = true;
+
+            try {
+                // Create a contract instance and call queue termination
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const tx = await listing.queueTermination();
+                await tx.wait();
+                alert('Termination transaction sent:\n' + tx.hash);
+
+                // Refresh other pages to show this
+                loadProviderListings();
+                getDashboardStats();
+            } catch (err) {
+                console.error('Terminate failed', err);
+                alert('Terminate failed: ' + err);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        // Listener for edit parameters modal
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.edit-listing-btn');
+            if (!btn) return;
+            
+            // Get the current information about the listing
+            const addr = btn.getAttribute('data-listing-addr');
+            const currentCapacity = btn.getAttribute('data-current-capacity');
+            const currentPrice = btn.getAttribute('data-current-price');
+
+            // Fill edit params modal 
+            document.getElementById('editParamsAddr').innerText = addr;
+            document.getElementById('editParamsPrice').value = currentPrice || '';
+            document.getElementById('editParamsCapacity').value = currentCapacity || '';
+
+            // Store the address on the confirm button
+            document.getElementById('confirmEditParamsBtn').setAttribute('data-listing-addr', addr);
+            openModal('editParamsModal');
+        });
+
+        // Confirm parameter change
+        document.getElementById('confirmEditParamsBtn').onclick = async (e) => {
+            const btn = e.currentTarget;
+            const addr = btn.getAttribute('data-listing-addr');
+            
+            // Ensure wallet is connected, if not then open wallet connect
+            if (!signer) {
+                openModal('walletModal');
+                return;
+            }
+
+            // Get the inputs for new price and new capacity
+            const newBasePrice = document.getElementById('editParamsPrice').value.trim();
+            const newCapacity = document.getElementById('editParamsCapacity').value.trim();
+
+            const basePriceNum = Number(newBasePrice);
+            const capacityNum = Number(newCapacity);
+
+            // Validate inputs
+            if (!Number.isInteger(basePriceNum) || basePriceNum <= 0) {
+                alert('Price must be a positive whole number.');
+                return;
+            }
+            if (!Number.isInteger(capacityNum) || capacityNum <= 0) {
+                alert('Capacity must be a positive whole number.');
+                return;
+            }
+
+            btn.disabled = true;
+
+            try {
+                // Create new contract instance to change params
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                // queueParameterChange() takes capacity first, and then basePrice
+                const tx = await listing.queueParameterChange(BigInt(capacityNum), BigInt(basePriceNum));
+                await tx.wait();
+
+                alert('Parameter change queued:\n' + tx.hash);
+                closeModal('editParamsModal');
+                loadProviderListings();
+                getDashboardStats();
+            } catch (err) {
+                console.error('Param change failed', err);
+                alert('Parameter change failed: ' + err);
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        // Authorize on-chain buyTokens 
+        document.getElementById('confirmPurchaseBtn').onclick = async (e) => {
+            const btn    = e.currentTarget;
+            const status = document.getElementById('buyPriceStatus');
+            const addr   = btn.getAttribute('data-listing-addr');
+            const amount = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
+        
+            if (!signer)  { openModal('walletModal'); return; }
+            if (!addr || addr.startsWith("__LISTING_") || addr.startsWith("0xREPLACE")) {
+                alert('Listing address not configured for this card.'); return;
+            }
+            if (amount <= 0) { alert('Enter a positive number of calls.'); return; }
+        
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.classList.replace('bg-primary', 'bg-gray-500');
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Quoting price…';
+        
+            try {
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const value   = await listing.getPurchasePrice(amount);
+        
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Awaiting signature…';
+                const tx = await listing.buyTokens(amount, { value });
+        
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Mining tx…';
+                const receipt = await tx.wait();
+
+                // IMPORTANT: need to check receipt status to see if transaction actually went through
+                // ethers.js receipt.status == 1 if transaction is a success or 0 if failure
+                // therefore need to ensure ==1 otherwise throw an error (stops failed mints from going into My Tokens page)
+                if (receipt.status !== 1) {
+                    throw new Error('Transasction failed on chain! No tokens minted')
+                }
+                
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Tokens minted!';
+                btn.classList.replace('bg-gray-500', 'bg-green-500');
+                status.innerHTML =
+                    `Tx: <a class="underline" target="_blank" ` +
+                    `href="https://sepolia.etherscan.io/tx/${receipt.hash}">` +
+                    `${receipt.hash.slice(0,10)}…</a>`;
+        
+                document.getElementById('sellBackBtn').classList.remove('hidden');
+                refreshPriceQuote();
+            } catch (err) {
+                console.error('buyTokens failed', err);
+                btn.classList.replace('bg-gray-500', 'bg-red-500');
+                btn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' +
+                                (err.shortMessage || 'Failed');
+            } finally {
+                setTimeout(() => {
+                    btn.disabled  = false;
+                    btn.innerHTML = original;
+                    btn.classList.remove('bg-green-500','bg-red-500','bg-gray-500');
+                    btn.classList.add('bg-primary');
+                }, 4000);
+            }
+        };
+            
+            
+        // Sell-back tokens 
+        document.getElementById('sellBackBtn').onclick = async () => {
+            const sellBtn = document.getElementById('sellBackBtn');
+            const addr    = document.getElementById('confirmPurchaseBtn').getAttribute('data-listing-addr');
+            const amount  = parseInt(document.getElementById('buyAmountInput').value, 10) || 0;
+            const status  = document.getElementById('buyPriceStatus');
+        
+            if (!signer)         { alert('Connect wallet first.'); return; }
+            if (!addr)           { alert('Listing address not configured.'); return; }
+            if (amount <= 0)     { alert('Enter how many tokens to sell.'); return; }
+        
+            sellBtn.disabled = true;
+            sellBtn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Selling…';
+            try {
+                const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+                const tx      = await listing.sellTokens(amount);
+                const receipt = await tx.wait();
+                sellBtn.innerHTML = '<i class="fa-solid fa-check"></i> Sold';
+                status.innerHTML  =
+                    `Sell tx: <a class="underline" target="_blank" ` +
+                    `href="https://sepolia.etherscan.io/tx/${receipt.hash}">` +
+                    `${receipt.hash.slice(0,10)}…</a>`;
+                refreshPriceQuote();
+            } catch (err) {
+                console.error('sellTokens failed', err);
+                sellBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' +
+                                    (err.shortMessage || 'Failed');
+            } finally {
+                setTimeout(() => {
+                    sellBtn.disabled  = false;
+                    sellBtn.innerHTML = '<i class="fa-solid fa-rotate-left"></i> Sell Back Tokens';
+                }, 3000);
+            }
+        };
+
+        /** PROVIDER DASHBOARD LOGIC */
+        const providerNavLinks = document.querySelectorAll('#providerNav a');
+        function showProviderSection(sectionId, activateSidebar = true) {
+            // Hide all
+            document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('dash-active'));
+            // Show target
+            document.getElementById(sectionId)?.classList.add('dash-active');
+
+            // Update Header Title based on section
+            const titles = {
+                'dash-main': 'Developer Console', 
+                'dash-publish': 'Publish API',
+                'dash-myapis': 'My APIs',
+                'dash-earnings': 'Earnings', 
+                'dash-profile': 'My Profile'
+            };
+            if(document.getElementById('dashHeaderTitle')) {
+                document.getElementById('dashHeaderTitle').innerText = titles[sectionId] || 'Console';
+            }
+
+            if(activateSidebar) {
+                providerNavLinks.forEach(l => {
+                    l.classList.remove('sidebar-active', 'bg-gray-50');
+                    l.classList.replace('text-primary', 'text-gray-600');
+                });
+                const activeLink = document.querySelector(`#providerNav a[href="#${sectionId}"]`);
+                if(activeLink) {
+                    activeLink.classList.add('sidebar-active', 'bg-gray-50');
+                    activeLink.classList.replace('text-gray-600', 'text-primary');
+                }
+            }
+
+            // Init charts if needed
+            if(sectionId === 'dash-publish') requestAnimationFrame(initBondingCurveChart);
+            
+            document.getElementById('providerMainScroll').scrollTo(0,0);
+        }
+
+        providerNavLinks.forEach(link => {
+            link.onclick = (e) => { e.preventDefault(); showProviderSection(link.getAttribute('href').substring(1)); };
+        });
+        document.querySelectorAll('.profile-nav-link').forEach(link => link.onclick = (e) => { e.preventDefault(); showProviderSection(link.getAttribute('href').substring(1)); });
+
+
+
+        
+        let bondingCurveChartInstance = null;
+        
+        // Create bonding curve chart that reflects bonding curves in solidity
+        // Therefore, should be constant at basePrice for 90% of supply range and then 
+        // follow 4x^3 up to capacity (as integral of 4x^3 is x**4 which was convenient for solidity)
+        function initBondingCurveChart() {
+            const ctx = document.getElementById('bondingCurveChart')?.getContext('2d');
+            if(!ctx) return;
+            
+            // Get params for the curve from webpage input:
+            // basePrice => the constant price for the first 90% of the supply range
+            // capacity => the maximum supply (for a given day)
+            const basePrice = parseFloat(document.getElementById('curveBasePrice').value || 1);
+            const capacity = parseInt(document.getElementById('curveMaxCapacity').value) || 1000;
+            const stepPoint = Math.floor(capacity * 0.9);
+
+            // Store x-axis (supply) values
+            const labels = [];
+
+            // Store y-axis (marginal price) values
+            const data = [];
+
+            // No. points to plot on the chart (lots so it looks more conintuous)
+            let points = 1000;
+
+            // Loop from 0 to number of points
+            for (let i = 0; i <= points; i++) {
+
+                // Get current supply for this point
+                let supply = Math.round((capacity / points) * i);
+
+                // start with basePrice (for constant porttion of curve)
+                let price = basePrice;
+
+                // Only increase price if after step point
+                if (supply >= stepPoint) {
+
+                    // Work out how far supply is from step point
+                    let x = supply - stepPoint;
+                    let curveIncrease = 4 * Math.pow(x, 3);     // bonding curve follows 4s^3 for spot price
+
+                    // Add curve increase on to base price
+                    price = basePrice + curveIncrease;
+                }
+
+                // Save supply values in x-axis array
+                labels.push(supply);
+
+                // Save price values in y-axis array
+                data.push(price);
+            }
+
+            // If the chart already exists, update it
+            if (bondingCurveChartInstance) {
+                // Update x-axis
+                bondingCurveChartInstance.data.labels = labels;
+                // Update y-axis 
+                bondingCurveChartInstance.data.datasets[0].data = data;
+                // Rewdraw chart
+                bondingCurveChartInstance.update();
+                return;
+            }
+
+            // If no chart exists yet, create new Chart.js instance 
+            bondingCurveChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    // labels for x axis
+                    labels: labels,
+
+                    datasets: [{
+                        // Y-axis values
+                        data: data,
+
+                        // Style of line (as written in groupmate's previous commit)
+                        borderColor: '#165DFF',
+                        backgroundColor: 'rgba(22, 93, 255, 0.1)',
+                        fill: true, 
+                        borderWidth: 3,
+                        tension: 0,
+                        pointRadius: 0,
+                        pointHoverRadius: 5
+                    }]
+                },
+                // Same options as groupmate's previous commiit
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false }, tooltip: { intersect: false } }, 
+                    scales: { 
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)'} }, 
+                        x: { grid: { display: false }, ticks:{maxTicksLimit: 5} } 
+                    } 
+                }
+            });
+        }
+
+        // Attach listeners for dynamic bonding curve update
+        ['curveBasePrice', 'curveMaxCapacity',].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', initBondingCurveChart);
+            document.getElementById(id)?.addEventListener('change', initBondingCurveChart);
+        });
+
+        /** EDIT PROFILE LOGIC */
+        document.getElementById('editProfileForm').onsubmit = (e) => {
+            e.preventDefault();
+            state.user = document.getElementById('editFullName').value;
+            // developer ID is readonly, no update
+            state.profile.username = document.getElementById('editUsername').value;
+            state.profile.roleTitle = document.getElementById('editRole').value;
+            state.profile.email = document.getElementById('editEmail').value;
+            state.profile.location = document.getElementById('editLocation').value;
+            state.profile.specialties = document.getElementById('editSpecialties').value;
+            state.profile.languages = document.getElementById('editLanguages').value;
+            state.profile.about = document.getElementById('editAbout').value;
+            
+            updateUIState(); 
+            closeModal('editProfileModal');
+            console.log("BACKEND HOOK: Profile Saved ->", state.profile);
+        };
+
+        /** GLOBAL UI STATE UPDATER */
+        function updateUIState() {
+            // Navbar text
+            document.querySelectorAll('#navLoginBtn').forEach(btn => btn.innerText = state.isLoggedIn ? "Dashboard" : "Login");
+            
+            // Header Info
+            document.getElementById('dashUser').innerText = state.isLoggedIn ? state.user : "Guest User";
+            const initials = state.isLoggedIn ? state.user.substring(0, 2).toUpperCase() : "UN";
+            document.getElementById('dashInitials').innerText = initials;
+            
+            // Profile Page Population
+            document.getElementById('profileBigInitials').innerText = initials;
+            document.getElementById('profileNameHeading').innerText = state.user;
+            document.getElementById('profileDeveloperId').innerText = state.profile.developerId;
+            document.getElementById('profileUsername').innerText = state.profile.username;
+            document.getElementById('profileRole').innerText = state.profile.roleTitle;
+            document.getElementById('profileEmail').innerText = state.profile.email;
+            document.getElementById('profileLocation').innerText = state.profile.location;
+            document.getElementById('profileSpecialties').innerText = state.profile.specialties;
+            document.getElementById('profileLanguages').innerText = state.profile.languages;
+            document.getElementById('profileAbout').innerText = state.profile.about;
+
+            // Pre-fill Edit Modal Fields
+            document.getElementById('editFullName').value = state.user;
+            document.getElementById('editDeveloperId').value = state.profile.developerId;
+            document.getElementById('editUsername').value = state.profile.username;
+            document.getElementById('editRole').value = state.profile.roleTitle;
+            document.getElementById('editEmail').value = state.profile.email;
+            document.getElementById('editLocation').value = state.profile.location;
+            document.getElementById('editSpecialties').value = state.profile.specialties;
+            document.getElementById('editLanguages').value = state.profile.languages;
+            document.getElementById('editAbout').value = state.profile.about;
+            
+            // Wallet States
+            const addrDisplay = state.wallet ? `${state.wallet.slice(0, 6)}...${state.wallet.slice(-4)}` : "Connect Wallet";
+            document.querySelectorAll('.wallet-status-text').forEach(el => el.innerText = addrDisplay);
+            document.querySelectorAll('.dash-wallet-addr').forEach(el => {
+                if(el.tagName === 'INPUT') el.value = state.wallet || ''; 
+                else el.innerText = state.wallet ? `${state.wallet.slice(0,8)}...${state.wallet.slice(-6)}` : "Not Connected";
+            });
+
+            
+        }
+
+        // Create API listing through registry contract and ask metamask to confirm transaction
+        document.getElementById('publishForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            const ogText = btn.innerHTML;
+
+            try {
+                // Get Solidity params from input field
+                const name = document.getElementById('pubName').value.trim(); 
+                const symbol = document.getElementById('pubSymbol').value.trim();
+                const endpoint = document.getElementById('pubUrl').value.trim();
+                const price = document.getElementById('curveBasePrice').value.trim();
+                const capacity = document.getElementById('curveMaxCapacity').value.trim();
+
+                // Validate inputs that are needed for Solidity
+                if (!name || name.length > 50) throw new Error('Name must be 1–50 characters.');
+                if (!symbol || symbol.length > 10) throw new Error('Symbol must be 1–10 characters.');
+                if (!endpoint || endpoint.length > 250) throw new Error('Endpoint must be 1–250 characters.');
+                if (!registryContract) throw new Error('Please connect your wallet first.');
+
+                // Ensure that numerial inputs are whole positive numbers (needed for discrete math in solidity)
+                let capacityNum = Number(capacity);
+                let priceNum = Number(price);
+                if (!Number.isInteger(capacityNum) || capacityNum <= 0) {
+                    throw new Error('Capacity must be a positive whole number');
+                }
+                if (!Number.isInteger(priceNum) || priceNum <= 0) {
+                    throw new Error('Price must be a positive whole number in wei');
+                }
+
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Deploying Contract...';
+
+                // Call createAPIListing in the registry contract to create a new listing with these paramgs
+                const tx = await registryContract.createAPIListing(name, symbol, endpoint, BigInt(capacity), BigInt(price));
+                const receipt = await tx.wait();
+                console.log('Transaction mined')
+
+                // get the address of the new listing
+                let listingAddress = null;
+
+                // Go through all logs in transsaction receipt to get listing address
+                for (let i = 0; i < receipt.logs.length; i++) {
+                    let currentLog = receipt.logs[i];
+
+                    try {
+                        // Parse this log using the registry contract ABI
+                        let parsed = registryContract.interface.parseLog(currentLog);
+
+                        // If the parsed log is CreatedListing event from Solidity, then extract the contract address
+                        if (parsed?.name === 'CreatedListing') {
+                            listingAddress = parsed.args.apiListing;
+                            break;
+                        }
+                    } catch { }
+                }
+                
+                // Send alert that API has been published
+                alert(
+                    `API Listing published!\n`+
+                    `Listing contract: ${listingAddress}\n`+
+                    `TX Hash: ${tx.hash}\n`
+                );
+                
+                // Save off-chain metadata (description, category, icon, etc.) to the gateway
+                try {
+                    const description = document.getElementById('pubDesc').value.trim();
+                    const categoryKey = document.getElementById('pubCat').value;
+                    const CATEGORY_VISUALS = {
+                        web3: { category: "Web3 / Blockchain", icon: "fa-cubes",                iconBg: "bg-blue-50 text-blue-600" },
+                        ai:   { category: "AI / ML",           icon: "fa-robot",                iconBg: "bg-purple-50 text-purple-600" },
+                        data: { category: "Data Analytics",    icon: "fa-chart-pie",            iconBg: "bg-green-50 text-green-600" },
+                        util: { category: "Utilities",         icon: "fa-screwdriver-wrench",   iconBg: "bg-gray-100 text-gray-600" }
+                    };
+                    const visual = CATEGORY_VISUALS[categoryKey] || CATEGORY_VISUALS.util;
+
+                    const metaRes = await fetch(`${GATEWAY_URL}/api/metadata`, {
+                        method:  'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            listingAddress,
+                            name,
+                            endpoint,
+                            description,
+                            ...visual,
+                            badge:      "New",
+                            badgeStyle: "bg-primary/10 text-primary"
+                        })
+                    });
+                    if (!metaRes.ok) {
+                        const errBody = await metaRes.json().catch(() => ({}));
+                        throw new Error(errBody.error || `Gateway returned HTTP ${metaRes.status}`);
+                    }
+                    console.log('Metadata POST →', metaRes.status, await metaRes.json());
+                } catch (metaErr) {
+                    console.error('Failed to save metadata (listing still on-chain):', metaErr);
+                    alert(
+                        `⚠️ Your API was deployed on-chain but failed to register with the gateway.\n\n` +
+                        `Listing Address: ${listingAddress}\n` +
+                        `Error: ${metaErr.message}\n\n` +
+                        `Please note this address and contact support, or re-submit the form.`
+                    );
+                }
+
+                // Show success state
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Deployed Successfully'; 
+                btn.classList.replace('bg-primary', 'bg-green-600');
+                setTimeout(() => { 
+                    btn.innerHTML = ogText; 
+                    btn.classList.replace('bg-green-600', 'bg-primary'); 
+                    document.getElementById('publishForm').reset(); 
+                    initBondingCurveChart(); // reset chart
+                    // Load the provider listings section for the new listing to be seen
+                    loadProviderListings();
+                    // Load the dashboard stats to update
+                    getDashboardStats();
+                    showProviderSection('dash-myapis'); 
+                }, 2000);
+
+            } catch (err) {
+                alert('Publish failed' + err)
+                btn.innerHTML = ogText; 
+            }
+        });
+        
+
+        // Withdrawal IGNORES the amount to be withdrawn, and withdraws everything
+        // This matches the structure of the solidity contract (no option for how much to withdarw)
+        document.getElementById('withdrawForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!state.wallet) return alert('Please connect a wallet first to withdraw.');
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> Submitting Tx...';
+            
+            try {
+                // Get current wallet address
+                const myWalletAdd = await signer.getAddress();
+
+                // Get all listing APIs from this provider
+                const listingAddresses = await registryContract.getProviderListings(myWalletAdd);
+
+                // Empty list to store listings that have credits
+                let listingsWithCredits = []
+
+                // Check each listing for credits:
+                for (let i = 0; i < listingAddresses.length; i++) {
+                    const addr = listingAddresses[i];
+
+                    // Create contract object for this listing
+                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+
+                    // Read current credits for this wallet address
+                    const credits = await listing.credits(myWalletAdd);
+
+                    // If credits are greater than zero then save this listing
+                    if (credits > 0n) {
+                        listingsWithCredits.push(listing);
+                    } 
+                }
+
+                // If ther are no listings with credits, then stop here
+                if (listingsWithCredits.length === 0) {
+                    alert('No credits to withdraw');
+                    // reset button
+                    btn.innerHTML = ogText;
+                    return;
+                }
+
+                // Tracker for how many listings have been withdrawn from
+                let withdrawCount = 0;
+
+                // Go through each listing and withdraw credits
+                for (let i = 0; i < listingsWithCredits.length; i++) {
+                    const listing = listingsWithCredits[i];
+
+                    // Withdraw from this listing
+                    const tx = await listing.withdraw();
+
+                    // Wait for transaction to be confirmed
+                    await tx.wait();
+
+                    // Add 1 to withdraw counter
+                    withdrawCount += 1;
+                }
+
+                alert('Withdrew from ' + withdrawCount + ' listings');
+
+                // Show button success
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Transfer Complete';
+                
+                // Reload dashboard stats
+                getDashboardStats();
+
+                setTimeout(() => { 
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Transfer Complete'; 
+                    btn.classList.replace('bg-primary', 'bg-green-600');
+                    setTimeout(() => { 
+                        btn.innerHTML = ogText; 
+                        btn.classList.replace('bg-green-600', 'bg-primary');
+                        document.getElementById('withdrawForm').reset(); 
+                    }, 2000); 
+                }, 1500);
+            } catch (err) {
+                console.error('Withdraw failed', err);
+                alert('Withdraw failed', err);
+                btn.innerHTML = ogText;
+            }
+        });
+
+        // Function that live-updates provider's API listing in the My APIs table
+        // Based on the number of listings associated with the connected wallet
+        // Uses the getProviderListings view function in APIBazaarRegistry.sol
+       async function loadProviderListings() {
+
+            // Get table body to add rows to
+            const tbody = document.getElementById('myApisTable');
+
+            // Stop if table doesn't exist
+            if (!tbody) {
+                return;
+            }
+
+            // Ensure metamask is connected, if not thens stop
+            if (!registryContract || !signer) {
+                return;
+            } 
+
+            try {
+                // Get current wallet address
+                const myWalletAdd = await signer.getAddress()
+
+                // Get all listing contract addresses associated with this wallet using Solidity funticon
+                const listingAddresses = await registryContract.getProviderListings(myWalletAdd)
+
+                // if no listings found, show message and stop
+                if (listingAddresses.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-gray-400 font-medium">No APIs published yet.</td></tr>';
+                    return;
+                }
+
+                let allRows = '';
+
+                // Go through each listing address one by one
+                for (let i = 0; i < listingAddresses.length; i++) {
+                    const addr = listingAddresses[i];
+
+                    // get metadata from this listing from solidity view function
+                    const metadata = await registryContract.getListing(addr);
+
+                    // Create contract object for this listing via APIListing.sol
+                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+
+                    // Default values if fail
+                    let priceWei = '-'
+                    let terminated = false;
+                    let dailySupply = '-'
+                    let capacity = '-'
+
+                    try {
+                        // Read base price from deployed listing contract
+                        priceWei = await listing.basePrice();
+
+                        // Read daily supply from deployed listing constract
+                        dailySupply = await listing.getCurrentDaySupply();
+
+                        // Read APIs capacity (from getActiveParams)
+                        capacity = await listing.capacity();
+
+                        // Check if listing is terminated
+                        terminated = await listing.isTerminated();
+                    } catch (err) {
+                        console.warn('Could not read listing details', addr, err);
+                    }
+                    
+                    // Create a status for html
+                    let status = '';
+
+                    // SHow termination status
+                    if (terminated) {
+                        // Show terminated in the HTML
+                        status = '<span class="px-2 py-1 rounded bg-red-100 text-red-700">Terminated</span>';
+                    } else {
+                        // Show active in the HTML
+                        status = '<span class="px-2 py-1 rounded bg-green-100 text-green-700">Active</span>';
+                    }
+                    
+                    // BUTTONS TERMINATION AND PARAMETER CHANGE IN CONTRACT 
+                    let actionsCell;
+                    
+                    // If the listing has already been terminated, then no action to be made (as termination is permanetnt)
+                    if (terminated) {
+                    actionsCell = '<span class="text-xs text-gray-400">No actions</span>';
+                    } else {
+                        // If it has not been terminated, the make button to allow param change and termination
+                        actionsCell = `
+                            <button
+                                class="edit-listing-btn px-3 py-1 bg-gray-900 text-white rounded-xl text-xs font-black mr-2" data-listing-addr="${addr}" data-current-capacity="${capacity}" data-current-price="${priceWei}"> Edit Params
+                            </button>
+                            <button
+                                class="terminate-listing-btn px-3 py-1 bg-red-600 text-white rounded-xl font-black text-xs mr-2" data-listing-addr="${addr}" data-listing-name="${metadata.name}"> Terminate
+                            </button>
+                        `;
+                    }
+
+                    // Add one table row for this listing 
+                    // Formatted same as groupmate's previous placeholder table rows from old commit 
+                    // Includes button to terminate lsting and change parameters (actionsCell) 
+                    allRows += `
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-5 font-black text-gray-900">${metadata.name} <span class="text-xs text-gray-400 font-mono">(${metadata.symbol.toUpperCase()})</span></td>
+                            <td class="p-5 text-gray-500 font-mono text-xs">${addr}</td>
+                            <td class="p-5 font-mono text-primary font-black">${priceWei} Wei</td>
+                            <td class="p-5 font-bold">${dailySupply}</td>
+                            <td class="p-5 font-black">${capacity}</td>
+                            <td class="p-5">${status}</td>
+                            <td class="p-5">${actionsCell}</td>
+                            <td class="p-5 text-right text-gray-400 text-xs font-mono">${metadata.endpoint.slice(0, 30)}...</td>
+                        </tr>`;
+                }
+                
+                // Put all rows into table body
+                tbody.innerHTML = allRows;
+
+            } catch (err) {
+                console.error('loadProviderListings failed', err);
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-red-400 font-medium">Failed to load listings.</td></tr>';
+            }
+        }
+
+        // Function to get the live statistics to display on the provider dashboard
+        async function getDashboardStats () {
+
+            // Ensure metamask is connected, if not thens stop
+            if (!registryContract || !signer) {
+                return;
+            } 
+
+            try {
+                // Get current wallet address
+                const myWalletAdd = await signer.getAddress()
+
+                // Get all API listings from this provider
+                const listingAddresses = await registryContract.getProviderListings(myWalletAdd);
+
+                // Start totals at zero
+                let totalCapacity = 0n;     // need to be big int
+                let totalSupplyToday = 0n;     // need to be big int
+                let totalCredits = 0n;     // need to be big int
+                let activeCount = 0;
+
+                // Go through each listing one by one
+                for (let i = 0; i < listingAddresses.length; i++) {
+                    const addr = listingAddresses[i];
+
+                    // Create contract instance for listing
+                    const listing = new ethers.Contract(addr, LISTING_ABI, signer);
+
+                    try {
+                        // Read current day supply from the listing
+                        const supplyToday = await listing.getCurrentDaySupply();
+
+                        // Read provider credits from the listing
+                        const credits = await listing.credits(myWalletAdd);
+
+                        // Check if this listing is terminated
+                        const terminated = await listing.isTerminated();
+
+                        // Get capacity (from get active params)
+                        const capacity = await listing.capacity();
+
+                        // Add current listing values to running totals
+                        totalSupplyToday += supplyToday;
+                        totalCredits += credits;
+                        totalCapacity += capacity;
+
+                        // Add to active count if not terminated
+                        if (!terminated) {
+                            activeCount += 1;
+                        }
+                    } catch (err) {
+                        console.warn('Could not read API listing', addr, err);
+                    }
+                }
+            
+            
+            let utilisationText = '0%';
+
+            // Calculate utilisation percentage (total supply / total capacity * 100)
+            if (totalCapacity > 0n) {
+                const utilisationPercent = Number((totalSupplyToday * 100n) / totalCapacity);
+                utilisationText = utilisationPercent.toFixed(1) + '%';
+            }
+
+            // Show active API count in dashboard
+            document.getElementById('statApiActive').innerText = activeCount;
+
+            // Show total supply for this day in dashboard
+            document.getElementById('statTotalSupply').innerText = totalSupplyToday.toString();
+
+            // SHow total withdrawable credits
+            document.getElementById('statWithdrawable').innerText = totalCredits.toString() + ' Wei';
+
+            // Show current utilisation
+            document.getElementById('statUtilisation').innerText = utilisationText;
+
+            } catch (err) {
+                console.error('getDashboardStats failed', err);
+            }
+
+        }
+
+        // Globalise functions for inline HTML (as now using type="module" to import ethers.js)
+        window.switchView = switchView;
+        window.handleProtectedRoute = handleProtectedRoute;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.showProviderSection = showProviderSection;
+        window.loadProviderListings = loadProviderListings;
+        window.getDashboardStats = getDashboardStats;
+        window.openDetailsModal = openDetailsModal;
+
+        // Initialize App
+        window.onload = updateUIState;
+
+    </script>
+</body>
+</html>
