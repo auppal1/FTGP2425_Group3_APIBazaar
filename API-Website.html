@@ -1154,7 +1154,11 @@
             "crypto social sentiment": { provider: "provider2", path: "/sentiment"  }
         };
 
-        const GATEWAY_URL = "http://localhost:3000";
+        const GATEWAY_URL = (() => {
+            const fromQuery = new URLSearchParams(location.search).get('gateway');
+            if (fromQuery) { localStorage.setItem('gatewayUrl', fromQuery); return fromQuery; }
+            return localStorage.getItem('gatewayUrl') || 'http://localhost:3000';
+            })();
 
         // Build one card's HTML from on-chain data + metadata
         function buildCardHTML({ address, name, providerAddr, basePriceWei }, meta) {
